@@ -1,0 +1,8 @@
+
+# Set for wolfbolin
+.idea
+__pycache__
+venv*
+cache
+config*.py
+!config_default.py
