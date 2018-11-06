@@ -15,7 +15,7 @@ def room_update(room_data, conn):
     with conn.cursor() as cursor:
         for count, room in enumerate(room_data):
             # 尝试插入该教室信息，若出现UNIQUE重复则自动忽略
-            sql = "INSERT INTO  `all_room` (`campus`, `building`, `name`) VALUES ('%s', '%s', '%s') " \
+            sql = "INSERT INTO  `room_all` (`campus`, `building`, `name`) VALUES ('%s', '%s', '%s') " \
                   "ON DUPLICATE KEY UPDATE rid = rid;" \
                   % (room['campus'], room['building'], room['name'])
             cursor.execute(sql)
@@ -32,7 +32,7 @@ def teacher_update(teacher_data):
     conn = teacher_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
         # 尝试插入该教师信息，若出现UNIQUE重复则自动更新数据
-        sql = "INSERT INTO `all_teacher` (`code`,`name`,`unit`,`title`,`degree`) VALUES ('%s','%s','%s','%s','%s') " \
+        sql = "INSERT INTO `teacher_all` (`code`,`name`,`unit`,`title`,`degree`) VALUES ('%s','%s','%s','%s','%s') " \
               "ON DUPLICATE KEY UPDATE `name`='%s', `unit`='%s', `title`='%s', `degree`='%s';" \
               % (teacher_data['code'],
                  teacher_data['name'], teacher_data['unit'], teacher_data['title'], teacher_data['degree'],
@@ -52,7 +52,7 @@ def student_update(student_data):
     conn = student_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
         # 尝试插入该学生信息，若出现UNIQUE重复则自动更新数据
-        sql = "INSERT INTO `all_student`(`code`,`name`,`klass`,`deputy`,`campus`)VALUES('%s','%s','%s','%s','%s') " \
+        sql = "INSERT INTO `student_all`(`code`,`name`,`klass`,`deputy`,`campus`)VALUES('%s','%s','%s','%s','%s') " \
               "ON DUPLICATE KEY UPDATE `name`='%s',`klass`='%s',`deputy`='%s',`campus`='%s';" \
               % (student_data['code'],
                  student_data['name'], student_data['klass'], student_data['deputy'], student_data['campus'],

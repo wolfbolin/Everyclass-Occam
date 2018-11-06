@@ -4,13 +4,12 @@ import re
 import json
 import copy
 import requests
-from bs4 import element
 from bs4 import BeautifulSoup
 # Personal package
 import util
 
 
-def all_student(cookie, thread_num, limit=999999999):
+def student_all(cookie, thread_num, limit=999999999):
     """
     单线程处理函数
     从common的子页面中获取所有学生的数据信息
@@ -153,4 +152,3 @@ def student_table(data_set):
     # 不解析数据直接储存
     util.save_to_cache(semester, 'student_html', data_set['xh'], http_result.text)
     return []
-

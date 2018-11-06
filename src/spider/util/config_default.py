@@ -12,7 +12,6 @@ mysql_database = 'defaultdatabase'
 mysql_port = 3306
 mysql_charset = 'utf8'
 
-
 # 预定义数据
 base_headers = {
     'Host': '',

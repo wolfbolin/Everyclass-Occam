@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 # Common package
+import re
 import json
 from hashlib import md5
 from bs4 import BeautifulSoup
 # Personal package
 import util
-from .filter_base import read_lesson, read_week, make_week
+from .filter_base import read_week, make_week
 
 
-def all_teacher(data_set):
+def teacher_all(data_set):
     """
     单线程处理函数
     完成对所有教师的信息的数据校验
@@ -56,9 +57,12 @@ def teacher_table(data_set):
     semester = data_set['semester']
     teacher_name = data_set['teacher_name']
     teacher_code = data_set['teacher_code']
-    if util.query_from_cache(semester, 'teacher_html', teacher_code):
+    if util.query_from_cache(semester, 'teacher_json', teacher_code):
+        teacher_json = util.read_from_cache(semester, 'teacher_json', teacher_code)
+        teacher_json = json.loads(teacher_json)
+    elif util.query_from_cache(semester, 'teacher_html', teacher_code):
         teacher_html = util.read_from_cache(semester, 'teacher_html', teacher_code)
-        teacher_json = teacher_table_analysis(teacher_html, teacher_name, teacher_code)
+        teacher_json = teacher_table_analysis(teacher_html, semester, teacher_name, teacher_code)
         util.save_to_cache(semester, 'teacher_json', teacher_code, teacher_json)
     else:
         raise util.ErrorSignal('缺少教师%s课表数据' % teacher_code)
@@ -87,11 +91,12 @@ def teacher_table(data_set):
     return result
 
 
-def teacher_table_analysis(html, teacher_name, teacher_code):
+def teacher_table_analysis(html, semester, teacher_name, teacher_code):
     """
     单线程函数
     根据下载的文件分析教师的课程表
     :param html: 原始数据
+    :param semester: 课表学期
     :param teacher_name: 教师基础信息
     :param teacher_code: 教师基础信息
     :return: 经过格式化的数据
@@ -114,21 +119,28 @@ def teacher_table_analysis(html, teacher_name, teacher_code):
             for course in courses:
                 card = util.card_info.copy()
                 try:
-                    card['course_name'] = course.find(title='课程名称').string
+                    card['jx0408id'] = re.findall('jx0408id=(.*?)&', course['onclick'], re.S | re.M)[0]
+                    card['classroomID'] = re.findall('classroomID=(.*?)&', course['onclick'], re.S | re.M)[0]
                     card['teacher_string'] = teacher_name
-                    card['week_string'] = course.find(title='周次').string
+                    card['lesson'] = lesson
+                    if course.find(title='课程名称') is not None:
+                        card['course_name'] = course.find(title='课程名称').string
+                    if course.find(title='周次') is not None:
+                        card['week_string'] = course.find(title='周次').string
                     if course.find(title='单双周') is not None:
                         card['week_string'] += '/' + course.find(title='单双周').string
-                    card['lesson'] = lesson
                     if course.find(title='上课地点教室') is not None:
                         card['room'] = course.find(title='上课地点教室').string
                     # 以下内容为附加内容
-                    card['pick'] = course.find(title='选课人数').string
+                    if course.find(title='选课人数') is not None:
+                        card['pick'] = course.find(title='选课人数').string
                     if course.find(title='教学班名称') is not None:
                         if len(list(course.find(title='教学班名称').strings)) > 0:
                             card['code'] = list(course.find(title='教学班名称').strings)[0]
-                    card['hour'] = course.find(title='上课总学时').string
-                    card['type'] = course.find(title='课程性质').string
+                    if course.find(title='上课总学时') is not None:
+                        card['hour'] = course.find(title='上课总学时').string
+                    if course.find(title='课程性质') is not None:
+                        card['type'] = course.find(title='课程性质').string
                 except (AttributeError, IndexError) as e:
                     raise util.ErrorSignal('教师%s课表解析错误，%s' % (teacher_name + teacher_code, e))
                 result.append(card)

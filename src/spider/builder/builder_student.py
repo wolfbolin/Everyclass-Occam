@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Common package
+import gc
 import time
 import json
 from math import ceil
@@ -20,23 +21,23 @@ def build_student():
     cookie = spider.cookie()
 
     util.print_t('Step1:正在获取所有学生的数据')
-    if util.query_from_cache('global', '', 'all_student'):
-        all_student = util.read_from_cache('global', '', 'all_student')
-        all_student = json.loads(all_student)
+    if util.query_from_cache('global', '', 'student_all'):
+        student_all = util.read_from_cache('global', '', 'student_all')
+        student_all = json.loads(student_all)
         util.print_d('已从缓存中读取数据')
     else:
-        all_student = spider.all_student(cookie, 5)
-        util.save_to_cache('global', '', 'all_student', json.dumps(all_student))
+        student_all = spider.student_all(cookie, 5)
+        util.save_to_cache('global', '', 'student_all', json.dumps(student_all))
         util.print_d('已从网络获取数据并缓存')
 
     # 数据过滤代码片段
     util.print_t('Step2:正在校验所有学生的数据')
-    all_student = filter.all_student(all_student)
+    student_all = filter.student_all(student_all)
 
     # 向数据库中写入数据
     util.print_t('Step3:正在写入所有学生的数据')
     time_start = time.time()
-    rowcount += util.multiprocess(task=database.student_update, main_data=all_student,
+    rowcount += util.multiprocess(task=database.student_update, main_data=student_all,
                                   multithread=util.mysql_multithread, max_thread=10)
     time_end = time.time()
     util.print_d('学生数据写入数据库完成，耗时%d秒，操作数据库%d行' % (ceil(time_end - time_start), rowcount))
@@ -92,15 +93,21 @@ def build_student_table(semester):
     util.print_i('Step3.1:正在解析并范化学生名单')
     student_list = filter.student_list(student_list)
 
-    util.print_i('Step3.1:正在解析并范化学生课表数据')
+    util.print_i('Step3.2:正在解析并范化学生课表数据')
     if util.query_from_cache(semester, '', 'student_table'):
+        util.print_i('正在从缓存中读取大文件')
         student_table = util.read_from_cache(semester, '', 'student_table')
         student_table = json.loads(student_table)
         util.print_d('已从缓存中读取数据')
     else:
         student_table = util.multiprocess(task=filter.student_table, main_data=student_list,
                                           multithread=util.nosql_multithread,
-                                          attach_data={'semester': semester}, max_thread=5)
+                                          attach_data={'semester': semester}, max_thread=10)
+        util.print_i('Step3.3:正在回收内存资源...让电脑喘口气')
+        time.sleep(2)
+        gc.collect()
+        time.sleep(2)
+        util.print_i('Step3.4:向本地缓存中写入数据')
         util.save_to_cache(semester, '', 'student_table', json.dumps(student_table))
         util.print_d('已从缓存中解析并缓存')
 

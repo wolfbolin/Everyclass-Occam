@@ -41,6 +41,7 @@ student_info = {
 
 # 课程卡片信息数据结构
 card_info = {
+    # 课程卡片信息
     'course_name': '',
     'teacher_string': '',
     'teacher_list': [],
@@ -51,9 +52,12 @@ card_info = {
     'lesson': '',
     'room': '',
     'md5': '',
-    # 以下内容为附加内容
+    # 以下内容为老师课表附加内容
     'pick': 0,
     'code': '',
     'hour': 0,
-    'type': ''
+    'type': '',
+    # 系统隐藏ID
+    'jx0408id': '',
+    'classroomID': ''
 }

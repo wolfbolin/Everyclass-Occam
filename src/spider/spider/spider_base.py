@@ -38,7 +38,7 @@ def cookie():
     return cookie_str
 
 
-def all_room(cookies):
+def room_all(cookies):
     """
     单线程处理函数
     获取所有教室信息

@@ -1,5 +1,6 @@
 
 # Set for wolfbolin
+dumps
 .idea
 __pycache__
 venv*

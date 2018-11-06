@@ -4,7 +4,7 @@
 import util
 
 
-def all_room(data_set):
+def room_all(data_set):
     """
     单线程处理函数
     完成对所有教室数据的校验
@@ -112,7 +112,7 @@ def read_lesson(lesson_str):
     将节次信息分裂为适当的片段
     解决半节课，多节课连续的问题
     :param lesson_str: 教务的节次信息
-    :return: 经过裂解后的节次信息数据
+    :return: 经过解析后的节次信息数据
     """
     # 课程连续过多，例如：1010203
     if len(lesson_str) == 0:
@@ -127,3 +127,11 @@ def read_lesson(lesson_str):
             lesson.append('%s%02d%02d' % (day, num - 1, num))
         return lesson
     return [lesson_str]
+
+
+def read_hour(hour_str):
+    """
+    将学生课表上的课时信息提取出来
+    :param hour_str: 课时信息字符串
+    :return: 经过解析后的课时信息数据
+    """

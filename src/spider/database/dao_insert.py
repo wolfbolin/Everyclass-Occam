@@ -1,9 +1,5 @@
 # -*- coding: UTF-8 -*-
 # Common package
-import time
-import json
-import pymysql
-from random import random
 # Personal package
 import util
 
@@ -18,7 +14,8 @@ def teacher_insert(teacher_data):
     rowcount = 0
     conn = teacher_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
-        sql = "SELECT `code`, `name`, `unit`, `title`, `degree` FROM `all_teacher` WHERE `code`='%s';" \
+        # 先将老师从数据总表中添加到本学期数据表
+        sql = "SELECT `code`, `name`, `unit`, `title`, `degree` FROM `teacher_all` WHERE `code`='%s';" \
               % teacher_data['teacher_code']
         cursor.execute(sql)
         teacher_info = cursor.fetchone()
@@ -32,15 +29,18 @@ def teacher_insert(teacher_data):
         tid = cursor.lastrowid
         rowcount += cursor.rowcount
 
+        # 向数据库中添加卡片数据
         for card in teacher_data['table']:
-            sql = "INSERT INTO  `card_%s` (`name`,`teacher`,`week`,`lesson`,`room`,`md5`,`pick`,`code`,`hour`,`type`)" \
-                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d,'%s') " \
-                  "ON DUPLICATE KEY UPDATE cid = cid;" \
-                  % (teacher_data['semester'], card['course_name'], teacher_data['teacher_name'], card['week'],
-                     card['lesson'], card['room'], card['md5'], card['pick'], card['code'], card['hour'], card['type'])
+            sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `md5`, " \
+                  "`pick`, `code`, `hour`, `type`, `jx0408id`, `classroomID`)" \
+                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d, '%s', '%s', '%s') " \
+                  "ON DUPLICATE KEY UPDATE `teacher`=CONCAT(`teacher`, ';%s');" \
+                  % (teacher_data['semester'], card['course_name'], card['teacher'], card['week'],
+                     card['lesson'], card['room'], card['md5'], card['pick'], card['code'], card['hour'], card['type'],
+                     card['jx0408id'], card['classroomID'], card['teacher'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
-            sql = "SELECT `cid` FROM `card_%s` WHERE `md5`='%s';" % (teacher_data['semester'], card['md5'])
+            sql = "SELECT `cid` FROM `card_%s` WHERE `jx0408id`='%s';" % (teacher_data['semester'], card['jx0408id'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
 
@@ -62,6 +62,7 @@ def student_insert(student_data):
     rowcount = 0
     conn = student_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
+        # 先将学生从数据总表中添加到本学期数据表
         sql = "SELECT `code`, `name`, `klass`, `deputy`, `campus` FROM `student_all` WHERE `code`='%s';" \
               % student_data['student_code']
         cursor.execute(sql)
@@ -76,15 +77,18 @@ def student_insert(student_data):
         sid = cursor.lastrowid
         rowcount += cursor.rowcount
 
+        # 向数据库中添加卡片数据
         for card in student_data['table']:
-            sql = "INSERT INTO  `card_%s` (`name`,`teacher`,`week`,`lesson`,`room`,`md5`,`pick`,`code`,`hour`,`type`)" \
-                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d,'%s') " \
+            sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `md5`, " \
+                  "`pick`, `code`, `hour`, `type`, `jx0408id`, `classroomID`)" \
+                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d, '%s', '%s', '%s') " \
                   "ON DUPLICATE KEY UPDATE cid = cid;" \
-                  % (student_data['semester'], card['course_name'], student_data['teacher_name'], card['week'],
-                     card['lesson'], card['room'], card['md5'], card['pick'], card['code'], card['hour'], card['type'])
+                  % (student_data['semester'], card['course_name'], card['teacher'], card['week'],
+                     card['lesson'], card['room'], card['md5'], card['pick'], card['code'], card['hour'], card['type'],
+                     card['jx0408id'], card['classroomID'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
-            sql = "SELECT `cid` FROM `card_%s` WHERE `md5`='%s';" % (student_data['semester'], card['md5'])
+            sql = "SELECT `cid` FROM `card_%s` WHERE `jx0408id`='%s';" % (student_data['semester'], card['jx0408id'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
 
@@ -94,4 +98,3 @@ def student_insert(student_data):
             rowcount += cursor.rowcount
 
         return rowcount
-

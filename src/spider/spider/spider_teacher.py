@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import util
 
 
-def all_teacher(cookie, thread_num, limit=999999999):
+def teacher_all(cookie, thread_num, limit=999999999):
     """
     单线程处理函数，内置多线程操作
     从Common的子页面中获取所有教师的数据信息
@@ -44,15 +44,15 @@ def all_teacher(cookie, thread_num, limit=999999999):
         'headers': headers,
         'pageSize': '500'
     }
-    teacher_all = util.multiprocess(task=teacher_info, main_data=range(1, total_pages + 1), max_thread=thread_num,
-                                    attach_data=page_data, multithread=util.nosql_multithread)
-    return teacher_all
+    result = util.multiprocess(task=teacher_info, main_data=range(1, total_pages + 1), max_thread=thread_num,
+                               attach_data=page_data, multithread=util.nosql_multithread)
+    return result
 
 
 def teacher_info(page_data):
     """
     多线程处理函数
-    获取该页码上的所有信息，面向all_teacher函数提供服务
+    获取该页码上的所有信息，面向teacher_all函数提供服务
     :param page_data: 访问数据(url ,headers, PageNum, pageSize)
     :return: 该页上的所有信息
     """

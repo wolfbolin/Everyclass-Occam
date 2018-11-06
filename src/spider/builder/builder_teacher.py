@@ -20,23 +20,23 @@ def build_teacher():
     cookie = spider.cookie()
 
     util.print_t('Step1:正在获取所有教师的数据')
-    if util.query_from_cache('global', '', 'all_teacher'):
-        all_teacher = util.read_from_cache('global', '', 'all_teacher')
-        all_teacher = json.loads(all_teacher)
+    if util.query_from_cache('global', '', 'teacher_all'):
+        teacher_all = util.read_from_cache('global', '', 'teacher_all')
+        teacher_all = json.loads(teacher_all)
         util.print_d('已从缓存中读取数据')
     else:
-        all_teacher = spider.all_teacher(cookie, 5)
-        util.save_to_cache('global', '', 'all_teacher', json.dumps(all_teacher))
+        teacher_all = spider.teacher_all(cookie, 5)
+        util.save_to_cache('global', '', 'teacher_all', json.dumps(teacher_all))
         util.print_d('已从网络获取数据并缓存')
 
     # 数据过滤代码片段
     util.print_t('Step2:正在校验所有教师的数据')
-    all_teacher = filter.all_teacher(all_teacher)
+    teacher_all = filter.teacher_all(teacher_all)
 
     # 向数据库中写入数据
     util.print_t('Step3:正在写入所有教师的数据')
     time_start = time.time()
-    rowcount += util.multiprocess(task=database.teacher_update, main_data=all_teacher,
+    rowcount += util.multiprocess(task=database.teacher_update, main_data=teacher_all,
                                   multithread=util.mysql_multithread, max_thread=10)
     time_end = time.time()
     util.print_d('教师数据写入数据库完成，耗时%d秒，操作数据库%d行' % (ceil(time_end - time_start), rowcount))

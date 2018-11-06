@@ -65,26 +65,24 @@ def build_room():
     cookie = spider.cookie()
 
     util.print_t('Step1:正在获取所有教室的数据')
-    if util.query_from_cache('global', '', 'all_room'):
-        all_room = util.read_from_cache('global', '', 'all_room')
-        all_room = json.loads(all_room)
+    if util.query_from_cache('global', '', 'room_all'):
+        room_all = util.read_from_cache('global', '', 'room_all')
+        room_all = json.loads(room_all)
         util.print_d('已从缓存中读取数据')
     else:
-        all_room = spider.all_room(cookie)
-        util.save_to_cache('global', '', 'all_room', json.dumps(all_room))
+        room_all = spider.room_all(cookie)
+        util.save_to_cache('global', '', 'room_all', json.dumps(room_all))
         util.print_d('已从网络获取数据并缓存')
 
     # 数据过滤代码片段
     util.print_t('Step2:正在校验所有教室的数据')
-    all_room = filter.all_room(all_room)
+    room_all = filter.room_all(room_all)
 
     # 向数据库中写入数据
     util.print_t('Step3:正在写入所有教室的数据')
     conn = database.connect()
-    database.clean_table(conn, 'all_room')
-    rowcount += database.room_update(all_room, conn)
+    database.clean_table(conn, 'room_all')
+    rowcount += database.room_update(room_all, conn)
 
     util.print_d('所有教室的数据已处理完毕')
     return rowcount
-
-
