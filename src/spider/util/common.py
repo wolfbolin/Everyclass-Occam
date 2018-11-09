@@ -16,6 +16,7 @@ table_name_template = [
 
 # 教室数据结构
 room_info = {
+    'code': '',
     'name': '',
     'building': '',
     'campus': ''
@@ -42,7 +43,7 @@ student_info = {
 # 课程卡片信息数据结构
 card_info = {
     # 课程卡片信息
-    'course_name': '',
+    'name': '',
     'teacher_string': '',
     'teacher_list': [],
     'teacher': '',
@@ -51,13 +52,12 @@ card_info = {
     'week': '',
     'lesson': '',
     'room': '',
-    'md5': '',
+    'klass': '',
     # 以下内容为老师课表附加内容
     'pick': 0,
-    'code': '',
     'hour': 0,
     'type': '',
     # 系统隐藏ID
-    'jx0408id': '',
-    'classroomID': ''
+    'klassID': '',
+    'roomID': ''
 }

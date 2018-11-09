@@ -31,16 +31,16 @@ def teacher_insert(teacher_data):
 
         # 向数据库中添加卡片数据
         for card in teacher_data['table']:
-            sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `md5`, " \
-                  "`pick`, `code`, `hour`, `type`, `jx0408id`, `classroomID`)" \
-                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d, '%s', '%s', '%s') " \
+            sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
+                  "`pick`, `hour`, `type`, `klassID`, `roomID`)" \
+                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s') " \
                   "ON DUPLICATE KEY UPDATE `teacher`=CONCAT(`teacher`, ';%s');" \
-                  % (teacher_data['semester'], card['course_name'], card['teacher'], card['week'],
-                     card['lesson'], card['room'], card['md5'], card['pick'], card['code'], card['hour'], card['type'],
-                     card['jx0408id'], card['classroomID'], card['teacher'])
+                  % (teacher_data['semester'], card['name'], card['teacher'], card['week'],
+                     card['lesson'], card['room'], card['klass'], card['pick'], card['hour'],
+                     card['type'], card['klassID'], card['roomID'], card['teacher'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
-            sql = "SELECT `cid` FROM `card_%s` WHERE `jx0408id`='%s';" % (teacher_data['semester'], card['jx0408id'])
+            sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (teacher_data['semester'], card['klassID'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
 
@@ -79,16 +79,16 @@ def student_insert(student_data):
 
         # 向数据库中添加卡片数据
         for card in student_data['table']:
-            sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `md5`, " \
-                  "`pick`, `code`, `hour`, `type`, `jx0408id`, `classroomID`)" \
-                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', %d, '%s', '%s', '%s') " \
+            sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
+                  "`pick`, `hour`, `type`, `klassID`, `roomID`)" \
+                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s') " \
                   "ON DUPLICATE KEY UPDATE cid = cid;" \
-                  % (student_data['semester'], card['course_name'], card['teacher'], card['week'],
-                     card['lesson'], card['room'], card['md5'], card['pick'], card['code'], card['hour'], card['type'],
-                     card['jx0408id'], card['classroomID'])
+                  % (student_data['semester'], card['name'], card['teacher'], card['week'],
+                     card['lesson'], card['room'], card['klass'], card['pick'], card['hour'],
+                     card['type'], card['klassID'], card['roomID'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
-            sql = "SELECT `cid` FROM `card_%s` WHERE `jx0408id`='%s';" % (student_data['semester'], card['jx0408id'])
+            sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (student_data['semester'], card['klassID'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
 

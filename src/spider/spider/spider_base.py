@@ -74,6 +74,7 @@ def room_all(cookies):
             room_line = copy.deepcopy(util.room_info)
             room_line['campus'] = cells[2].string
             room_line['building'] = cells[3].string
+            room_line['code'] = cells[4].string
             room_line['name'] = cells[5].string
             result.append(room_line)
             change_flag = True

@@ -1,146 +1,140 @@
 # -*- coding: utf-8 -*-
 # Common package
-import os
-import sys
-import time
+# Personal package
+import util
 
 """
-被其他运行包所引用的工具包
-提供了大部分常用功能
+向内部业务提供特殊的通用性工具
 """
 
 
-# 自定义异常
-class ErrorSignal(Exception):
-    def __init__(self, value):
-        self.value = value
+def read_week(time_str):
+    """
+    将教务系统中复杂的周次信息读取为数组
+    例如将 ‘1,5-9,11-15/单周’ 变为 [1,5,7,9,11,13,15]
+    :param time_str: 教务系统中的时间编号
+    :return: 转化后的数组
+    """
+    # 排除双横杠的异常字符串 例如：4--5,7-18/全周
+    time_str = time_str.replace('--', '-')
+    length = time_str.split('/')[0]
+    try:
+        cycle = time_str.split('/')[1]
+    except IndexError as ie:
+        cycle = 0
 
-    def __str__(self):
-        return repr(self.value)
-
-
-def print_e(message):
-    print('\033[0;31;0m[ERROR] {}\033[0m'.format(str(message)))
-
-
-def print_d(message):
-    print('\033[0;32;0m[DONE] {}\033[0m'.format(str(message)))
-
-
-def print_w(message):
-    print('\033[0;33;0m[WARNING] {}\033[0m'.format(str(message)))
-
-
-def print_a(message):
-    print('\033[0;34;0m[ACTION] {}\033[0m'.format(str(message)))
-
-
-def print_t(message):
-    print('\033[0;36;0m[TIPS] {}\033[0m'.format(str(message)))
-
-
-def print_i(message):
-    print('\033[0;37;0m[INFO] {}\033[0m'.format(str(message)))
-
-
-def process_bar(now, total, attach=''):
-    # 在窗口底部动态显示进度条
-    rate = now / total
-    rate_num = int(rate * 100)
-    bar_length = int(rate_num / 2)
-    blank = '                                                    '
-    if rate_num == 100:
-        bar = 'Pid:%5d:%s%s' % (os.getpid(), attach, blank)
-        bar = '\r' + bar[0:30]
-        bar += '%s>%d%%\n' % ('=' * bar_length, rate_num)
+    if cycle == '单周' or cycle == '单':
+        cycle = 1
+    elif cycle == '双周' or cycle == '双':
+        cycle = 2
     else:
-        bar = 'Pid:%5d:%s%s' % (os.getpid(), attach, blank)
-        bar = '\r' + bar[0:30]
-        bar += '%s>%d%%' % ('=' * bar_length, rate_num)
-    sys.stdout.write(bar)
-    sys.stdout.flush()
+        cycle = 0
+
+    week = []
+    try:
+        for part in length.split(','):
+            point = part.split('-')
+            if len(point) == 1:  # 说明没有时间跨度
+                if len(point[0]) == 0:
+                    continue
+                week.append(int(point[0]))
+            else:  # 说明具有时间跨度
+                for t in range(int(point[0]), int(point[1]) + 1):
+                    if cycle == 0:
+                        week.append(int(t))
+                    elif cycle == 1 and t % 2 == 1:
+                        week.append(int(t))
+                    elif cycle == 2 and t % 2 == 0:
+                        week.append(int(t))
+    except ValueError as e:
+        util.print_e('奇怪的时间信息：{}'.format(time_str))
+    week.sort()
+    return week
 
 
-def print_data_size(data, remarks=''):
-    # 展示变量当前内存消耗状态
-    print_i('{}消耗内存{}kb'.format(remarks, sys.getsizeof(data) / 1024))
+def make_week(time_list):
+    """
+    将周次信息合并为方便理解的中文字符串
+    :param time_list: 周次列表
+    :return: 简化的周次信息
+    """
+    # 自带去重排序效果（仅增强健壮性，不可依赖）
+    time_list = list(set(time_list))
+    # 判断异常
+    if len(time_list) == 0:
+        raise util.ErrorSignal('发现了没有周次的课程')
+    # 判断一周的课程
+    if len(time_list) == 1:
+        return '%d/全周' % time_list[0]
+    # 判断单双全周
+    dt = []
+    for i in range(1, len(time_list)):
+        dt.append(time_list[i] - time_list[i - 1])
+    dt = list(set(dt))
+    if len(dt) == 1:  # 说明周次是有规律的
+        if dt[0] == 1:  # 说明是全周课程
+            return '%d-%d/全周' % (time_list[0], time_list[-1])
+        if dt[0] == 2 and time_list[0] % 2 == 1:  # 说明是单周
+            return '%d-%d/单周' % (time_list[0], time_list[-1])
+        if dt[0] == 2 and time_list[0] % 2 == 0:  # 说明是双周
+            return '%d-%d/双周' % (time_list[0], time_list[-1])
+    # 不能进行单双全周聚合的时间
+    time_list.append(999)  # 添加不可能存在的周次推动最后一组数据进入结果
+    begin = time_list[0]
+    result = ''
+    for i in range(1, len(time_list)):
+        if time_list[i] != time_list[i - 1] + 1:  # 说明时间发生了不连续的情况
+            if time_list[i - 1] == begin:
+                result += ',%d' % time_list[i - 1]
+            else:
+                result += ',%d-%d' % (begin, time_list[i - 1])
+            begin = time_list[i]
+    return result[1:] + '/全周'
 
 
-def print_http_status(result, remarks=''):
-    # 展示网络请求地址与状态，另有附加信息可选
-    if result.status_code == 200 or result.status_code == 302:
-        print_i('%s HTTP状态%d url=%s' % (remarks, result.status_code, result.url))
-    else:
-        print_e('%s HTTP状态%d url=%s' % (remarks, result.status_code, result.url))
-        raise ErrorSignal("网络连接异常或失败，请重试")
+def read_lesson(lesson_str):
+    """
+    将节次信息分裂为适当的片段
+    解决半节课，多节课连续的问题
+    :param lesson_str: 教务的节次信息
+    :return: 经过解析后的节次信息数据
+    """
+    # 课程连续过多，例如：1010203
+    if len(lesson_str) == 0:
+        raise util.ErrorSignal('课程信息为空:{}'.format(lesson_str))
+    if len(lesson_str) != 5:
+        day = lesson_str[0]
+        lesson = []
+        for i in range(1, len(lesson_str), 4):
+            num = lesson_str[i] + lesson_str[i + 1]
+            num = int(num)
+            num += num % 2
+            lesson.append('%s%02d%02d' % (day, num - 1, num))
+        return lesson
+    return [lesson_str]
 
 
-def save_to_log(name, data):
-    # 将需要存储的日志数据储存在文件中
-    time_now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
-    log_file_name = './cache/log/%s' % (name + time_now)
-    with open(log_file_name, 'w', encoding='utf8') as file:
-        file.write(str(data))
-    print_t('日志已被存储至 ' + log_file_name)
+def sbc2dbc(ustring):
+    """全角转半角"""
+    rstring = ""
+    for uchar in ustring:
+        inside_code = ord(uchar)
+        if inside_code == 12288:  # 全角空格直接转换
+            inside_code = 32
+        elif 65281 <= inside_code <= 65374:  # 全角字符（除空格）根据关系转化
+            inside_code -= 65248
+        rstring += chr(inside_code)
+    return rstring
 
 
-def save_to_output(name, data):
-    # 将调试需要的数据储存在文件中
-    time_now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
-    output_file_name = './cache/output/%s' % (name + time_now)
-    with open(output_file_name, 'w', encoding='utf8') as file:
-        file.write(str(data))
-    print_t('数据已被存储至 ' + output_file_name)
-
-
-def save_to_cache(semester, folder, name, data):
-    # 将获取到的数据缓存至本地，减少数据操作失败后的网络下载时间
-    if folder != '':
-        cache_file_name = './cache/%s/%s/%s' % (semester, folder, name)
-    else:
-        cache_file_name = './cache/%s/%s' % (semester, name)
-    with open(cache_file_name, 'w', encoding='utf8') as file:
-        data = str(data)
-        if sys.getsizeof(data) < 104857600:
-            file.write(data)
-        else:
-            for i in range(0, len(data), 4096):
-                file.write(data[i: i + 4096])
-
-    # print_i('数据已缓存至 ' + cache_file_name)
-
-
-def del_from_cache(semester, folder, name):
-    # 删除本地的数据缓存，此操作可避免软件读取到错误的缓存
-    if folder != '':
-        cache_file_name = './cache/%s/%s/%s' % (semester, folder, name)
-    else:
-        cache_file_name = './cache/%s/%s' % (semester, name)
-    if os.path.exists(cache_file_name) is False:
-        raise ErrorSignal('文件不存在，请检查本地缓存')
-    os.remove(cache_file_name)
-
-
-def query_from_cache(semester, folder, name):
-    # 检查本地缓存是否存在，没有提示
-    if folder != '':
-        cache_file_name = './cache/%s/%s/%s' % (semester, folder, name)
-    else:
-        cache_file_name = './cache/%s/%s' % (semester, name)
-    if os.path.exists(cache_file_name) is True:
-        return True
-    else:
-        return False
-
-
-def read_from_cache(semester, folder, name):
-    # 读取本地的数据缓存，减少数据操作失败后的网络下载时间
-    if folder != '':
-        cache_file_name = './cache/%s/%s/%s' % (semester, folder, name)
-    else:
-        cache_file_name = './cache/%s/%s' % (semester, name)
-    if os.path.exists(cache_file_name) is False:
-        raise ErrorSignal('文件不存在，请检查本地缓存')
-    with open(cache_file_name, 'r', encoding='utf8') as file:
-        data = file.read()
-    return data
+def dbc2sbc(ustring):
+    """半角转全角"""
+    rstring = ""
+    for uchar in ustring:
+        inside_code = ord(uchar)
+        if inside_code == 32:  # 半角空格直接转化
+            inside_code = 12288
+        elif 32 <= inside_code <= 126:  # 半角字符（除空格）根据关系转化
+            inside_code += 65248
+        rstring += chr(inside_code)
+    return rstring

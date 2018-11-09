@@ -6,7 +6,6 @@ from hashlib import md5
 from bs4 import BeautifulSoup
 # Personal package
 import util
-from .filter_base import read_week, make_week
 
 
 def teacher_all(data_set):
@@ -65,7 +64,7 @@ def teacher_table(data_set):
     elif util.query_from_cache(semester, 'teacher_html', teacher_code):
         teacher_html = util.read_from_cache(semester, 'teacher_html', teacher_code)
         teacher_json = teacher_table_analysis(teacher_html, semester, teacher_name, teacher_code)
-        util.save_to_cache(semester, 'teacher_json', teacher_code, teacher_json)
+        util.save_to_cache(semester, 'teacher_json', teacher_code, json.dumps(teacher_json))
     else:
         raise util.ErrorSignal('缺少教师%s课表数据' % teacher_code)
 
@@ -75,12 +74,13 @@ def teacher_table(data_set):
                 card[key] = card[key].replace('\xa0', '').replace('\u3000', '').strip()
 
         card['teacher'] = card['teacher_string']
-        card['week_list'] = read_week(card['week_string'])
-        card['week'] = make_week(card['week_list'])
-        md5_str = '/'.join([';'.join(card['week']), card['lesson'], card['room'], card['course_name']])
-        md5_str = md5_str.encode('utf-8')
-        md5_code = md5(md5_str).hexdigest()
-        card['md5'] = md5_code
+        card['week_list'] = util.read_week(card['week_string'])
+        card['week'] = card['week_list']
+        # md5_str = '/'.join([';'.join(card['week']), card['lesson'], card['room'], card['course_name']])
+        # md5_str = md5_str.encode('utf-8')
+        # md5_code = md5(md5_str).hexdigest()
+        # card['md5'] = md5_code
+        card['room'] = util.sbc2dbc(card['room'])
         card['pick'] = int(card['pick'].replace('人', ''))
         card['hour'] = int(card['hour'])
 
@@ -121,12 +121,12 @@ def teacher_table_analysis(html, semester, teacher_name, teacher_code):
             for course in courses:
                 card = util.card_info.copy()
                 try:
-                    card['jx0408id'] = re.findall('jx0408id=(.*?)&', course['onclick'], re.S | re.M)[0]
-                    card['classroomID'] = re.findall('classroomID=(.*?)&', course['onclick'], re.S | re.M)[0]
+                    card['klassID'] = re.findall('jx0408id=(.*?)&', course['onclick'], re.S | re.M)[0]
+                    card['roomID'] = re.findall('classroomID=(.*?)&', course['onclick'], re.S | re.M)[0]
                     card['teacher_string'] = teacher_name
                     card['lesson'] = lesson
                     if course.find(title='课程名称') is not None:
-                        card['course_name'] = course.find(title='课程名称').string
+                        card['name'] = course.find(title='课程名称').string
                     if course.find(title='周次') is not None:
                         card['week_string'] = course.find(title='周次').string
                     if course.find(title='单双周') is not None:
@@ -138,7 +138,7 @@ def teacher_table_analysis(html, semester, teacher_name, teacher_code):
                         card['pick'] = course.find(title='选课人数').string
                     if course.find(title='教学班名称') is not None:
                         if len(list(course.find(title='教学班名称').strings)) > 0:
-                            card['code'] = list(course.find(title='教学班名称').strings)[0]
+                            card['klass'] = list(course.find(title='教学班名称').strings)[0]
                     if course.find(title='上课总学时') is not None:
                         card['hour'] = course.find(title='上课总学时').string
                     if course.find(title='课程性质') is not None:

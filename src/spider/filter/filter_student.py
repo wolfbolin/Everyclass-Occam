@@ -6,7 +6,6 @@ from hashlib import md5
 from bs4 import BeautifulSoup
 # Personal package
 import util
-from .filter_base import read_week, make_week
 
 
 def student_all(data_set):
@@ -71,12 +70,13 @@ def student_table(data_set):
                 card[key] = card[key].replace('\xa0', '').replace('\u3000', '').strip()
 
         card['teacher'] = card['teacher_string']
-        card['week_list'] = read_week(card['week_string'])
-        card['week'] = make_week(card['week_list'])
-        md5_str = '/'.join([';'.join(card['week']), card['lesson'], card['room'], card['course_name']])
-        md5_str = md5_str.encode('utf-8')
-        md5_code = md5(md5_str).hexdigest()
-        card['md5'] = md5_code
+        card['week_list'] = util.read_week(card['week_string'])
+        card['week'] = card['week_list']
+        # md5_str = '/'.join([';'.join(card['week']), card['lesson'], card['room'], card['course_name']])
+        # md5_str = md5_str.encode('utf-8')
+        # md5_code = md5(md5_str).hexdigest()
+        # card['md5'] = md5_code
+        card['room'] = util.sbc2dbc(card['room'])
         card['hour'] = int(card['hour'])
 
     # 将结果添加到结果集中
@@ -129,9 +129,9 @@ def student_table_analysis(html, semester, student_name, student_code):
             for index, course in enumerate(courses):
                 card = util.card_info.copy()
                 try:
-                    card['jx0408id'] = re.findall('jx0408id=(.*?)&', course['onclick'], re.S | re.M)[0]
-                    card['classroomID'] = re.findall('classroomID=(.*?)&', course['onclick'], re.S | re.M)[0]
-                    card['course_name'] = course_names[index].find('font').string
+                    card['klassID'] = re.findall('jx0408id=(.*?)&', course['onclick'], re.S | re.M)[0]
+                    card['roomID'] = re.findall('classroomID=(.*?)&', course['onclick'], re.S | re.M)[0]
+                    card['name'] = course_names[index].find('font').string
                     card['lesson'] = lesson
                     if course.find(title='老师') is not None:
                         card['teacher_string'] = course.find(title='老师').string
