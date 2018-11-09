@@ -150,5 +150,6 @@ def teacher_table(data_set):
             break
 
     # 不解析数据直接储存
+    teacher_code = teacher_code.replace('*', '#')  # 临时改变名称，避免文件系统限制
     util.save_to_cache(semester, 'teacher_html', teacher_code, http_result.text)
     return []

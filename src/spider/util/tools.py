@@ -100,7 +100,13 @@ def save_to_cache(semester, folder, name, data):
     else:
         cache_file_name = './cache/%s/%s' % (semester, name)
     with open(cache_file_name, 'w', encoding='utf8') as file:
-        file.write(str(data))
+        data = str(data)
+        if sys.getsizeof(data) < 104857600:
+            file.write(data)
+        else:
+            for i in range(0, len(data), 4096):
+                file.write(data[i: i + 4096])
+
     # print_i('数据已缓存至 ' + cache_file_name)
 
 

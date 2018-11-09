@@ -23,6 +23,7 @@ def teacher_all(data_set):
                 teacher[key] = teacher[key].replace('\xa0', '').replace('\u3000', '').strip()
             except TypeError as e:
                 raise util.ErrorSignal('教师{}缺少字段'.format(teacher))
+        teacher['code'] = teacher['code'].replace('*', '#')
         teacher['name'] = teacher['name'].replace('*', '#')
     return data_set
 
@@ -39,6 +40,7 @@ def teacher_list(data_set):
             teacher['jg0101id'] = teacher['jg0101id'].replace('\xa0', '').replace('\u3000', '').strip()
             teacher['jgh'] = teacher['jgh'].replace('\xa0', '').replace('\u3000', '').strip()
             teacher['xm'] = teacher['xm'].replace('\xa0', '').replace('\u3000', '').strip()
+            teacher['jgh'] = teacher['jgh'].replace('*', '#')
             teacher['xm'] = teacher['xm'].replace('*', '#')
             teacher['teacher_code'] = teacher['jgh']
             teacher['teacher_name'] = teacher['xm']
