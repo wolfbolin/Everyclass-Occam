@@ -1,5 +1,6 @@
 
 # Set for wolfbolin
+*.sql
 dumps
 .idea
 __pycache__
