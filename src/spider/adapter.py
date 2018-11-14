@@ -4,17 +4,19 @@ import pymysql
 from warnings import filterwarnings
 # Personal package
 import builder
+import filter
+import util
 
-# 运行相关的配置设置
 # 将数据库警告定义为错误方便捕获
 filterwarnings('error', category=pymysql.Warning)
-# 重建学生与教师的数据总表（警告：该操作将清空数据库）
-rebuild_base_table = False
-# 设置运行的学期
-semester = '2017-2018-1'
-# 线程数不可提前设计，需要根据数据量进行调教
 
 if __name__ == "__main__":
+    # 设置运行的学期信息
+    semester = input("请输入需要更新的学期：")
+    if filter.check_semester(semester) is not True:
+        util.print_e('输入的学期信息错误，请检查您的输入')
+        exit()
+
     # 创建本地缓存文件夹
     builder.build_folder(semester=semester)
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Common package
+import re
 # Personal package
 import util
 
@@ -24,3 +25,20 @@ def room_all(data_set):
         if room not in result:
             result.append(room)
     return result
+
+
+def check_semester(semester):
+    """
+    检查输入的学期信息是否合理
+    :param semester: 输入的学期信息
+    :return: 判定结果
+    """
+    result = re.match('^([0-9]{4})-([0-9]{4})-([1-2])$', semester)
+    if result:
+        part1 = int(result.group(1))
+        part2 = int(result.group(2))
+        if part1 < 2016 or part2 != part1 + 1:
+            return False
+        return True
+    else:
+        return False

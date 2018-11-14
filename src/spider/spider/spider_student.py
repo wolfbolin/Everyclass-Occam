@@ -64,7 +64,7 @@ def student_info(page_data):
         'pageSize': '500'
     }
     for i in range(5):
-        http_result = requests.post(url, data=http_data, headers=headers)
+        http_result = requests.post(url, headers=headers, data=http_data)
         if http_result.status_code == 200:
             break
 
