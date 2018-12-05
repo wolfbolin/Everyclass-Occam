@@ -59,7 +59,7 @@ def identifier_encrypt(key, cate, code):
 def identifier_decrypt(key, data):
     data = aes_decrypt(key, data)
     # 通过正则校验确定数据的正确性
-    group = re.match('^(student|teacher|course|room);([A-Za-z0-9]+)$', data)
+    group = re.match('^(student|teacher|klass|room);([A-Za-z0-9]+)$', data)
     if group is None:
         raise ValueError('解密后的数据无法被合理解读，解密后数据:%s' % data)
     else:

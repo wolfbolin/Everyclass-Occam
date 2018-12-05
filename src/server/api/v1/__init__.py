@@ -6,6 +6,9 @@ from flask import Blueprint
 # Personal package
 blueprint = Blueprint('api_v1', __name__)
 from .student import get_student_schedule
+from .teacher import get_teacher_schedule
+from .room import get_room_schedule
+from .klass import get_klass_schedule
 
 
 # 访问参数异常处理

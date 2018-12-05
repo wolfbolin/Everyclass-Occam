@@ -11,23 +11,23 @@ import api.v1.dao as dao
 from api.v1 import blueprint
 
 
-@blueprint.route('/student')
-def hello_student():
-    return 'Hello Student!'
+@blueprint.route('/teacher')
+def hello_teacher():
+    return 'Hello Teacher!'
 
 
-@blueprint.route('/student/<string:identifier>/<string:semester>', methods=['GET'])
-def get_student_schedule(identifier, semester):
+@blueprint.route('/teacher/<string:identifier>/<string:semester>', methods=['GET'])
+def get_teacher_schedule(identifier, semester):
     """
-    通过学生资源ID和学期获取学生某学期的课程表
-    :param identifier: 学生资源标识
+    通过老师资源ID和学期获取老师某学期的课程表
+    :param identifier: 老师资源标识
     :param semester: 需要查询的学期
-    :return: 该学生在该学期的课程
+    :return: 该老师在该学期的课程
     """
     # 获取附加参数
     accept = request.values.get('accept')
 
-    # 尝试解码学生资源标识
+    # 尝试解码老师资源标识
     try:
         id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
     except ValueError:
@@ -35,14 +35,14 @@ def get_student_schedule(identifier, semester):
         return
 
     # 检验数据的正确性
-    if id_type != 'student' or util.check_semester(semester) is not True:
+    if id_type != 'teacher' or util.check_semester(semester) is not True:
         abort(400)
 
-    # 从数据库中访问学生数据
-    student_schedule = dao.student_schedule(app.mysql_pool.connection(), id_code, semester)
+    # 从数据库中访问老师数据
+    teacher_schedule = dao.teacher_schedule(app.mysql_pool.connection(), id_code, semester)
 
     # 对资源编号进行对称加密
-    for course in student_schedule['course']:
+    for course in teacher_schedule['course']:
         course['cid'] = util.identifier_encrypt(util.aes_key, 'klass', course['cid'])
         course['rid'] = util.identifier_encrypt(util.aes_key, 'room', course['rid'])
         for teacher in course['teacher']:
@@ -50,6 +50,6 @@ def get_student_schedule(identifier, semester):
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':
-        return msgpack.dumps(student_schedule)
+        return msgpack.dumps(teacher_schedule)
     else:
-        return jsonify(student_schedule)
+        return jsonify(teacher_schedule)

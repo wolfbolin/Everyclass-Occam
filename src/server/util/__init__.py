@@ -14,5 +14,7 @@ from .config import mysql_charset
 from .common import student_data
 from .common import course_data
 from .common import teacher_data
+# from .common import room_data
+from .common import klass_data
 
 

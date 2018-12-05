@@ -7,7 +7,14 @@ student_data = {
     'name': '',
     'klass': '',
     'deputy': '',
-    'course': []
+    'sid': ''
+}
+
+teacher_data = {
+    'name': '',
+    'tid': '',
+    'title': '',
+    'unit': ''
 }
 
 course_data = {
@@ -16,12 +23,24 @@ course_data = {
     'room': '',
     'rid': '',
     'week': '',
-    'lesson': '',
-    'teacher': []
+    'lesson': ''
 }
 
-teacher_data = {
+klass_data = {
     'name': '',
-    'title': '',
-    'tid': ''
+    'room': '',
+    'rid': '',
+    'week': '',
+    'lesson': '',
+    'klass': '',
+    'pick': '',
+    'hour': '',
+    'type': ''
 }
+
+# room_data = {
+#     'name': '',
+#     'rid': '',
+#     'building': '',
+#     'campus': ''
+# }
