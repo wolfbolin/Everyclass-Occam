@@ -8,3 +8,4 @@ venv*
 cache
 config*.py
 !config_default.py
+src/htmlstash
