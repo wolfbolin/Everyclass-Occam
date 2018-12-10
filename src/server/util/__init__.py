@@ -5,11 +5,16 @@ from .tools import check_semester
 from .config import aes_key
 from .config import max_thread
 from .config import mysql_host
+from .config import mysql_port
 from .config import mysql_user
+from .config import mysql_charset
 from .config import mysql_password
 from .config import mysql_database
-from .config import mysql_port
-from .config import mysql_charset
+from .config import mongo_host
+from .config import mongo_port
+from .config import mongo_user
+from .config import mongo_password
+from .config import mongo_database
 
 from .util import ErrorSignal
 from .util import print_e

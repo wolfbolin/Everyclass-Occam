@@ -16,4 +16,11 @@ mysql_user = 'defaultuser'
 mysql_password = 'defaultpasswd'
 mysql_database = 'defaultdatabase'
 mysql_port = 3306
-mysql_charset = 'utf8'
+mysql_charset = 'utf8mb4'
+
+# MongoDB连接配置
+mongo_host = '127.0.0.1'
+mongo_user = 'defaultuser'
+mongo_password = 'defaultpasswd'
+mongo_database = 'defaultdatabase'
+mongo_port = 27017
