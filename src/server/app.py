@@ -8,7 +8,7 @@ import api
 import util
 
 app = Flask(__name__)
-app.register_blueprint(api.v1, url_prefix='/v1')
+app.register_blueprint(api.blueprint, url_prefix='/api')
 
 mysql_pool = PooledDB(creator=pymysql,
                       mincached=1, maxcached=util.max_thread,
