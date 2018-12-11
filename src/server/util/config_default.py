@@ -12,15 +12,15 @@ max_thread = 4
 
 # MySQL连接配置
 mysql_host = '127.0.0.1'
+mysql_port = 3306
 mysql_user = 'defaultuser'
+mysql_charset = 'utf8mb4'
 mysql_password = 'defaultpasswd'
 mysql_database = 'defaultdatabase'
-mysql_port = 3306
-mysql_charset = 'utf8mb4'
 
 # MongoDB连接配置
 mongo_host = '127.0.0.1'
+mongo_port = 27017
 mongo_user = 'defaultuser'
 mongo_password = 'defaultpasswd'
 mongo_database = 'defaultdatabase'
-mongo_port = 27017

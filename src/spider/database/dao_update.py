@@ -73,9 +73,9 @@ def student_update_search(student_data):
     """
     mongo_db = student_data['mongo_pool']['student']
     result = mongo_db.update_one(
-        filter={'sid': student_data['sid']},
+        filter={'code': student_data['code']},
         update={'$set': {
-            'sid': student_data['sid'],
+            'code': student_data['code'],
             'name': student_data['name'],
             'klass': student_data['klass'],
             'deputy': student_data['deputy']
@@ -102,9 +102,9 @@ def teacher_update_search(teacher_data):
     """
     mongo_db = teacher_data['mongo_pool']['teacher']
     result = mongo_db.update_one(
-        filter={'tid': teacher_data['tid']},
+        filter={'code': teacher_data['code']},
         update={'$set': {
-            'tid': teacher_data['tid'],
+            'code': teacher_data['code'],
             'name': teacher_data['name'],
             'unit': teacher_data['unit'],
             'title': teacher_data['title']

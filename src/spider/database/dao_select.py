@@ -21,7 +21,7 @@ def student_select(conn, semester):
         result = cursor.fetchall()
         for count, student in enumerate(result):
             student_list.append({
-                'sid': student[0],
+                'code': student[0],
                 'name': student[1],
                 'klass': student[2],
                 'deputy': student[3],
@@ -47,7 +47,7 @@ def teacher_select(conn, semester):
         result = cursor.fetchall()
         for count, teacher in enumerate(result):
             teacher_list.append({
-                'tid': teacher[0],
+                'code': teacher[0],
                 'name': teacher[1],
                 'unit': teacher[2],
                 'title': teacher[3],
