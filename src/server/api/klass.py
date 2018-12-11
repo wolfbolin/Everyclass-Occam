@@ -112,6 +112,12 @@ def get_klass_schedule(identifier, semester):
             }
             klass_data['teacher'].append(teacher_data)
 
+    # 获取附加参数并根据参数调整传输的数据内容
+    accept = request.values.get('accept')
+    week_string = request.values.get('week_string')
+    if week_string is True:
+        klass_data['week_string'] = util.make_week(klass_data['week'])
+
     # 对资源编号进行对称加密
     klass_data['rid'] = util.identifier_encrypt(util.aes_key, 'room', klass_data['rid'])
     for student in klass_data['student']:

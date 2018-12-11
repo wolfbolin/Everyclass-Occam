@@ -23,9 +23,6 @@ def get_teacher_schedule(identifier, semester):
     :param semester: 需要查询的学期
     :return: 该老师在该学期的课程
     """
-    # 获取附加参数
-    accept = request.values.get('accept')
-
     # 尝试解码老师资源标识
     try:
         id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
@@ -92,6 +89,13 @@ def get_teacher_schedule(identifier, semester):
             course_info[data[4]]['teacher'].append(o_teacher_data)
         # 将聚合后的数据转换为序列
         teacher_data['course'] = list(course_info.values())
+
+    # 获取附加参数并根据参数调整传输的数据内容
+    accept = request.values.get('accept')
+    week_string = request.values.get('week_string')
+    for course in teacher_data['course']:
+        if week_string is True:
+            course['week_string'] = util.make_week(course['week'])
 
     # 对资源编号进行对称加密
     for course in teacher_data['course']:

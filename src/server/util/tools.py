@@ -3,9 +3,9 @@
 import re
 from Crypto.Cipher import AES
 from binascii import b2a_hex, a2b_hex
-
-
 # Personal package
+import util
+
 
 def fill_16(text):
     """
@@ -80,3 +80,43 @@ def check_semester(semester):
         return True
     else:
         return False
+
+
+def make_week(time_list):
+    """
+    将周次信息合并为方便理解的中文字符串
+    :param time_list: 周次列表
+    :return: 简化的周次信息
+    """
+    # 自带去重排序效果（仅增强健壮性，不可依赖）
+    time_list = list(set(time_list))
+    # 判断异常
+    if len(time_list) == 0:
+        raise util.ErrorSignal('发现了没有周次的课程')
+    # 判断一周的课程
+    if len(time_list) == 1:
+        return '%d/全周' % time_list[0]
+    # 判断单双全周
+    dt = []
+    for i in range(1, len(time_list)):
+        dt.append(time_list[i] - time_list[i - 1])
+    dt = list(set(dt))
+    if len(dt) == 1:  # 说明周次是有规律的
+        if dt[0] == 1:  # 说明是全周课程
+            return '%d-%d/全周' % (time_list[0], time_list[-1])
+        if dt[0] == 2 and time_list[0] % 2 == 1:  # 说明是单周
+            return '%d-%d/单周' % (time_list[0], time_list[-1])
+        if dt[0] == 2 and time_list[0] % 2 == 0:  # 说明是双周
+            return '%d-%d/双周' % (time_list[0], time_list[-1])
+    # 不能进行单双全周聚合的时间
+    time_list.append(999)  # 添加不可能存在的周次推动最后一组数据进入结果
+    begin = time_list[0]
+    result = ''
+    for i in range(1, len(time_list)):
+        if time_list[i] != time_list[i - 1] + 1:  # 说明时间发生了不连续的情况
+            if time_list[i - 1] == begin:
+                result += ',%d' % time_list[i - 1]
+            else:
+                result += ',%d-%d' % (begin, time_list[i - 1])
+            begin = time_list[i]
+    return result[1:] + '/全周'

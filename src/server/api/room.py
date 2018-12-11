@@ -23,9 +23,6 @@ def get_room_schedule(identifier, semester):
     :param semester: 需要查询的学期
     :return: 该教室在该学期的课程
     """
-    # 获取附加参数
-    accept = request.values.get('accept')
-
     # 尝试解码教室资源标识
     try:
         id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
@@ -92,8 +89,17 @@ def get_room_schedule(identifier, semester):
         # 将聚合后的数据转换为序列
         room_data['course'] = list(course_info.values())
 
+    # 获取附加参数并根据参数调整传输的数据内容
+    accept = request.values.get('accept')
+    week_string = request.values.get('week_string')
+    for course in room_data['course']:
+        if week_string is True:
+            course['week_string'] = util.make_week(course['week'])
+
     # 对资源编号进行对称加密
     for course in room_data['course']:
+        if week_string is True:
+            course['week_string'] = util.make_week(course['week'])
         course['cid'] = util.identifier_encrypt(util.aes_key, 'student', course['cid'])
         course['rid'] = util.identifier_encrypt(util.aes_key, 'student', course['rid'])
         for teacher in course['teacher']:
