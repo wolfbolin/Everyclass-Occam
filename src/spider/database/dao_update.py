@@ -104,7 +104,7 @@ def teacher_update_search(teacher_data):
     result = mongo_db.update_one(
         filter={'tid': teacher_data['tid']},
         update={'$set': {
-            'tid': teacher_data['sid'],
+            'tid': teacher_data['tid'],
             'name': teacher_data['name'],
             'unit': teacher_data['klass'],
             'title': teacher_data['deputy']
