@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 # Common package
 # Personal package
+import util
 
 
 def room_update(room_data, conn):
@@ -44,6 +45,7 @@ def teacher_update(teacher_data):
 
 def student_update(student_data):
     """
+    多线程函数
     完成学生的信息在学生总表上插入，若学生编号已存在则跳过
     学生信息的批量插入需要由控制器完成
     :param student_data: 数据字典，一名学生的信息+数据库链接句柄
@@ -60,3 +62,61 @@ def student_update(student_data):
         cursor.execute(sql)
         rowcount = cursor.rowcount
         return rowcount
+
+
+def student_update_search(student_data):
+    """
+    多线程函数
+    将某学期学生的信息写入文档库中
+    :param student_data: 数据字典，一名学生的信息+数据库链接句柄+学期信息
+    :return: 受影响的数据行数
+    """
+    mongo_db = student_data['mongo_pool']['student']
+    result = mongo_db.update_one(
+        filter={'sid': student_data['sid']},
+        update={'$set': {
+            'sid': student_data['sid'],
+            'name': student_data['name'],
+            'klass': student_data['klass'],
+            'deputy': student_data['deputy']
+        },
+            '$push': {
+                'semester': student_data['semester']
+            }
+        },
+        upsert=True
+    )
+    if result.upserted_id:
+        # 此时说明upsert生效
+        return 1
+    else:
+        return result.modified_count
+
+
+def teacher_update_search(teacher_data):
+    """
+    多线程函数
+    将某学期教师的信息写入文档库中
+    :param teacher_data: 数据字典，一名教师的信息+数据库链接句柄+学期信息
+    :return: 受影响的数据行数
+    """
+    mongo_db = teacher_data['mongo_pool']['teacher']
+    result = mongo_db.update_one(
+        filter={'tid': teacher_data['sid']},
+        update={'$set': {
+            'tid': teacher_data['sid'],
+            'name': teacher_data['name'],
+            'unit': teacher_data['klass'],
+            'title': teacher_data['deputy']
+        },
+            '$push': {
+                'semester': teacher_data['semester']
+            }
+        },
+        upsert=True
+    )
+    if result.upserted_id:
+        # 此时说明upsert生效
+        return 1
+    else:
+        return result.modified_count

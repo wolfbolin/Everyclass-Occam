@@ -1,14 +1,30 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import re
 import pymysql
+import pymongo
 # Personal package
 import util
 
 
-def connect():
-    conn = pymysql.connect(host=util.mysql_host, user=util.mysql_user, passwd=util.mysql_password,
-                           db=util.mysql_database, port=util.mysql_port, charset=util.mysql_charset)
+def mysql_connect():
+    conn = pymysql.connect(host=util.mysql_host,
+                           user=util.mysql_user,
+                           passwd=util.mysql_password,
+                           db=util.mysql_database,
+                           port=util.mysql_port,
+                           charset=util.mysql_charset)
     conn.autocommit(1)  # 定义数据库不自动提交
+    return conn
+
+
+def mongo_connect():
+    conn = pymongo.MongoClient(host=util.mongo_host,
+                               port=util.mongo_port,
+                               username=util.mongo_user,
+                               password=util.mongo_password
+                               )
+    conn = conn[util.mongo_database]
     return conn
 
 
@@ -25,6 +41,18 @@ def clean_table(conn, table_name):
         cursor.execute(sql)
         rowcount = cursor.rowcount
         return rowcount
+
+
+def clean_document(conn, collection):
+    """
+    清除MongoDB的指定集合中的所有文档
+    :param conn: 数据库连接句柄
+    :param collection: 需要清除的集合名称
+    :return: 受影响的数据条数
+    """
+    mongo_db = conn[collection]
+    result = mongo_db.delete_many({})
+    return result.deleted_count
 
 
 def remove_tables(conn, semester):
@@ -99,3 +127,22 @@ def get_teacher_title(conn):
 
 def cmp(elem):
     return len(elem)
+
+
+def get_semester_list(conn):
+    """
+    检索数据库中已有的所有学期
+    :param conn: 数据库连接句柄
+    :return: 已有的学期列表
+    """
+    semester_list = []
+    with conn.cursor() as cursor:
+        sql = "show tables LIKE 'card_%';"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        for card in result:
+            group = re.match('card_([0-9]{4}-[0-9]{4}-[1-2])', card[0])
+            if group:
+                semester_list.append(group.group(1))
+
+    return semester_list

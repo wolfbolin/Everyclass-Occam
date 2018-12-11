@@ -48,7 +48,7 @@ def build_table(semester):
     :return: rowcount
     """
     util.print_a('开始初始化数据表')
-    conn = database.connect()
+    conn = database.mysql_connect()
     database.remove_tables(conn, semester)
     database.add_tables(conn, semester)
     database.add_foreign(conn, semester)
@@ -80,7 +80,7 @@ def build_room():
 
     # 向数据库中写入数据
     util.print_t('Step3:正在写入所有教室的数据')
-    conn = database.connect()
+    conn = database.mysql_connect()
     database.clean_table(conn, 'room_all')
     rowcount += database.room_update(room_all, conn)
 
