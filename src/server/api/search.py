@@ -52,6 +52,7 @@ def get_search(keyword):
             'tid': teacher['code'],
             'name': teacher['name'],
             'unit': teacher['unit'],
+            'title': teacher['title'],
             'semester': teacher['semester']
         })
 
