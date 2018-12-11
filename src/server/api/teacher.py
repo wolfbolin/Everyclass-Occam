@@ -93,9 +93,16 @@ def get_teacher_schedule(identifier, semester):
     # 获取附加参数并根据参数调整传输的数据内容
     accept = request.values.get('accept')
     week_string = request.values.get('week_string')
+    other_semester = request.values.get('other_semester')
+    # 对于课程周次的显示参数处理
     for course in teacher_data['course']:
         if week_string is True:
             course['week_string'] = util.make_week(course['week'])
+    # 对于其他可用周次的显示参数处理
+    if other_semester is True:
+        mongo_db = app.mongo_pool['teacher']
+        result = mongo_db.find_one({'tid': id_code}, {'_id': 0})
+        teacher_data['semester_list'] = result['semester']
 
     # 对资源编号进行对称加密
     for course in teacher_data['course']:

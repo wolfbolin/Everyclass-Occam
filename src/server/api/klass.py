@@ -115,6 +115,7 @@ def get_klass_schedule(identifier, semester):
     # 获取附加参数并根据参数调整传输的数据内容
     accept = request.values.get('accept')
     week_string = request.values.get('week_string')
+    # 对于课程周次的显示参数处理
     if week_string is True:
         klass_data['week_string'] = util.make_week(klass_data['week'])
 
