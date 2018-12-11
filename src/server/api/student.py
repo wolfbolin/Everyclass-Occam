@@ -23,9 +23,6 @@ def get_student_schedule(identifier, semester):
     :param semester: 需要查询的学期
     :return: 该学生在该学期的课程
     """
-    # 获取附加参数
-    accept = request.values.get('accept')
-
     # 尝试解码学生资源标识
     try:
         id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
@@ -92,6 +89,20 @@ def get_student_schedule(identifier, semester):
             course_info[data[4]]['teacher'].append(teacher_data)
         # 将聚合后的数据转换为序列
         student_data['course'] = list(course_info.values())
+
+    # 获取附加参数并根据参数调整传输的数据内容
+    accept = request.values.get('accept')
+    week_string = request.values.get('week_string')
+    other_semester = request.values.get('other_semester')
+    # 对于课程周次的显示参数处理
+    for course in student_data['course']:
+        if week_string is True:
+            course['week_string'] = util.make_week(course['week'])
+    # 对于其他可用周次的显示参数处理
+    if other_semester is True:
+        mongo_db = app.mongo_pool['student']
+        result = mongo_db.find_one({'sid': id_code}, {'_id': 0})
+        student_data['semester_list'] = result['semester']
 
     # 对资源编号进行对称加密
     for course in student_data['course']:

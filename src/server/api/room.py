@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import re
 import msgpack
 from flask import abort
 from flask import request
@@ -23,9 +24,6 @@ def get_room_schedule(identifier, semester):
     :param semester: 需要查询的学期
     :return: 该教室在该学期的课程
     """
-    # 获取附加参数
-    accept = request.values.get('accept')
-
     # 尝试解码教室资源标识
     try:
         id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
@@ -92,8 +90,31 @@ def get_room_schedule(identifier, semester):
         # 将聚合后的数据转换为序列
         room_data['course'] = list(course_info.values())
 
+    # 获取附加参数并根据参数调整传输的数据内容
+    accept = request.values.get('accept')
+    week_string = request.values.get('week_string')
+    other_semester = request.values.get('other_semester')
+    # 对于课程周次的显示参数处理
+    for course in room_data['course']:
+        if week_string is True:
+            course['week_string'] = util.make_week(course['week'])
+    # 对于其他可用周次的显示参数处理
+    if other_semester is True:
+        semester_list = []
+        with conn.cursor() as cursor:
+            sql = "show tables LIKE 'card_%';"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            for card in result:
+                group = re.match('card_([0-9]{4}-[0-9]{4}-[1-2])', card[0])
+                if group:
+                    semester_list.append(group.group(1))
+        room_data['semester_list'] = semester_list
+
     # 对资源编号进行对称加密
     for course in room_data['course']:
+        if week_string is True:
+            course['week_string'] = util.make_week(course['week'])
         course['cid'] = util.identifier_encrypt(util.aes_key, 'student', course['cid'])
         course['rid'] = util.identifier_encrypt(util.aes_key, 'student', course['rid'])
         for teacher in course['teacher']:

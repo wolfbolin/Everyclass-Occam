@@ -1,6 +1,7 @@
 from .tools import identifier_encrypt
 from .tools import identifier_decrypt
 from .tools import check_semester
+from .tools import make_week
 
 from .config import aes_key
 from .config import max_thread
@@ -32,3 +33,4 @@ from .util import save_to_cache
 from .util import del_from_cache
 from .util import query_from_cache
 from .util import read_from_cache
+
