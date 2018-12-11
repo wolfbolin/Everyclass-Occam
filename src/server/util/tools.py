@@ -29,7 +29,7 @@ def aes_encrypt(aes_key, aes_text):
     # 先进行aes加密
     encrypt = cipher.encrypt(fill_16(aes_text))
     # 使用十六进制转成字符串形式
-    encrypt_text = b2a_base64(encrypt).decode().replace('/', '-')
+    encrypt_text = b2a_base64(encrypt).decode().replace('/', '-').strip()
     # 返回执行结果
     return encrypt_text
 
