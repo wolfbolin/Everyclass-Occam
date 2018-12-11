@@ -2,7 +2,7 @@
 # Common package
 import re
 from Crypto.Cipher import AES
-from binascii import b2a_hex, a2b_hex
+from binascii import b2a_base64, a2b_base64
 # Personal package
 import util
 
@@ -29,7 +29,7 @@ def aes_encrypt(aes_key, aes_text):
     # 先进行aes加密
     encrypt = cipher.encrypt(fill_16(aes_text))
     # 使用十六进制转成字符串形式
-    encrypt_text = b2a_hex(encrypt).decode()
+    encrypt_text = b2a_base64(encrypt).decode().replace('/', '-')
     # 返回执行结果
     return encrypt_text
 
@@ -44,7 +44,7 @@ def aes_decrypt(aes_key, aes_text):
     # 初始化解码器
     cipher = AES.new(fill_16(aes_key), AES.MODE_ECB)
     # 优先逆向解密十六进制为bytes
-    decrypt = a2b_hex(aes_text.encode())
+    decrypt = a2b_base64(aes_text.replace('-', '/').encode())
     # 使用aes解密密文
     decrypt_text = str(cipher.decrypt(decrypt), encoding='utf-8').replace('\0', '')
     # 返回执行结果

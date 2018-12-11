@@ -106,8 +106,8 @@ def teacher_update_search(teacher_data):
         update={'$set': {
             'tid': teacher_data['tid'],
             'name': teacher_data['name'],
-            'unit': teacher_data['klass'],
-            'title': teacher_data['deputy']
+            'unit': teacher_data['unit'],
+            'title': teacher_data['title']
         },
             '$push': {
                 'semester': teacher_data['semester']
