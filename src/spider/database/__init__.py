@@ -20,3 +20,5 @@ from .dao_insert import student_insert
 
 from .dao_select import student_select
 from .dao_select import teacher_select
+
+from .dao_delete import delete_semester_document
