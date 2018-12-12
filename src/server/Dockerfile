@@ -7,7 +7,10 @@ RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/source
 	&& apt-get update \
 	&& apt-get install wget unzip -y \
 	&& pip install pipenv \
-	&& pipenv sync
+
+COPY . /www/wwwroot/api-server
+
+RUN pipenv sync
 
 EXPOSE 80
 
