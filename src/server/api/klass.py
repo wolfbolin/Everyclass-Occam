@@ -60,6 +60,7 @@ def get_klass_schedule(identifier, semester):
         cursor.execute(sql)
         result = cursor.fetchone()
         klass_data = {
+            'cid': id_code,
             'name': result[0],
             'room': result[1],
             'rid': result[2],
@@ -75,9 +76,10 @@ def get_klass_schedule(identifier, semester):
         # 查询课程的学生信息
         sql = """
         SELECT 
+        `student`.`code` as student_code,
         `student`.`name` as student_name, 
         `student`.`klass` as student_klass, 
-        `student`.`code` as student_code 
+        `student`.`deputy` as student_deputy 
         FROM `card_%s` as card
         JOIN `student_link_%s` as s_link 
         ON card.cid = s_link.cid AND card.klassID = '%s' 
@@ -87,17 +89,18 @@ def get_klass_schedule(identifier, semester):
         result = cursor.fetchall()
         for data in result:
             student_data = {
-                'name': data[0],
-                'class': data[1],
-                'sid': data[2]
+                'sid': data[0],
+                'name': data[1],
+                'class': data[2],
+                'deputy': data[3]
             }
             klass_data['student'].append(student_data)
         # 查询课程的教师信息
         sql = """
         SELECT 
+        `teacher`.`code` as student_code,
         `teacher`.`name` as student_name, 
-        `teacher`.`title` as student_title, 
-        `teacher`.`code` as student_code 
+        `teacher`.`title` as student_title 
         FROM `card_%s` as card
         JOIN `teacher_link_%s` as t_link 
         ON card.cid = t_link.cid AND card.klassID = '%s' 
@@ -107,9 +110,9 @@ def get_klass_schedule(identifier, semester):
         result = cursor.fetchall()
         for data in result:
             teacher_data = {
-                'name': data[0],
-                'title': data[1],
-                'tid': data[2]
+                'tid': data[0],
+                'name': data[1],
+                'title': data[2]
             }
             klass_data['teacher'].append(teacher_data)
 

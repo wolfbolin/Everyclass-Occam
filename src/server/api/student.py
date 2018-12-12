@@ -50,9 +50,9 @@ def get_student_schedule(identifier, semester):
         `card`.`roomID` as course_rid,
         `card`.`week` as course_week,
         `card`.`lesson` as course_lesson,
+        `teacher`.`code` as teacher_tid,
         `teacher`.`name` as teacher_name,
-        `teacher`.`title` as teacher_title,
-        `teacher`.`code` as teacher_tid
+        `teacher`.`title` as teacher_title 
         FROM `student_%s` as student
         JOIN `student_link_%s` as s_link 
         ON student.sid = s_link.sid AND student.code = '%s'
@@ -68,6 +68,7 @@ def get_student_schedule(identifier, semester):
         for data in result:
             if student_info:
                 student_info = False
+                student_data['sid'] = id_code
                 student_data['name'] = data[0]
                 student_data['class'] = data[1]
                 student_data['deputy'] = data[2]
@@ -83,9 +84,9 @@ def get_student_schedule(identifier, semester):
                 }
                 course_info[data[4]] = course_data
             teacher_data = {
-                'name': data[9],
-                'title': data[10],
-                'tid': data[11]
+                'tid': data[9],
+                'name': data[10],
+                'title': data[11],
             }
             course_info[data[4]]['teacher'].append(teacher_data)
         # 将聚合后的数据转换为序列

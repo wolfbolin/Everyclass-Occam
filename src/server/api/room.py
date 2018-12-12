@@ -51,9 +51,9 @@ def get_room_schedule(identifier, semester):
         `card`.`roomID` as course_rid,
         `card`.`week` as course_week,
         `card`.`lesson` as course_lesson,
+        `teacher`.`code` as teacher_tid,
         `teacher`.`name` as teacher_name,
-        `teacher`.`title` as teacher_title,
-        `teacher`.`code` as teacher_tid
+        `teacher`.`title` as teacher_title 
         FROM `room_all` as room
         JOIN `card_%s` as card 
         ON room.code = card.roomID AND room.code = '%s'
@@ -68,6 +68,7 @@ def get_room_schedule(identifier, semester):
         for data in result:
             if room_info:
                 room_info = False
+                room_data['rid'] = id_code
                 room_data['name'] = data[0]
                 room_data['building'] = data[1]
                 room_data['campus'] = data[2]
@@ -83,9 +84,9 @@ def get_room_schedule(identifier, semester):
                 }
                 course_info[data[4]] = course_data
             teacher_data = {
-                'name': data[9],
-                'title': data[10],
-                'tid': data[11]
+                'tid': data[9],
+                'name': data[10],
+                'title': data[11],
             }
             course_info[data[4]]['teacher'].append(teacher_data)
         # 将聚合后的数据转换为序列
