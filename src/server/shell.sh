@@ -6,8 +6,10 @@ cd /root \
 && unzip update.zip \
 && cp config.py Everyclass-Occam-update/src/server/util/config.py \
 && cd Everyclass-Occam-update/src \
-&& docker build -t everyclass/api:latest -f server/Dockerfile server \
 && docker stop api-server-v1 \
 && docker rm api-server-v1 \
-&& docker run -d -p 25601:80 -v server:/www/wwwroot/api-server --name api-server-v1 everyclass/api \
-&& docker start api-server-v1
+&& docker rmi everyclass/api:latest \
+&& docker build -t everyclass/api:latest -f server/Dockerfile --no-cache server \
+&& docker run -d -p 25600:80 --name api-server-v1 everyclass/api:latest \
+&& docker start api-server-v1 \
+&& docker ps
