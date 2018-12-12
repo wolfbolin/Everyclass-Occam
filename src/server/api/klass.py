@@ -117,7 +117,7 @@ def get_klass_schedule(identifier, semester):
     accept = request.values.get('accept')
     week_string = request.values.get('week_string')
     # 对于课程周次的显示参数处理
-    if week_string is 'True':
+    if week_string:
         klass_data['week_string'] = util.make_week(klass_data['week'])
 
     # 对资源编号进行对称加密

@@ -97,10 +97,10 @@ def get_room_schedule(identifier, semester):
     other_semester = request.values.get('other_semester')
     # 对于课程周次的显示参数处理
     for course in room_data['course']:
-        if week_string is 'True':
+        if week_string:
             course['week_string'] = util.make_week(course['week'])
     # 对于其他可用周次的显示参数处理
-    if other_semester is 'True':
+    if other_semester:
         semester_list = []
         with conn.cursor() as cursor:
             sql = "show tables LIKE 'card_%';"
