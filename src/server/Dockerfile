@@ -14,4 +14,4 @@ RUN pipenv sync
 
 EXPOSE 80
 
-CMD ['pipenv', 'run', 'python', 'app.py']
+CMD ["pipenv", "run", "python", "app.py"]
