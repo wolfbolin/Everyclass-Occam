@@ -102,7 +102,7 @@ def get_student_schedule(identifier, semester):
     # 对于其他可用周次的显示参数处理
     if other_semester:
         mongo_db = app.mongo_pool['student']
-        result = mongo_db.find_one({'sid': id_code}, {'_id': 0})
+        result = mongo_db.find_one({'code': id_code}, {'_id': 0})
         student_data['semester_list'] = result['semester']
 
     # 对资源编号进行对称加密

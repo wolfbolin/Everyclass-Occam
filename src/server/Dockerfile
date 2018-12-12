@@ -8,7 +8,8 @@ RUN apt-get update \
 	&& pip install pipenv \
 	&& wget https://github.com/wolfbolin/Everyclass-Occam/archive/update.zip \
 	&& unzip update.zip \
-	&& mv Everyclass-Occam-update/src/server /www/wwwroot/api-server \
+	&& cp Everyclass-Occam-update/src/server /www/wwwroot/api-server \
+	&& cp config.py api-server/util/config.py \
 	&& rm Everyclass-Occam-update update.zip -rf \
 
 RUN cd api-server \
