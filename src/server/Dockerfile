@@ -6,7 +6,8 @@ WORKDIR /www/wwwroot/api-server
 RUN apt-get update \
 	&& apt-get install wget unzip -y \
 	&& pip install pipenv \
-	&& pipenv sync \
-	&& pipenv run python app.py
+	&& pipenv sync
 
 EXPOSE 80
+
+CMD ['pipenv', 'run', 'python', 'app.py']
