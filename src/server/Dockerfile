@@ -3,7 +3,8 @@ MAINTAINER WolfBolin.com
 
 WORKDIR /www/wwwroot/api-server
 
-RUN apt-get update \
+RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list \
+	&& apt-get update \
 	&& apt-get install wget unzip -y \
 	&& pip install pipenv \
 	&& pipenv sync
