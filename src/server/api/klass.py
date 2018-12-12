@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import json
 import msgpack
 from flask import abort
 from flask import request
@@ -62,9 +63,9 @@ def get_klass_schedule(identifier, semester):
             'name': result[0],
             'room': result[1],
             'rid': result[2],
-            'week': result[3],
+            'week': json.loads(result[3]),
             'lesson': result[4],
-            'klass': result[5],
+            'class': result[5],
             'pick': result[6],
             'hour': result[7],
             'type': result[8],
@@ -87,7 +88,7 @@ def get_klass_schedule(identifier, semester):
         for data in result:
             student_data = {
                 'name': data[0],
-                'klass': data[1],
+                'class': data[1],
                 'sid': data[2]
             }
             klass_data['student'].append(student_data)
@@ -116,7 +117,7 @@ def get_klass_schedule(identifier, semester):
     accept = request.values.get('accept')
     week_string = request.values.get('week_string')
     # 对于课程周次的显示参数处理
-    if week_string is True:
+    if week_string is 'True':
         klass_data['week_string'] = util.make_week(klass_data['week'])
 
     # 对资源编号进行对称加密

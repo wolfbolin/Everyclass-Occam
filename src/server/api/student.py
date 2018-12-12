@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import json
 import msgpack
 from flask import abort
 from flask import request
@@ -68,7 +69,7 @@ def get_student_schedule(identifier, semester):
             if student_info:
                 student_info = False
                 student_data['name'] = data[0]
-                student_data['klass'] = data[1]
+                student_data['class'] = data[1]
                 student_data['deputy'] = data[2]
             if data[4] not in course_info:
                 course_data = {
@@ -76,7 +77,7 @@ def get_student_schedule(identifier, semester):
                     'cid': data[4],
                     'room': data[5],
                     'rid': data[6],
-                    'week': data[7],
+                    'week': json.loads(data[7]),
                     'lesson': data[8],
                     'teacher': []
                 }
@@ -96,10 +97,10 @@ def get_student_schedule(identifier, semester):
     other_semester = request.values.get('other_semester')
     # 对于课程周次的显示参数处理
     for course in student_data['course']:
-        if week_string is True:
+        if week_string is 'True':
             course['week_string'] = util.make_week(course['week'])
     # 对于其他可用周次的显示参数处理
-    if other_semester is True:
+    if other_semester is 'True':
         mongo_db = app.mongo_pool['student']
         result = mongo_db.find_one({'sid': id_code}, {'_id': 0})
         student_data['semester_list'] = result['semester']
