@@ -68,9 +68,9 @@ def get_search(keyword):
                 'name': result[1],
                 'campus': result[2],
                 'building': result[3],
-                'semester': {
-                    '2018-2019-1'
-                }  # 临时设置，待修补
+                'semester': [
+                    '2018-2019-1'  # 临时设置，待修补
+                ]
             }]
         else:
             room_data = []
