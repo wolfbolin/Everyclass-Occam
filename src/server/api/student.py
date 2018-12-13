@@ -60,23 +60,23 @@ def get_student_schedule(identifier, semester):
         cursor.execute(sql)
         course_info = {}
         for data in cursor.fetchall():
-            if data[4] not in course_info:
+            if data[1] not in course_info:
                 course_data = {
-                    'name': data[3],
-                    'cid': data[4],
-                    'room': data[5],
-                    'rid': data[6],
-                    'week': json.loads(data[7]),
-                    'lesson': data[8],
+                    'name': data[0],
+                    'cid': data[1],
+                    'room': data[2],
+                    'rid': data[3],
+                    'week': json.loads(data[4]),
+                    'lesson': data[5],
                     'teacher': []
                 }
-                course_info[data[4]] = course_data
+                course_info[data[1]] = course_data
             teacher_data = {
-                'tid': data[9],
-                'name': data[10],
-                'title': data[11],
+                'tid': data[6],
+                'name': data[7],
+                'title': data[8],
             }
-            course_info[data[4]]['teacher'].append(teacher_data)
+            course_info[data[1]]['teacher'].append(teacher_data)
 
     # 从MongoDB数据库中访问学生课程数据
     mongo_db = app.mongo_pool['student']
