@@ -107,11 +107,11 @@ def get_room_schedule(identifier, semester):
 
     # 对资源编号进行对称加密
     for course in room_data['course']:
-        course['cid'] = util.identifier_encrypt('student', course['cid'])
-        course['rid'] = util.identifier_encrypt('student', course['rid'])
+        course['cid'] = util.identifier_encrypt('klass', course['cid'])
+        course['rid'] = util.identifier_encrypt('room', course['rid'])
         for teacher in course['teacher']:
             if teacher['tid']:
-                teacher['tid'] = util.identifier_encrypt('student', teacher['tid'])
+                teacher['tid'] = util.identifier_encrypt('teacher', teacher['tid'])
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':
