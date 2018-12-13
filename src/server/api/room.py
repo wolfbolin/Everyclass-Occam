@@ -55,11 +55,11 @@ def get_room_schedule(identifier, semester):
         `teacher`.`name` as teacher_name,
         `teacher`.`title` as teacher_title 
         FROM `room_all` as room
-        JOIN `card_%s` as card 
-        ON room.code = card.roomID AND room.code = '%s'
-        JOIN `teacher_link_%s` as t_link USING(cid)
-        JOIN `teacher_%s` as teacher USING(tid);
-        """ % (semester, id_code, semester, semester)
+        LEFT JOIN `card_%s` as card ON room.code = card.roomID 
+        LEFT JOIN `teacher_link_%s` as t_link USING(cid)
+        LEFT JOIN `teacher_%s` as teacher USING(tid) 
+        WHERE room.code = '%s'
+        """ % (semester, semester, semester, id_code)
         cursor.execute(sql)
         result = cursor.fetchall()
         room_data = {}
@@ -88,7 +88,8 @@ def get_room_schedule(identifier, semester):
                 'name': data[10],
                 'title': data[11],
             }
-            course_info[data[4]]['teacher'].append(teacher_data)
+            if teacher_data['tid']:
+                course_info[data[4]]['teacher'].append(teacher_data)
         # 将聚合后的数据转换为序列
         room_data['course'] = list(course_info.values())
 
@@ -115,12 +116,11 @@ def get_room_schedule(identifier, semester):
 
     # 对资源编号进行对称加密
     for course in room_data['course']:
-        if week_string is True:
-            course['week_string'] = util.make_week(course['week'])
         course['cid'] = util.identifier_encrypt('student', course['cid'])
         course['rid'] = util.identifier_encrypt('student', course['rid'])
         for teacher in course['teacher']:
-            teacher['tid'] = util.identifier_encrypt('student', teacher['tid'])
+            if teacher['tid']:
+                teacher['tid'] = util.identifier_encrypt('student', teacher['tid'])
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':

@@ -36,14 +36,11 @@ def get_student_schedule(identifier, semester):
         abort(400, '查询的信息无法被识别')
         return
 
-    # 从数据库中访问学生数据
+    # 从MySQL数据库中访问学生课程数据
     conn = app.mysql_pool.connection()
     with conn.cursor() as cursor:
         sql = """
         SELECT 
-        `student`.`name` as student_name, 
-        `student`.`klass` as student_klass, 
-        `student`.`deputy` as student_deputy, 
         `card`.`name` as course_name,
         `card`.`klassID` as course_cid,
         `card`.`room` as course_room,
@@ -54,24 +51,15 @@ def get_student_schedule(identifier, semester):
         `teacher`.`name` as teacher_name,
         `teacher`.`title` as teacher_title 
         FROM `student_%s` as student
-        JOIN `student_link_%s` as s_link 
-        ON student.sid = s_link.sid AND student.code = '%s'
+        JOIN `student_link_%s` as s_link USING(sid) 
         JOIN `card_%s` as card USING(cid)
         JOIN `teacher_link_%s` as t_link USING(cid)
-        JOIN `teacher_%s` as teacher USING(tid);
-        """ % (semester, semester, id_code, semester, semester, semester)
+        JOIN `teacher_%s` as teacher USING(tid)
+        WHERE student.`code` = '%s';
+        """ % (semester, semester, semester, semester, semester, id_code)
         cursor.execute(sql)
-        result = cursor.fetchall()
-        student_data = {}
-        student_info = True
         course_info = {}
-        for data in result:
-            if student_info:
-                student_info = False
-                student_data['sid'] = id_code
-                student_data['name'] = data[0]
-                student_data['class'] = data[1]
-                student_data['deputy'] = data[2]
+        for data in cursor.fetchall():
             if data[4] not in course_info:
                 course_data = {
                     'name': data[3],
@@ -89,8 +77,18 @@ def get_student_schedule(identifier, semester):
                 'title': data[11],
             }
             course_info[data[4]]['teacher'].append(teacher_data)
-        # 将聚合后的数据转换为序列
-        student_data['course'] = list(course_info.values())
+
+    # 从MongoDB数据库中访问学生课程数据
+    mongo_db = app.mongo_pool['student']
+    mongo_data = mongo_db.find_one({'code': id_code}, {'_id': 0})
+    # 将聚合后的数据转换为序列
+    student_data = {
+        'sid': id_code,
+        'name': mongo_data['name'],
+        'class': mongo_data['klass'],
+        'deputy': mongo_data['deputy'],
+        'course': list(course_info.values())
+    }
 
     # 获取附加参数并根据参数调整传输的数据内容
     accept = request.values.get('accept')
@@ -102,9 +100,7 @@ def get_student_schedule(identifier, semester):
             course['week_string'] = util.make_week(course['week'])
     # 对于其他可用周次的显示参数处理
     if other_semester:
-        mongo_db = app.mongo_pool['student']
-        result = mongo_db.find_one({'code': id_code}, {'_id': 0})
-        student_data['semester_list'] = result['semester']
+        student_data['semester_list'] = mongo_data['semester']
 
     # 对资源编号进行对称加密
     for course in student_data['course']:

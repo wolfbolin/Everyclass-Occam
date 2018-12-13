@@ -41,9 +41,6 @@ def get_teacher_schedule(identifier, semester):
     with conn.cursor() as cursor:
         sql = """
         SELECT 
-        `teacher`.`name` as teacher_name, 
-        `teacher`.`title` as teacher_title, 
-        `teacher`.`unit` as teacher_unit, 
         `card`.`name` as course_name,
         `card`.`klassID` as course_cid,
         `card`.`room` as course_room,
@@ -54,24 +51,15 @@ def get_teacher_schedule(identifier, semester):
         `o_teacher`.`name` as other_teacher_name, 
         `o_teacher`.`title` as other_teacher_title 
         FROM `teacher_%s` as teacher
-        JOIN `teacher_link_%s` as teacher2card 
-        ON teacher.tid = teacher2card.tid AND teacher.code = '%s'
+        JOIN `teacher_link_%s` as teacher2card ON card.cid = teacher2card.cid
         JOIN `card_%s` as card ON teacher2card.cid = card.cid
         JOIN `teacher_link_%s` as card2teacher ON card.cid = card2teacher.cid
-        JOIN `teacher_%s` as o_teacher ON card2teacher.tid = o_teacher.tid;
-        """ % (semester, semester, id_code, semester, semester, semester)
+        JOIN `teacher_%s` as o_teacher ON card2teacher.tid = o_teacher.tid 
+        WHERE teacher.`code` = '%s'
+        """ % (semester, semester, semester, semester, semester, id_code)
         cursor.execute(sql)
-        result = cursor.fetchall()
-        teacher_data = {}
-        teacher_info = True
         course_info = {}
-        for data in result:
-            if teacher_info:
-                teacher_info = False
-                teacher_data['tid'] = id_code
-                teacher_data['name'] = data[0]
-                teacher_data['title'] = data[1]
-                teacher_data['unit'] = data[2]
+        for data in cursor.fetchall():
             if data[4] not in course_info:
                 course_data = {
                     'name': data[3],
@@ -89,8 +77,18 @@ def get_teacher_schedule(identifier, semester):
                 'title': data[11]
             }
             course_info[data[4]]['teacher'].append(o_teacher_data)
-        # 将聚合后的数据转换为序列
-        teacher_data['course'] = list(course_info.values())
+
+    # 从MongoDB数据库中访问学生课程数据
+    mongo_db = app.mongo_pool['teacher']
+    mongo_data = mongo_db.find_one({'code': id_code}, {'_id': 0})
+    # 将聚合后的数据转换为序列
+    teacher_data = {
+        'tid': id_code,
+        'name': mongo_data['name'],
+        'unit': mongo_data['unit'],
+        'title': mongo_data['title'],
+        'course': list(course_info.values())
+    }
 
     # 获取附加参数并根据参数调整传输的数据内容
     accept = request.values.get('accept')
@@ -102,9 +100,7 @@ def get_teacher_schedule(identifier, semester):
             course['week_string'] = util.make_week(course['week'])
     # 对于其他可用周次的显示参数处理
     if other_semester:
-        mongo_db = app.mongo_pool['teacher']
-        result = mongo_db.find_one({'code': id_code}, {'_id': 0})
-        teacher_data['semester_list'] = result['semester']
+        teacher_data['semester_list'] = mongo_data['semester']
 
     # 对资源编号进行对称加密
     for course in teacher_data['course']:

@@ -24,9 +24,6 @@ def get_klass_schedule(identifier, semester):
     :param semester: 需要查询的学期
     :return: 该课程的资源信息表
     """
-    # 获取附加参数
-    accept = request.values.get('accept')
-
     # 尝试解码教室资源标识
     try:
         id_type, id_code = util.identifier_decrypt(identifier)

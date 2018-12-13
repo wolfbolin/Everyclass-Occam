@@ -158,11 +158,8 @@ def get_config(key):
     except ImportError:
         set_dict = {}
     if key in env_dict:
-        print_t('env[%s]:%s' % (key, env_dict[key]))
         return env_dict[key]
     elif key in set_dict:
-        print_t('set[%s]:%s' % (key, set_dict[key]))
         return set_dict[key]
     else:
-        print('None')
         return None
