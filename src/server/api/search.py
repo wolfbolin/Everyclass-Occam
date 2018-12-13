@@ -68,9 +68,7 @@ def get_search(keyword):
                 'name': result[1],
                 'campus': result[2],
                 'building': result[3],
-                'semester': [
-                    '2018-2019-1'  # 临时设置，待修补
-                ]
+                'semester': util.get_semester_list(app.mongo_pool)
             }]
         else:
             room_data = []
