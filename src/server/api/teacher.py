@@ -51,7 +51,7 @@ def get_teacher_schedule(identifier, semester):
         `o_teacher`.`name` as other_teacher_name, 
         `o_teacher`.`title` as other_teacher_title 
         FROM `teacher_%s` as teacher
-        JOIN `teacher_link_%s` as teacher2card ON card.cid = teacher2card.cid
+        JOIN `teacher_link_%s` as teacher2card ON teacher.tid = teacher2card.tid
         JOIN `card_%s` as card ON teacher2card.cid = card.cid
         JOIN `teacher_link_%s` as card2teacher ON card.cid = card2teacher.cid
         JOIN `teacher_%s` as o_teacher ON card2teacher.tid = o_teacher.tid 
