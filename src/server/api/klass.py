@@ -29,7 +29,7 @@ def get_klass_schedule(identifier, semester):
 
     # 尝试解码教室资源标识
     try:
-        id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
+        id_type, id_code = util.identifier_decrypt(identifier)
     except ValueError:
         abort(400, '查询的课程信息无法被识别')
         return
@@ -124,11 +124,11 @@ def get_klass_schedule(identifier, semester):
         klass_data['week_string'] = util.make_week(klass_data['week'])
 
     # 对资源编号进行对称加密
-    klass_data['rid'] = util.identifier_encrypt(util.aes_key, 'room', klass_data['rid'])
+    klass_data['rid'] = util.identifier_encrypt('room', klass_data['rid'])
     for student in klass_data['student']:
-        student['sid'] = util.identifier_encrypt(util.aes_key, 'student', student['sid'])
+        student['sid'] = util.identifier_encrypt('student', student['sid'])
     for teacher in klass_data['teacher']:
-        teacher['tid'] = util.identifier_encrypt(util.aes_key, 'student', teacher['tid'])
+        teacher['tid'] = util.identifier_encrypt('student', teacher['tid'])
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':

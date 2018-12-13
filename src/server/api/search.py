@@ -77,11 +77,11 @@ def get_search(keyword):
 
     # 对资源编号进行对称加密
     for student in student_data:
-        student['sid'] = util.identifier_encrypt(util.aes_key, 'student', student['sid'])
+        student['sid'] = util.identifier_encrypt('student', student['sid'])
     for teacher in teacher_data:
-        teacher['tid'] = util.identifier_encrypt(util.aes_key, 'teacher', teacher['tid'])
+        teacher['tid'] = util.identifier_encrypt('teacher', teacher['tid'])
     for room in room_data:
-        room['rid'] = util.identifier_encrypt(util.aes_key, 'room', room['rid'])
+        room['rid'] = util.identifier_encrypt('room', room['rid'])
 
     # 根据请求类型反馈数据
     search_data = {

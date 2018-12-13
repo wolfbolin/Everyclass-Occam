@@ -51,12 +51,12 @@ def aes_decrypt(aes_key, aes_text):
     return decrypt_text.strip()
 
 
-def identifier_encrypt(key, cate, code):
-    return aes_encrypt(key, "%s;%s" % (cate, code))
+def identifier_encrypt(cate, code):
+    return aes_encrypt(util.get_config('aes_key'), "%s;%s" % (cate, code))
 
 
-def identifier_decrypt(key, data):
-    data = aes_decrypt(key, data)
+def identifier_decrypt(data):
+    data = aes_decrypt(util.get_config('aes_key'), data)
     # 通过正则校验确定数据的正确性
     group = re.match('^(student|teacher|klass|room);([A-Za-z0-9]+)$', data)
     if group is None:

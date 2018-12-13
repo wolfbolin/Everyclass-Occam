@@ -27,7 +27,7 @@ def get_room_schedule(identifier, semester):
     """
     # 尝试解码教室资源标识
     try:
-        id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
+        id_type, id_code = util.identifier_decrypt(identifier)
     except ValueError:
         abort(400, '查询的教室信息无法被识别')
         return
@@ -117,10 +117,10 @@ def get_room_schedule(identifier, semester):
     for course in room_data['course']:
         if week_string is True:
             course['week_string'] = util.make_week(course['week'])
-        course['cid'] = util.identifier_encrypt(util.aes_key, 'student', course['cid'])
-        course['rid'] = util.identifier_encrypt(util.aes_key, 'student', course['rid'])
+        course['cid'] = util.identifier_encrypt('student', course['cid'])
+        course['rid'] = util.identifier_encrypt('student', course['rid'])
         for teacher in course['teacher']:
-            teacher['tid'] = util.identifier_encrypt(util.aes_key, 'student', teacher['tid'])
+            teacher['tid'] = util.identifier_encrypt('student', teacher['tid'])
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':

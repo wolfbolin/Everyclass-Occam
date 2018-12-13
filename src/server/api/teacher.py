@@ -26,7 +26,7 @@ def get_teacher_schedule(identifier, semester):
     """
     # 尝试解码老师资源标识
     try:
-        id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
+        id_type, id_code = util.identifier_decrypt(identifier)
     except ValueError:
         abort(400, '查询的教师信息无法被识别')
         return
@@ -108,10 +108,10 @@ def get_teacher_schedule(identifier, semester):
 
     # 对资源编号进行对称加密
     for course in teacher_data['course']:
-        course['cid'] = util.identifier_encrypt(util.aes_key, 'klass', course['cid'])
-        course['rid'] = util.identifier_encrypt(util.aes_key, 'room', course['rid'])
+        course['cid'] = util.identifier_encrypt('klass', course['cid'])
+        course['rid'] = util.identifier_encrypt('room', course['rid'])
         for teacher in course['teacher']:
-            teacher['tid'] = util.identifier_encrypt(util.aes_key, 'teacher', teacher['tid'])
+            teacher['tid'] = util.identifier_encrypt('teacher', teacher['tid'])
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':

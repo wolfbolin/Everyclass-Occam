@@ -144,3 +144,25 @@ def read_from_cache(semester, folder, name):
     with open(cache_file_name, 'r', encoding='utf8') as file:
         data = file.read()
     return data
+
+
+def get_config(key):
+    """
+    自动从环境变量或配置文件中获取设定的信息
+    :param key: 环境变量键值
+    :return: 预定义的环境变量值或None
+    """
+    env_dict = os.environ
+    try:
+        from .config import set_dict
+    except ImportError:
+        set_dict = {}
+    if key in env_dict:
+        print_t('env[%s]:%s' % (key, env_dict[key]))
+        return env_dict[key]
+    elif key in set_dict:
+        print_t('set[%s]:%s' % (key, set_dict[key]))
+        return set_dict[key]
+    else:
+        print('None')
+        return None
