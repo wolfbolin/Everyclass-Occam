@@ -18,6 +18,8 @@ def hello_world():
 
 
 if __name__ == '__main__':
+    util.set_semester_list(util.mysql_connect(), app.mongo_pool)
+    util.print_t('数据库可用学期：' + ';'.join(util.get_semester_list(app.mongo_pool)))
     app.run(
         host='0.0.0.0',
         port=80

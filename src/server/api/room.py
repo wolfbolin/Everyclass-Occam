@@ -33,7 +33,7 @@ def get_room_schedule(identifier, semester):
         return
 
     # 检验数据的正确性
-    if id_type != 'room' or util.check_semester(semester) is not True:
+    if id_type != 'room' or util.check_semester(semester, app.mongo_pool) is not True:
         abort(400, '查询的信息无法被识别')
         return
 
@@ -103,16 +103,7 @@ def get_room_schedule(identifier, semester):
             course['week_string'] = util.make_week(course['week'])
     # 对于其他可用周次的显示参数处理
     if other_semester:
-        semester_list = []
-        with conn.cursor() as cursor:
-            sql = "show tables LIKE 'card_%';"
-            cursor.execute(sql)
-            result = cursor.fetchall()
-            for card in result:
-                group = re.match('card_([0-9]{4}-[0-9]{4}-[1-2])', card[0])
-                if group:
-                    semester_list.append(group.group(1))
-        room_data['semester_list'] = semester_list
+        room_data['semester_list'] = util.get_semester_list(app.mongo_pool)
 
     # 对资源编号进行对称加密
     for course in room_data['course']:

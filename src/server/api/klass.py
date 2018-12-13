@@ -32,7 +32,7 @@ def get_klass_schedule(identifier, semester):
         return
 
     # 检验数据的正确性
-    if id_type != 'klass' or util.check_semester(semester) is not True:
+    if id_type != 'klass' or util.check_semester(semester, app.mongo_pool) is not True:
         abort(400, '查询的信息无法被识别')
         return
 

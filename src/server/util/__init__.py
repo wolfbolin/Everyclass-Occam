@@ -2,6 +2,8 @@ from .tools import identifier_encrypt
 from .tools import identifier_decrypt
 from .tools import check_semester
 from .tools import make_week
+from .tools import set_semester_list
+from .tools import get_semester_list
 
 from .dao import mysql_connect
 from .dao import mysql_pool

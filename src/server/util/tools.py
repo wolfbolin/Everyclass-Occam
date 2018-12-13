@@ -65,21 +65,27 @@ def identifier_decrypt(data):
         return group.group(1), group.group(2)
 
 
-def check_semester(semester):
+def check_semester(semester, mongo_pool):
     """
     检查输入的学期信息是否合理
     :param semester: 输入的学期信息
+    :param mongo_pool: MongoDB连接池
     :return: 判定结果
     """
-    result = re.match('^([0-9]{4})-([0-9]{4})-([1-2])$', semester)
-    if result:
-        part1 = int(result.group(1))
-        part2 = int(result.group(2))
-        if part1 < 2016 or part2 != part1 + 1:
-            return False
+    semester_list = util.get_semester_list(mongo_pool)
+    if semester in semester_list:
         return True
     else:
         return False
+    # result = re.match('^([0-9]{4})-([0-9]{4})-([1-2])$', semester)
+    # if result:
+    #     part1 = int(result.group(1))
+    #     part2 = int(result.group(2))
+    #     if part1 < 2016 or part2 != part1 + 1:
+    #         return False
+    #     return True
+    # else:
+    #     return False
 
 
 def make_week(time_list):
@@ -120,3 +126,37 @@ def make_week(time_list):
                 result += ',%d-%d' % (begin, time_list[i - 1])
             begin = time_list[i]
     return result[1:] + '/全周'
+
+
+def set_semester_list(mysql_conn, mongo_pool):
+    # 查询现有的可用学期
+    semester_list = []
+    with mysql_conn.cursor() as cursor:
+        sql = "show tables LIKE 'card_%';"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        for card in result:
+            group = re.match('card_([0-9]{4}-[0-9]{4}-[1-2])', card[0])
+            if group:
+                semester_list.append(group.group(1))
+
+    # 向数据库中写入可用学期
+    mongo_db = mongo_pool['common']
+    mongo_db.update_one(
+        filter={'semester_list': {'$exists': 1}},
+        update={
+            '$set': {
+                'semester_list': semester_list
+            }
+        },
+        upsert=True
+    )
+
+
+def get_semester_list(mongo_pool):
+    # 从MongoDB中查询可用学期列表
+    mongo_db = mongo_pool['common']
+    result = mongo_db.find_one(
+        filter={'semester_list': {'$exists': 1}},
+        projection={'_id': 0})
+    return result['semester_list']
