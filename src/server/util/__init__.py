@@ -2,20 +2,12 @@ from .tools import identifier_encrypt
 from .tools import identifier_decrypt
 from .tools import check_semester
 from .tools import make_week
+from .tools import set_semester_list
+from .tools import get_semester_list
 
-from .config import aes_key
-from .config import max_thread
-from .config import mysql_host
-from .config import mysql_port
-from .config import mysql_user
-from .config import mysql_charset
-from .config import mysql_password
-from .config import mysql_database
-from .config import mongo_host
-from .config import mongo_port
-from .config import mongo_user
-from .config import mongo_password
-from .config import mongo_database
+from .dao import mysql_connect
+from .dao import mysql_pool
+from .dao import mongo_pool
 
 from .util import ErrorSignal
 from .util import print_e
@@ -33,4 +25,5 @@ from .util import save_to_cache
 from .util import del_from_cache
 from .util import query_from_cache
 from .util import read_from_cache
+from .util import get_config
 

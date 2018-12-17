@@ -18,6 +18,7 @@ from .util import read_from_cache
 from .tools import read_week
 from .tools import make_week
 from .tools import read_lesson
+from .tools import next_lesson
 from .tools import sbc2dbc
 from .tools import dbc2sbc
 

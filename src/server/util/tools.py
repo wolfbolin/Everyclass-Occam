@@ -2,7 +2,7 @@
 # Common package
 import re
 from Crypto.Cipher import AES
-from binascii import b2a_hex, a2b_hex
+from binascii import b2a_base64, a2b_base64
 # Personal package
 import util
 
@@ -29,7 +29,7 @@ def aes_encrypt(aes_key, aes_text):
     # 先进行aes加密
     encrypt = cipher.encrypt(fill_16(aes_text))
     # 使用十六进制转成字符串形式
-    encrypt_text = b2a_hex(encrypt).decode()
+    encrypt_text = b2a_base64(encrypt).decode().replace('/', '-').strip()
     # 返回执行结果
     return encrypt_text
 
@@ -44,19 +44,19 @@ def aes_decrypt(aes_key, aes_text):
     # 初始化解码器
     cipher = AES.new(fill_16(aes_key), AES.MODE_ECB)
     # 优先逆向解密十六进制为bytes
-    decrypt = a2b_hex(aes_text.encode())
+    decrypt = a2b_base64(aes_text.replace('-', '/').encode())
     # 使用aes解密密文
     decrypt_text = str(cipher.decrypt(decrypt), encoding='utf-8').replace('\0', '')
     # 返回执行结果
     return decrypt_text.strip()
 
 
-def identifier_encrypt(key, cate, code):
-    return aes_encrypt(key, "%s;%s" % (cate, code))
+def identifier_encrypt(cate, code):
+    return aes_encrypt(util.get_config('aes_key'), "%s;%s" % (cate, code))
 
 
-def identifier_decrypt(key, data):
-    data = aes_decrypt(key, data)
+def identifier_decrypt(data):
+    data = aes_decrypt(util.get_config('aes_key'), data)
     # 通过正则校验确定数据的正确性
     group = re.match('^(student|teacher|klass|room);([A-Za-z0-9]+)$', data)
     if group is None:
@@ -65,21 +65,27 @@ def identifier_decrypt(key, data):
         return group.group(1), group.group(2)
 
 
-def check_semester(semester):
+def check_semester(semester, mongo_pool):
     """
     检查输入的学期信息是否合理
     :param semester: 输入的学期信息
+    :param mongo_pool: MongoDB连接池
     :return: 判定结果
     """
-    result = re.match('^([0-9]{4})-([0-9]{4})-([1-2])$', semester)
-    if result:
-        part1 = int(result.group(1))
-        part2 = int(result.group(2))
-        if part1 < 2016 or part2 != part1 + 1:
-            return False
+    semester_list = util.get_semester_list(mongo_pool)
+    if semester in semester_list:
         return True
     else:
         return False
+    # result = re.match('^([0-9]{4})-([0-9]{4})-([1-2])$', semester)
+    # if result:
+    #     part1 = int(result.group(1))
+    #     part2 = int(result.group(2))
+    #     if part1 < 2016 or part2 != part1 + 1:
+    #         return False
+    #     return True
+    # else:
+    #     return False
 
 
 def make_week(time_list):
@@ -120,3 +126,37 @@ def make_week(time_list):
                 result += ',%d-%d' % (begin, time_list[i - 1])
             begin = time_list[i]
     return result[1:] + '/全周'
+
+
+def set_semester_list(mysql_conn, mongo_pool):
+    # 查询现有的可用学期
+    semester_list = []
+    with mysql_conn.cursor() as cursor:
+        sql = "show tables LIKE 'card_%';"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        for card in result:
+            group = re.match('card_([0-9]{4}-[0-9]{4}-[1-2])', card[0])
+            if group:
+                semester_list.append(group.group(1))
+
+    # 向数据库中写入可用学期
+    mongo_db = mongo_pool['common']
+    mongo_db.update_one(
+        filter={'semester_list': {'$exists': 1}},
+        update={
+            '$set': {
+                'semester_list': semester_list
+            }
+        },
+        upsert=True
+    )
+
+
+def get_semester_list(mongo_pool):
+    # 从MongoDB中查询可用学期列表
+    mongo_db = mongo_pool['common']
+    result = mongo_db.find_one(
+        filter={'semester_list': {'$exists': 1}},
+        projection={'_id': 0})
+    return result['semester_list']

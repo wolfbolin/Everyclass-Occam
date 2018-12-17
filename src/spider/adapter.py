@@ -11,10 +11,22 @@ import util
 filterwarnings('error', category=pymysql.Warning)
 
 if __name__ == "__main__":
+    # 完成所有学期搜索信息的更新
+    document = input("更新所有学期搜索数据库(y/n)：")
+    if document is 'y':
+        builder.build_search_all()
+        exit()
+
     # 设置运行的学期信息
     semester = input("请输入需要更新的学期：")
     if filter.check_semester(semester) is not True:
         util.print_e('输入的学期信息错误，请检查您的输入')
+        exit()
+
+    document = input("仅更新本学期搜索数据库(y/n)：")
+    if document is 'y':
+        # 完成该学期搜索信息的更新
+        builder.build_search_semester(semester=semester)
         exit()
 
     # 创建本地缓存文件夹

@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 # Common package
 import re
+import json
 import msgpack
 from flask import abort
 from flask import request
@@ -26,13 +27,13 @@ def get_room_schedule(identifier, semester):
     """
     # 尝试解码教室资源标识
     try:
-        id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
+        id_type, id_code = util.identifier_decrypt(identifier)
     except ValueError:
         abort(400, '查询的教室信息无法被识别')
         return
 
     # 检验数据的正确性
-    if id_type != 'room' or util.check_semester(semester) is not True:
+    if id_type != 'room' or util.check_semester(semester, app.mongo_pool) is not True:
         abort(400, '查询的信息无法被识别')
         return
 
@@ -50,15 +51,15 @@ def get_room_schedule(identifier, semester):
         `card`.`roomID` as course_rid,
         `card`.`week` as course_week,
         `card`.`lesson` as course_lesson,
+        `teacher`.`code` as teacher_tid,
         `teacher`.`name` as teacher_name,
-        `teacher`.`title` as teacher_title,
-        `teacher`.`code` as teacher_tid
+        `teacher`.`title` as teacher_title 
         FROM `room_all` as room
-        JOIN `card_%s` as card 
-        ON room.code = card.roomID AND room.code = '%s'
-        JOIN `teacher_link_%s` as t_link USING(cid)
-        JOIN `teacher_%s` as teacher USING(tid);
-        """ % (semester, id_code, semester, semester)
+        LEFT JOIN `card_%s` as card ON room.code = card.roomID 
+        LEFT JOIN `teacher_link_%s` as t_link USING(cid)
+        LEFT JOIN `teacher_%s` as teacher USING(tid) 
+        WHERE room.code = '%s'
+        """ % (semester, semester, semester, id_code)
         cursor.execute(sql)
         result = cursor.fetchall()
         room_data = {}
@@ -67,6 +68,7 @@ def get_room_schedule(identifier, semester):
         for data in result:
             if room_info:
                 room_info = False
+                room_data['rid'] = id_code
                 room_data['name'] = data[0]
                 room_data['building'] = data[1]
                 room_data['campus'] = data[2]
@@ -76,17 +78,18 @@ def get_room_schedule(identifier, semester):
                     'cid': data[4],
                     'room': data[5],
                     'rid': data[6],
-                    'week': data[7],
+                    'week': json.loads(data[7]),
                     'lesson': data[8],
                     'teacher': []
                 }
                 course_info[data[4]] = course_data
             teacher_data = {
-                'name': data[9],
-                'title': data[10],
-                'tid': data[11]
+                'tid': data[9],
+                'name': data[10],
+                'title': data[11],
             }
-            course_info[data[4]]['teacher'].append(teacher_data)
+            if teacher_data['tid']:
+                course_info[data[4]]['teacher'].append(teacher_data)
         # 将聚合后的数据转换为序列
         room_data['course'] = list(course_info.values())
 
@@ -96,29 +99,19 @@ def get_room_schedule(identifier, semester):
     other_semester = request.values.get('other_semester')
     # 对于课程周次的显示参数处理
     for course in room_data['course']:
-        if week_string is True:
+        if week_string:
             course['week_string'] = util.make_week(course['week'])
     # 对于其他可用周次的显示参数处理
-    if other_semester is True:
-        semester_list = []
-        with conn.cursor() as cursor:
-            sql = "show tables LIKE 'card_%';"
-            cursor.execute(sql)
-            result = cursor.fetchall()
-            for card in result:
-                group = re.match('card_([0-9]{4}-[0-9]{4}-[1-2])', card[0])
-                if group:
-                    semester_list.append(group.group(1))
-        room_data['semester_list'] = semester_list
+    if other_semester:
+        room_data['semester_list'] = util.get_semester_list(app.mongo_pool)
 
     # 对资源编号进行对称加密
     for course in room_data['course']:
-        if week_string is True:
-            course['week_string'] = util.make_week(course['week'])
-        course['cid'] = util.identifier_encrypt(util.aes_key, 'student', course['cid'])
-        course['rid'] = util.identifier_encrypt(util.aes_key, 'student', course['rid'])
+        course['cid'] = util.identifier_encrypt('klass', course['cid'])
+        course['rid'] = util.identifier_encrypt('room', course['rid'])
         for teacher in course['teacher']:
-            teacher['tid'] = util.identifier_encrypt(util.aes_key, 'student', teacher['tid'])
+            if teacher['tid']:
+                teacher['tid'] = util.identifier_encrypt('teacher', teacher['tid'])
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':

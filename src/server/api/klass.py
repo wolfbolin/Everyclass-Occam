@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import json
 import msgpack
 from flask import abort
 from flask import request
@@ -23,18 +24,15 @@ def get_klass_schedule(identifier, semester):
     :param semester: 需要查询的学期
     :return: 该课程的资源信息表
     """
-    # 获取附加参数
-    accept = request.values.get('accept')
-
     # 尝试解码教室资源标识
     try:
-        id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
+        id_type, id_code = util.identifier_decrypt(identifier)
     except ValueError:
         abort(400, '查询的课程信息无法被识别')
         return
 
     # 检验数据的正确性
-    if id_type != 'klass' or util.check_semester(semester) is not True:
+    if id_type != 'klass' or util.check_semester(semester, app.mongo_pool) is not True:
         abort(400, '查询的信息无法被识别')
         return
 
@@ -59,12 +57,13 @@ def get_klass_schedule(identifier, semester):
         cursor.execute(sql)
         result = cursor.fetchone()
         klass_data = {
+            'cid': id_code,
             'name': result[0],
             'room': result[1],
             'rid': result[2],
-            'week': result[3],
+            'week': json.loads(result[3]),
             'lesson': result[4],
-            'klass': result[5],
+            'class': result[5],
             'pick': result[6],
             'hour': result[7],
             'type': result[8],
@@ -74,9 +73,10 @@ def get_klass_schedule(identifier, semester):
         # 查询课程的学生信息
         sql = """
         SELECT 
+        `student`.`code` as student_code,
         `student`.`name` as student_name, 
         `student`.`klass` as student_klass, 
-        `student`.`code` as student_code 
+        `student`.`deputy` as student_deputy 
         FROM `card_%s` as card
         JOIN `student_link_%s` as s_link 
         ON card.cid = s_link.cid AND card.klassID = '%s' 
@@ -86,17 +86,18 @@ def get_klass_schedule(identifier, semester):
         result = cursor.fetchall()
         for data in result:
             student_data = {
-                'name': data[0],
-                'klass': data[1],
-                'sid': data[2]
+                'sid': data[0],
+                'name': data[1],
+                'class': data[2],
+                'deputy': data[3]
             }
             klass_data['student'].append(student_data)
         # 查询课程的教师信息
         sql = """
         SELECT 
+        `teacher`.`code` as student_code,
         `teacher`.`name` as student_name, 
-        `teacher`.`title` as student_title, 
-        `teacher`.`code` as student_code 
+        `teacher`.`title` as student_title 
         FROM `card_%s` as card
         JOIN `teacher_link_%s` as t_link 
         ON card.cid = t_link.cid AND card.klassID = '%s' 
@@ -106,9 +107,9 @@ def get_klass_schedule(identifier, semester):
         result = cursor.fetchall()
         for data in result:
             teacher_data = {
-                'name': data[0],
-                'title': data[1],
-                'tid': data[2]
+                'tid': data[0],
+                'name': data[1],
+                'title': data[2]
             }
             klass_data['teacher'].append(teacher_data)
 
@@ -116,15 +117,15 @@ def get_klass_schedule(identifier, semester):
     accept = request.values.get('accept')
     week_string = request.values.get('week_string')
     # 对于课程周次的显示参数处理
-    if week_string is True:
+    if week_string:
         klass_data['week_string'] = util.make_week(klass_data['week'])
 
     # 对资源编号进行对称加密
-    klass_data['rid'] = util.identifier_encrypt(util.aes_key, 'room', klass_data['rid'])
+    klass_data['rid'] = util.identifier_encrypt('room', klass_data['rid'])
     for student in klass_data['student']:
-        student['sid'] = util.identifier_encrypt(util.aes_key, 'student', student['sid'])
+        student['sid'] = util.identifier_encrypt('student', student['sid'])
     for teacher in klass_data['teacher']:
-        teacher['tid'] = util.identifier_encrypt(util.aes_key, 'student', teacher['tid'])
+        teacher['tid'] = util.identifier_encrypt('student', teacher['tid'])
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':

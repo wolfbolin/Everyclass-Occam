@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import json
 import msgpack
 from flask import abort
 from flask import request
@@ -25,70 +26,69 @@ def get_student_schedule(identifier, semester):
     """
     # 尝试解码学生资源标识
     try:
-        id_type, id_code = util.identifier_decrypt(util.aes_key, identifier)
+        id_type, id_code = util.identifier_decrypt(identifier)
     except ValueError:
         abort(400, '查询的学生信息无法被识别')
         return
 
     # 检验数据的正确性
-    if id_type != 'student' or util.check_semester(semester) is not True:
+    if id_type != 'student' or util.check_semester(semester, app.mongo_pool) is not True:
         abort(400, '查询的信息无法被识别')
         return
 
-    # 从数据库中访问学生数据
+    # 从MySQL数据库中访问学生课程数据
     conn = app.mysql_pool.connection()
     with conn.cursor() as cursor:
         sql = """
         SELECT 
-        `student`.`name` as student_name, 
-        `student`.`klass` as student_klass, 
-        `student`.`deputy` as student_deputy, 
         `card`.`name` as course_name,
         `card`.`klassID` as course_cid,
         `card`.`room` as course_room,
         `card`.`roomID` as course_rid,
         `card`.`week` as course_week,
         `card`.`lesson` as course_lesson,
+        `teacher`.`code` as teacher_tid,
         `teacher`.`name` as teacher_name,
-        `teacher`.`title` as teacher_title,
-        `teacher`.`code` as teacher_tid
+        `teacher`.`title` as teacher_title 
         FROM `student_%s` as student
-        JOIN `student_link_%s` as s_link 
-        ON student.sid = s_link.sid AND student.code = '%s'
+        JOIN `student_link_%s` as s_link USING(sid) 
         JOIN `card_%s` as card USING(cid)
         JOIN `teacher_link_%s` as t_link USING(cid)
-        JOIN `teacher_%s` as teacher USING(tid);
-        """ % (semester, semester, id_code, semester, semester, semester)
+        JOIN `teacher_%s` as teacher USING(tid)
+        WHERE student.`code` = '%s';
+        """ % (semester, semester, semester, semester, semester, id_code)
         cursor.execute(sql)
-        result = cursor.fetchall()
-        student_data = {}
-        student_info = True
         course_info = {}
-        for data in result:
-            if student_info:
-                student_info = False
-                student_data['name'] = data[0]
-                student_data['klass'] = data[1]
-                student_data['deputy'] = data[2]
-            if data[4] not in course_info:
+        for data in cursor.fetchall():
+            if data[1] not in course_info:
                 course_data = {
-                    'name': data[3],
-                    'cid': data[4],
-                    'room': data[5],
-                    'rid': data[6],
-                    'week': data[7],
-                    'lesson': data[8],
+                    'name': data[0],
+                    'cid': data[1],
+                    'room': data[2],
+                    'rid': data[3],
+                    'week': json.loads(data[4]),
+                    'lesson': data[5],
                     'teacher': []
                 }
-                course_info[data[4]] = course_data
+                course_info[data[1]] = course_data
             teacher_data = {
-                'name': data[9],
-                'title': data[10],
-                'tid': data[11]
+                'tid': data[6],
+                'name': data[7],
+                'title': data[8],
             }
-            course_info[data[4]]['teacher'].append(teacher_data)
-        # 将聚合后的数据转换为序列
-        student_data['course'] = list(course_info.values())
+            course_info[data[1]]['teacher'].append(teacher_data)
+
+    # 从MongoDB数据库中访问学生课程数据
+    mongo_db = app.mongo_pool['student']
+    mongo_data = mongo_db.find_one({'code': id_code}, {'_id': 0})
+    # 将聚合后的数据转换为序列
+    student_data = {
+        'sid': id_code,
+        'name': mongo_data['name'],
+        'class': mongo_data['klass'],
+        'deputy': mongo_data['deputy'],
+        'course': list(course_info.values())
+    }
 
     # 获取附加参数并根据参数调整传输的数据内容
     accept = request.values.get('accept')
@@ -96,20 +96,18 @@ def get_student_schedule(identifier, semester):
     other_semester = request.values.get('other_semester')
     # 对于课程周次的显示参数处理
     for course in student_data['course']:
-        if week_string is True:
+        if week_string:
             course['week_string'] = util.make_week(course['week'])
     # 对于其他可用周次的显示参数处理
-    if other_semester is True:
-        mongo_db = app.mongo_pool['student']
-        result = mongo_db.find_one({'sid': id_code}, {'_id': 0})
-        student_data['semester_list'] = result['semester']
+    if other_semester:
+        student_data['semester_list'] = mongo_data['semester']
 
     # 对资源编号进行对称加密
     for course in student_data['course']:
-        course['cid'] = util.identifier_encrypt(util.aes_key, 'klass', course['cid'])
-        course['rid'] = util.identifier_encrypt(util.aes_key, 'room', course['rid'])
+        course['cid'] = util.identifier_encrypt('klass', course['cid'])
+        course['rid'] = util.identifier_encrypt('room', course['rid'])
         for teacher in course['teacher']:
-            teacher['tid'] = util.identifier_encrypt(util.aes_key, 'teacher', teacher['tid'])
+            teacher['tid'] = util.identifier_encrypt('teacher', teacher['tid'])
 
     # 根据请求类型反馈数据
     if accept == 'msgpack':

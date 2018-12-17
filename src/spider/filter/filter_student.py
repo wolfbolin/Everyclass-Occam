@@ -55,16 +55,20 @@ def student_table(data_set):
     student_name = data_set['student_name']
     student_code = data_set['student_code']
     if util.query_from_cache(semester, 'student_json', student_code):
-        student_json = util.read_from_cache(semester, 'student_json', student_code)
-        student_json = json.loads(student_json)
+        student_data = util.read_from_cache(semester, 'student_json', student_code)
+        student_data = json.loads(student_data)
     elif util.query_from_cache(semester, 'student_html', student_code):
         student_html = util.read_from_cache(semester, 'student_html', student_code)
-        student_json = student_table_analysis(student_html, semester, student_name, student_code)
-        util.save_to_cache(semester, 'student_json', student_code, json.dumps(student_json))
+        student_data = student_table_analysis(student_html, semester, student_name, student_code)
+        util.save_to_cache(semester, 'student_json', student_code, json.dumps(student_data))
     else:
         raise util.ErrorSignal('缺少学生%s课表数据' % student_code)
 
-    for card in student_json:
+    # Fix Bug 2018-12-17 --Begin
+    klass_id_index = {}  # 创建节次数据索引
+    # Fix Bug 2018-12-17 --end
+
+    for index, card in enumerate(student_data):
         for key in card:
             if isinstance(card[key], str):
                 card[key] = card[key].replace('\xa0', '').replace('\u3000', '').strip()
@@ -72,18 +76,40 @@ def student_table(data_set):
         card['teacher'] = card['teacher_string']
         card['week_list'] = util.read_week(card['week_string'])
         card['week'] = card['week_list']
-        # md5_str = '/'.join([';'.join(card['week']), card['lesson'], card['room'], card['course_name']])
-        # md5_str = md5_str.encode('utf-8')
-        # md5_code = md5(md5_str).hexdigest()
-        # card['md5'] = md5_code
         card['room'] = util.sbc2dbc(card['room'])
         card['hour'] = int(card['hour'])
+
+        # Fix Bug 2018-12-17 --Begin
+        if card['klassID'] in klass_id_index:
+            klass_id_index[card['klassID']].append((card['lesson'], index))
+        else:
+            klass_id_index[card['klassID']] = [(card['lesson'], index)]
+        # Fix Bug 2018-12-17 --end
+
+    """
+    Fix Bug 2018-12-17
+    通过对于每节课向后搜索的模式，确定每节课是不是多节课连接的状态
+    对于多节课连接的课程，将当前的课程名进行重命名，以避免重复的klassID造成重复
+    当课程ID重复时，按照lesson进行排序，并且从前到后向klassID中添加数字后缀予以区分
+    该方案假设前提，klassID相同的课程，lesson都是不同的
+    klassID_index = {
+        'klassID1': [ ('lesson': index), ... ],
+        'klassID2': ...
+    }
+    """
+    for klassID in klass_id_index:  # 读取相同的klassID数据集合
+        if len(klass_id_index[klassID]):  # 说明课程ID不唯一
+            sorted(klass_id_index[klassID])  # 按照课程节次对课程进行排序
+            for index, pair in enumerate(klass_id_index[klassID]):
+                # 使用数据集合中记录的数组下标更新课程ID
+                student_data[pair[1]]['klassID'] += '&%d' % index
+    # Fix Bug 2018-12-17 --end
 
     # 将结果添加到结果集中
     result = [{
         'student_name': student_name,
         'student_code': student_code,
-        'table': student_json
+        'table': student_data
     }]
     return result
 

@@ -35,7 +35,7 @@ def get_search(keyword):
         student_data.append({
             'sid': student['code'],
             'name': student['name'],
-            'klass': student['klass'],
+            'class': student['klass'],
             'deputy': student['deputy'],
             'semester': student['semester']
         })
@@ -63,22 +63,23 @@ def get_search(keyword):
         cursor.execute(sql, keyword)
         result = cursor.fetchone()
         if result:
-            room_data = {
+            room_data = [{
                 'rid': result[0],
                 'name': result[1],
                 'campus': result[2],
                 'building': result[3],
-            }
+                'semester': util.get_semester_list(app.mongo_pool)
+            }]
         else:
-            room_data = {}
+            room_data = []
 
     # 对资源编号进行对称加密
     for student in student_data:
-        student['sid'] = util.identifier_encrypt(util.aes_key, 'student', student['sid'])
+        student['sid'] = util.identifier_encrypt('student', student['sid'])
     for teacher in teacher_data:
-        teacher['tid'] = util.identifier_encrypt(util.aes_key, 'teacher', teacher['tid'])
-    if room_data:
-        room_data['rid'] = util.identifier_encrypt(util.aes_key, 'room', room_data['rid'])
+        teacher['tid'] = util.identifier_encrypt('teacher', teacher['tid'])
+    for room in room_data:
+        room['rid'] = util.identifier_encrypt('room', room['rid'])
 
     # 根据请求类型反馈数据
     search_data = {
