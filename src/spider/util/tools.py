@@ -114,6 +114,20 @@ def read_lesson(lesson_str):
     return [lesson_str]
 
 
+def next_lesson(lesson_str):
+    """
+    解析出该课程的下一节课
+    为多节课连接的情况提供服务
+    :param lesson_str: 当前课程的节次（必须为标准格式）
+    :return: 下一节课的节次
+    """
+    day = lesson_str[0]
+    time1 = int(lesson_str[1:2])
+    time2 = int(lesson_str[3:4])
+    next_lesson_str = '%s%02d%02d' % (day, time1 - 1, time2)
+    return next_lesson_str
+
+
 def sbc2dbc(ustring):
     """全角转半角"""
     rstring = ""

@@ -44,12 +44,12 @@ student_info = {
 card_info = {
     # 课程卡片信息
     'name': '',
-    'teacher_string': '',
-    'teacher_list': [],
-    'teacher': '',
-    'week_string': '',
-    'week_list': [],
-    'week': '',
+    'teacher_string': '',  # 教师信息的原始数据
+    'teacher_list': [],  # 教师信息的解析形式
+    'teacher': '',  # 教师信息的合成数据
+    'week_string': '',  # 周次信息的原始数据
+    'week_list': [],  # 周次信息的解析形式
+    'week': '',  # 周次信息的合成数据
     'lesson': '',
     'room': '',
     'klass': '',
