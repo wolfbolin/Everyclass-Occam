@@ -7,6 +7,6 @@ __pycache__
 venv*
 cache
 config*.py
-!config_default.py
+default.py
 test.py
 src/htmlstash
