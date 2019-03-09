@@ -2,6 +2,7 @@
 # Common package
 import re
 import json
+import time
 from hashlib import md5
 from bs4 import BeautifulSoup
 # Personal package
@@ -141,7 +142,7 @@ def student_table_analysis(html, semester, student_name, student_code):
                     continue
                 course_names = column.find(class_='kbcontent1').find_all('a')
                 course_hour = column.find_all(class_='kbcontent')[2].string
-                course_hours = re.findall(':([0-9]*?)\)', course_hour, re.S | re.M)
+                course_hours = re.findall(r':([0-9]*?)\)', course_hour, re.S | re.M)
             except BaseException as e:
                 util.del_from_cache(semester, 'student_html', student_code)
                 util.print_e("存在无法读取学生%s，已删除。%s" % (student_name + student_code, e))
@@ -167,10 +168,11 @@ def student_table_analysis(html, semester, student_name, student_code):
                         card['week_string'] += '/' + course.find(title='单双周').string
                     if course.find(title='上课地点教室') is not None:
                         card['room'] = course.find(title='上课地点教室').string
-                    if len(course_hours) == len(course):  # 课时信息
+                    if len(course_hours) == len(courses):  # 课时信息
                         card['hour'] = course_hours[index]
                 except (AttributeError, IndexError) as e:
-                    raise util.ErrorSignal('学生%s课表解析错误，%s' % (student_name + student_code, e))
+                    util.del_from_cache(semester, 'student_html', student_code)
+                    raise util.ErrorSignal('学生%s课表解析错误，已删除，%s' % (student_name + student_code, e))
                 result.append(card)
 
     # 分析结束，返回结果

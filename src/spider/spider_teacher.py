@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Common package
+import time
 import json
 import copy
 import requests
@@ -145,6 +146,7 @@ def teacher_table(data_set):
     }
     # 开始下载数据
     for i in range(5):
+        time.sleep(2)
         http_result = requests.post(url, headers=headers, data=http_data)
         if http_result.status_code == 200:
             break

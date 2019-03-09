@@ -71,7 +71,6 @@ def build_teacher_table(semester):
     util.print_i('Step2.1:正在检索缺少的课表数据')
     download_list = []
     for count, teacher in enumerate(teacher_list):
-
         if util.query_from_cache(semester, 'teacher_html', teacher['jgh'].replace('*', '#')) is False:
             download_list.append(teacher)
         util.process_bar(count + 1, len(teacher_list), '已检索%d条课表数据' % (count + 1))

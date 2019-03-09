@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Common package
 import re
+import time
 import json
 import copy
 import requests
@@ -45,9 +46,9 @@ def student_all(cookie, thread_num, limit=999999999):
         'headers': headers,
         'pageSize': '500'
     }
-    student_all = util.multiprocess(task=student_info, main_data=range(1, total_pages + 1), max_thread=thread_num,
+    result = util.multiprocess(task=student_info, main_data=range(1, total_pages + 1), max_thread=thread_num,
                                     attach_data=page_data, multithread=util.nosql_multithread)
-    return student_all
+    return result
 
 
 def student_info(page_data):
@@ -145,6 +146,7 @@ def student_table(data_set):
     }
     # 开始下载数据
     for i in range(5):
+        time.sleep(2)
         http_result = requests.post(url, headers=headers, data=http_data)
         if http_result.status_code == 200:
             break
