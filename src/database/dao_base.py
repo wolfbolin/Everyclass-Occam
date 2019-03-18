@@ -22,8 +22,7 @@ def mongo_connect():
     conn = pymongo.MongoClient(host=util.mongo_host,
                                port=util.mongo_port,
                                username=util.mongo_user,
-                               password=util.mongo_password
-                               )
+                               password=util.mongo_password)
     conn = conn[util.mongo_database]
     return conn
 

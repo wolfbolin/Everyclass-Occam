@@ -4,7 +4,7 @@
 import util
 
 
-def delete_semester_document(conn, collection, semester):
+def semester_delete(conn, collection, semester):
     """
     清除MongoDB的指定集合中指定的学期信息
     :param conn: 数据库连接句柄
@@ -17,7 +17,7 @@ def delete_semester_document(conn, collection, semester):
         filter={},
         update={
             '$pull': {
-                'semester': semester
+                "semester": semester
             }
         }
     )

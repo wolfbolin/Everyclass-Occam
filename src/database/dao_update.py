@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import pypinyin
 # Personal package
 import util
 
@@ -64,59 +65,67 @@ def student_update(student_data):
         return rowcount
 
 
-def student_update_search(student_data):
+def search_update(object_data):
     """
     多线程函数
     将某学期学生的信息写入文档库中
-    :param student_data: 数据字典，一名学生的信息+数据库链接句柄+学期信息
+    :param object_data: 数据字典，一名学生的信息+数据库链接句柄+学期信息
     :return: 受影响的数据行数
     """
-    mongo_db = student_data['mongo_pool']['student']
+    rowcount = 0
+    conn = object_data['mongo_pool']
+    # 生成名字的拼音与缩写
+    full_pinyin = pypinyin.pinyin(object_data['name'], errors='ignore', style=pypinyin.Style.NORMAL)
+    full_pinyin = ''.join(list(x[0] for x in full_pinyin)).strip()
+    first_pinyin = pypinyin.pinyin(object_data['name'], errors='ignore', style=pypinyin.Style.FIRST_LETTER)
+    first_pinyin = ''.join(list(x[0] for x in first_pinyin)).strip()
+    # 写入索引记录
+    search_data = {k: object_data[k] for k in object_data['conversion']}
+    rowcount += search_update_row(conn, object_data['name'], object_data['code'], object_data['name'],
+                                  object_data['type'], object_data['semester'], search_data)
+    if len(full_pinyin) > 0:
+        rowcount += search_update_row(conn, full_pinyin, object_data['code'], object_data['name'],
+                                      object_data['type'], object_data['semester'], search_data)
+    if len(first_pinyin) > 0:
+        rowcount += search_update_row(conn, first_pinyin, object_data['code'], object_data['name'],
+                                      object_data['type'], object_data['semester'], search_data)
+    return rowcount
+
+
+def search_update_row(conn, key, code, name, type, semester, data):
+    """
+    向数据库中更新单条搜索关联
+    :param conn: MongoDB数据库连接
+    :param key: 索引值
+    :param code: 实体编号
+    :param name: 实体名称
+    :param type: 实体类型
+    :param semester: 学期列表
+    :param data: 附加数据表
+    :return: 受影响的记录数
+    """
+    # 设定文档集
+    mongo_db = conn['search']
+    # 尝试更新学期在已知字段中
+    # 此人记录不存在，创建该记录
     result = mongo_db.update_one(
-        filter={'code': student_data['code']},
-        update={'$set': {
-            'code': student_data['code'],
-            'name': student_data['name'],
-            'klass': student_data['klass'],
-            'deputy': student_data['deputy']
+        filter={
+            "key": key,
+            "code": code
         },
-            '$push': {
-                'semester': student_data['semester']
+        update={
+            "$setOnInsert": {
+                "name": name,
+                "type": type,
+                "data": data,
+            },
+            "$addToSet": {
+                "semester": semester
             }
         },
         upsert=True
     )
     if result.upserted_id:
-        # 此时说明upsert生效
-        return 1
-    else:
-        return result.modified_count
-
-
-def teacher_update_search(teacher_data):
-    """
-    多线程函数
-    将某学期教师的信息写入文档库中
-    :param teacher_data: 数据字典，一名教师的信息+数据库链接句柄+学期信息
-    :return: 受影响的数据行数
-    """
-    mongo_db = teacher_data['mongo_pool']['teacher']
-    result = mongo_db.update_one(
-        filter={'code': teacher_data['code']},
-        update={'$set': {
-            'code': teacher_data['code'],
-            'name': teacher_data['name'],
-            'unit': teacher_data['unit'],
-            'title': teacher_data['title']
-        },
-            '$push': {
-                'semester': teacher_data['semester']
-            }
-        },
-        upsert=True
-    )
-    if result.upserted_id:
-        # 此时说明upsert生效
         return 1
     else:
         return result.modified_count

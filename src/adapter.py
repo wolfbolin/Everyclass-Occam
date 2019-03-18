@@ -23,12 +23,6 @@ if __name__ == "__main__":
         util.print_e('输入的学期信息错误，请检查您的输入')
         exit()
 
-    document = input("仅更新本学期搜索数据库(y/n)：")
-    if document is 'y':
-        # 完成该学期搜索信息的更新
-        builder.build_search_semester(semester=semester)
-        exit()
-
     # 创建本地缓存文件夹
     builder.build_folder(semester=semester)
 
