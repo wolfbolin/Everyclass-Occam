@@ -107,7 +107,7 @@ def teacher_table(data_set):
             sorted(klass_id_index[klassID])  # 按照课程节次对课程进行排序
             for index, pair in enumerate(klass_id_index[klassID]):
                 # 使用数据集合中记录的数组下标更新课程ID
-                teacher_data[pair[1]]['klassID'] += '&%d' % index
+                teacher_data[pair[1]]['klassID'] += '%d' % index
     # Fix Bug 2018-12-17 --end
 
     # 将结果添加到结果集中
