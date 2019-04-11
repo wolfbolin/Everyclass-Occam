@@ -81,6 +81,10 @@ def search_update(object_data):
     first_pinyin = ''.join(list(x[0] for x in first_pinyin)).strip()
     # 写入索引记录
     search_data = {k: object_data[k] for k in object_data['conversion']}
+    # 写入学号索引
+    rowcount += search_update_row(conn, object_data['code'], object_data['code'], object_data['name'],
+                                  object_data['type'], object_data['semester'], search_data)
+    # 写入姓名索引
     rowcount += search_update_row(conn, object_data['name'], object_data['code'], object_data['name'],
                                   object_data['type'], object_data['semester'], search_data)
     if len(full_pinyin) > 0:
