@@ -13,11 +13,14 @@ from .dao_update import room_update
 from .dao_update import teacher_update
 from .dao_update import student_update
 from .dao_update import search_update
+from .dao_update import error_room_update
 
 from .dao_insert import teacher_insert
 from .dao_insert import student_insert
 
 from .dao_select import student_select
 from .dao_select import teacher_select
+from .dao_select import room_select
+from .dao_select import error_room_select
 
 from .dao_delete import semester_delete

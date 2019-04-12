@@ -44,5 +44,8 @@ if __name__ == "__main__":
     # 获取本学期学生的课程表
     builder.build_student_table(semester=semester)
 
+    # 修正本学期数据中的异常数据
+    builder.correct_error_data(semester=semester)
+
     # 完成该学期搜索信息的更新
     builder.build_search_semester(semester=semester)

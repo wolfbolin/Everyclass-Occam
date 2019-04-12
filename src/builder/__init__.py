@@ -10,3 +10,6 @@ from .builder_student import build_student_table
 
 from .builder_search import build_search_all
 from .builder_search import build_search_semester
+
+from .correct_data import correct_error_data_all
+from .correct_data import correct_error_data

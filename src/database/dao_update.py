@@ -133,3 +133,19 @@ def search_update_row(conn, key, code, name, type, semester, data):
         return 1
     else:
         return result.modified_count
+
+
+def error_room_update(conn, semester, error_room_list):
+    """
+    更新数据库中错误的教室信息
+    :return: 受影响的记录数
+    """
+    rowcount = 0
+    with conn.cursor() as cursor:
+        for count, error_room in enumerate(error_room_list):
+            sql = "UPDATE `card_%s` SET `roomID`='%s' WHERE `cid`=%s;" \
+                  % (semester, error_room['roomID'], error_room['cid'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+            util.process_bar(count + 1, len(error_room_list), '已修正%d条错误教室数据' % (count + 1))
+        return rowcount
