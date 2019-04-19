@@ -4,9 +4,9 @@
 import util
 
 
-def student_select(conn, semester):
+def occam_student_select(conn, semester):
     """
-    获取某学期全部学生的信息
+    在Occam数据库中查询某学期全部学生的信息
     :return: 学生信息数据
     """
     student_list = []
@@ -16,23 +16,25 @@ def student_select(conn, semester):
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询学生的信息
-        sql = 'SELECT `code`, `name`, `klass`, `deputy` FROM `student_%s`;' % semester
+        sql = 'SELECT `sid`, `code`, `name`, `klass`, `deputy`, `campus` FROM `student_%s`;' % semester
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, student in enumerate(result):
             student_list.append({
-                'code': student[0],
-                'name': student[1],
-                'klass': student[2],
-                'deputy': student[3],
+                'sid': student[0],
+                'code': student[1],
+                'name': student[2],
+                'klass': student[3],
+                'deputy': student[4],
+                'campus': student[5]
             })
             util.process_bar(count + 1, data_count, '已查询%d条学生数据' % (count + 1))
         return student_list
 
 
-def teacher_select(conn, semester):
+def occam_teacher_select(conn, semester):
     """
-    获取某学期全部教师的信息
+    在Occam数据库中查询某学期全部教师的信息
     :return: 教师信息数据
     """
     teacher_list = []
@@ -42,7 +44,137 @@ def teacher_select(conn, semester):
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询教师的信息
-        sql = 'SELECT `code`, `name`, `unit`, `title` FROM `teacher_%s`;' % semester
+        sql = 'SELECT `tid`, `code`, `name`, `unit`, `title`, `degree` FROM `teacher_%s`;' % semester
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        for count, teacher in enumerate(result):
+            teacher_list.append({
+                'tid': teacher[0],
+                'code': teacher[1],
+                'name': teacher[2],
+                'unit': teacher[3],
+                'title': teacher[4],
+                'degree': teacher[5]
+            })
+            util.process_bar(count + 1, data_count, '已查询%d条教师数据' % (count + 1))
+        return teacher_list
+
+
+def occam_card_select(conn, semester):
+    """
+    在Occam数据库中查询某学期所有的卡片信息
+    :return: 卡片信息
+    """
+    card_list = []
+    with conn.cursor() as cursor:
+        # 查询卡片信息总数
+        sql = 'SELECT COUNT(*) FROM `card_%s`;' % semester
+        cursor.execute(sql)
+        data_count = cursor.fetchone()[0]
+        # 查询卡片的信息
+        sql = 'SELECT `cid`, `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, ' \
+              '`hour`, `type`, `klassID`, `roomID` FROM `card_%s`;' % semester
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        for count, teacher in enumerate(result):
+            card_list.append({
+                'cid': teacher[0],
+                'name': teacher[1],
+                'teacher': teacher[2],
+                'week': teacher[3],
+                'lesson': teacher[4],
+                'room': teacher[5],
+                'klass': teacher[6],
+                'pick': teacher[7],
+                'hour': teacher[8],
+                'type': teacher[9],
+                'klassID': teacher[10],
+                'roomID': teacher[11],
+            })
+            util.process_bar(count + 1, data_count, '已查询%d条卡片数据' % (count + 1))
+        return card_list
+
+
+def occam_link_select(conn, semester):
+    """
+    在Occam数据库中查询某学期全部教师的信息
+    :return: 教师信息数据
+    """
+    link_list = []
+    with conn.cursor() as cursor:
+        # 查询教师关联信息总数
+        sql = 'SELECT COUNT(*) FROM `teacher_link_%s`;' % semester
+        cursor.execute(sql)
+        data_count = cursor.fetchone()[0]
+        # 查询教师的信息
+        sql = 'SELECT `tid`, `cid` FROM `teacher_link_%s`;' % semester
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        for count, teacher in enumerate(result):
+            link_list.append({
+                'tid': teacher[0],
+                'cid': teacher[1]
+            })
+            util.process_bar(count + 1, data_count, '已查询%d条教师关联数据' % (count + 1))
+
+        # 查询学生关联信息总数
+        sql = 'SELECT COUNT(*) FROM `student_link_%s`;' % semester
+        cursor.execute(sql)
+        data_count = cursor.fetchone()[0]
+        # 查询学生关联的信息
+        sql = 'SELECT `sid`, `cid` FROM `student_link_%s`;' % semester
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        for count, teacher in enumerate(result):
+            link_list.append({
+                'sid': teacher[0],
+                'cid': teacher[1]
+            })
+            util.process_bar(count + 1, data_count, '已查询%d条学生关联数据' % (count + 1))
+
+        return link_list
+
+
+def entity_student_select(conn, semester):
+    """
+    在Occam数据库中查询某学期全部学生的信息
+    :return: 学生信息数据
+    """
+    student_list = []
+    with conn.cursor() as cursor:
+        # 查询学生信息总数
+        sql = "SELECT COUNT(*) FROM `student` WHERE `semester`='%s';" % semester
+        cursor.execute(sql)
+        data_count = cursor.fetchone()[0]
+        # 查询学生的信息
+        sql = "SELECT `code`, `name`, `klass`, `deputy`, `campus` FROM `student` WHERE `semester`='%s';" % semester
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        for count, student in enumerate(result):
+            student_list.append({
+                'code': student[0],
+                'name': student[1],
+                'klass': student[2],
+                'deputy': student[3],
+                'campus': student[4]
+            })
+            util.process_bar(count + 1, data_count, '已查询%d条学生数据' % (count + 1))
+        return student_list
+
+
+def entity_teacher_select(conn, semester):
+    """
+    在Occam数据库中查询某学期全部教师的信息
+    :return: 教师信息数据
+    """
+    teacher_list = []
+    with conn.cursor() as cursor:
+        # 查询教师信息总数
+        sql = "SELECT COUNT(*) FROM `teacher` WHERE `semester`='%s';" % semester
+        cursor.execute(sql)
+        data_count = cursor.fetchone()[0]
+        # 查询教师的信息
+        sql = "SELECT `code`, `name`, `unit`, `title`, `degree` FROM `teacher` WHERE `semester`='%s';" % semester
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, teacher in enumerate(result):
@@ -51,12 +183,13 @@ def teacher_select(conn, semester):
                 'name': teacher[1],
                 'unit': teacher[2],
                 'title': teacher[3],
+                'degree': teacher[4]
             })
             util.process_bar(count + 1, data_count, '已查询%d条教师数据' % (count + 1))
         return teacher_list
 
 
-def room_select(conn, semester):
+def room_select(conn, table):
     """
     查询所有教室的信息
     :return: 教室信息列表
@@ -64,7 +197,7 @@ def room_select(conn, semester):
     room_list = []
     with conn.cursor() as cursor:
         # 查询教室数据
-        sql = "SELECT `code`, `name`, `campus`, `building` FROM `room_all`;"
+        sql = "SELECT `code`, `name`, `campus`, `building` FROM `%s`;" % table
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, item in enumerate(result):
@@ -86,8 +219,8 @@ def error_room_select(conn, semester):
     error_list = []
     with conn.cursor() as cursor:
         # 查询异常数据
-        sql = "SELECT `cid`, `room`, `roomID` FROM `card_%s` WHERE " \
-              "LENGTH( `roomID` ) > 0 AND `roomID` NOT IN ( SELECT `code` FROM `room_all` );" \
+        sql = "SELECT `cid`, `room`, `roomID` FROM `card` WHERE `semester`='%s' AND " \
+              "LENGTH( `roomID` ) > 0 AND `roomID` NOT IN ( SELECT `code` FROM `room` );" \
               % semester
         cursor.execute(sql)
         result = cursor.fetchall()
@@ -110,8 +243,8 @@ def doubt_klass_list(conn, semester):
     with conn.cursor() as cursor:
         # 查询异常数据
         sql = "SELECT `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, `hour`, `type`, `roomID` " \
-              "FROM `card_%s` GROUP BY `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, " \
-              "`hour`, `type`, `roomID` HAVING COUNT(*) > 1;" % semester
+              "FROM `card` WHERE `semester`='%s' GROUP BY `name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
+              "`pick`, `hour`, `type`, `roomID` HAVING COUNT(*) > 1;" % semester
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, item in enumerate(result):
@@ -140,9 +273,9 @@ def klass_map_list(conn, semester, doubt_list):
     with conn.cursor() as cursor:
         for item in doubt_list:
             # 根据重复的信息查询现有的课程编号cid
-            sql = "SELECT `cid` FROM `card_%s` WHERE `name`='%s' AND `teacher`='%s' AND `week`='%s' AND `" \
-                  "lesson`='%s' AND `room`='%s' AND `klass`='%s' AND `pick`=%s AND `hour`=%s AND `type`='%s' AND " \
-                  "`roomID`='%s';" \
+            sql = "SELECT `cid` FROM `card` WHERE `semester`='%s' AND `name`='%s' AND `teacher`='%s' AND `week`='%s' " \
+                  "AND `lesson`='%s' AND `room`='%s' AND `klass`='%s' AND `pick`=%s AND `hour`=%s AND `type`='%s' " \
+                  "AND `roomID`='%s';" \
                   % (semester, item['name'], item['teacher'], item['week'], item['lesson'], item['room'], item['klass'],
                      item['pick'], item['hour'], item['type'], item['roomID'])
             cursor.execute(sql)
@@ -153,7 +286,7 @@ def klass_map_list(conn, semester, doubt_list):
             # 查询每个cid的映射列表
             map_list = {}
             for cid in cid_list:
-                sql = "SELECT `sid` FROM `student_link_%s` WHERE `cid`=%s;" % (semester, cid)
+                sql = "SELECT `sid` FROM `student_link` WHERE `cid`=%s;" % cid
                 cursor.execute(sql)
                 result = cursor.fetchall()
                 sid_list = []

@@ -108,7 +108,7 @@ def build_teacher_table(semester):
     # 将数据写入数据库
     util.print_t('Step4:正在写入本学期教师课表信息')
     time_start = time.time()
-    sql_count = util.multiprocess(task=database.teacher_insert, main_data=teacher_table, max_thread=10,
+    sql_count = util.multiprocess(task=database.occam_teacher_insert, main_data=teacher_table, max_thread=20,
                                   attach_data={'semester': semester, 'mysql_database': util.mysql_occam_database},
                                   multithread=util.mysql_multithread)
     time_end = time.time()

@@ -5,24 +5,25 @@ from warnings import filterwarnings
 # Personal package
 import database
 import builder
-import filter
 import util
 
 # 将数据库警告定义为错误方便捕获
 filterwarnings('error', category=pymysql.Warning)
 
 if __name__ == "__main__":
-    util.print_w('请自行完成数据库同步操作')
+    # 预读取学期列表
+    mysql_conn = database.mysql_connect(util.mysql_occam_database)
+    semester_list = database.get_semester_list(mysql_conn)
+    mysql_conn.close()
 
-    document = input("更新所有学期错误数据or更新某学期错误数据(y/20xx-20xx-x/other)：")
-    semester_list = []
+    # 获取操作指令
+    document = input("更新所有学期数据or更新某学期数据(y/20xx-20xx-x/other)：")
     if document == 'y':
-        # 检索数据库中已有的学期
-        mysql_conn = database.mysql_connect(util.mysql_entity_database)
-        semester_list = database.get_semester_list(mysql_conn)
-        mysql_conn.close()
-    elif filter.check_semester(document) is True:
-        semester_list = document
+        # 清空数据库课程信息，使主键从1开始计算
+        builder.build_entity_table()
+        pass
+    elif document in semester_list:
+        semester_list = [document]
     else:
         util.print_e('请做出正确的选择')
         exit()
@@ -31,7 +32,10 @@ if __name__ == "__main__":
     change_log = []
 
     for semester in semester_list:
-        util.print_w('正在修改%s学期的异常数据' % semester)
+        util.print_w('正在修改%s学期的数据' % semester)
+
+        # 同步学期数据
+        builder.copy_mysql_data(semester)
 
         # 修正教室数据
         sql_count, change_log_room = builder.correct_room_data(semester)

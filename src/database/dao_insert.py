@@ -14,15 +14,15 @@ def change_log_insert(conn, change_log):
     mongo_db = conn['change_log']
     result = mongo_db.insert_many(
         list({
-            'semester': it['semester'],
-            'type': it['type'],
-            'message': it['message'],
-        } for it in change_log)
+                 'semester': it['semester'],
+                 'type': it['type'],
+                 'message': it['message'],
+             } for it in change_log)
     )
     return len(result.inserted_ids)
 
 
-def teacher_insert(teacher_data):
+def occam_teacher_insert(teacher_data):
     """
     多线程处理函数
     根据教师课表中的教师工号向某学期的数据表中添加教师，数据来自数据总表
@@ -80,7 +80,7 @@ def teacher_insert(teacher_data):
         return rowcount
 
 
-def student_insert(student_data):
+def occam_student_insert(student_data):
     """
     多线程处理函数
     根据学生课表中的学生工号向某学期的数据表中添加学生，数据来自数据总表
@@ -138,3 +138,106 @@ def student_insert(student_data):
             cursor.execute(sql)
 
         return rowcount
+
+
+def entity_teacher_insert(teacher_data):
+    """
+    多线程处理函数
+    向数据库中写入该学期的教师信息，不应该有冲突
+    :param teacher_data: 数据库连接句柄 + 学期信息
+    :return: 受影响的数据行数
+    """
+    rowcount = 0
+    conn = teacher_data['mysql_pool'].connection()
+    with conn.cursor() as cursor:
+        sql = "INSERT INTO `teacher` (`oid`, `code`, `name`, `unit`, `title`, `degree`, `semester`) " \
+              "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');" \
+              % (teacher_data['tid'], teacher_data['code'], teacher_data['name'], teacher_data['unit'],
+                 teacher_data['title'], teacher_data['degree'], teacher_data['semester'])
+        cursor.execute(sql)
+        rowcount += cursor.rowcount
+    return rowcount
+
+
+def entity_student_insert(student_data):
+    """
+    多线程处理函数
+    向数据库中写入该学期的学生信息，不应该有冲突
+    :param student_data: 数据库连接句柄 + 数据
+    :return: 受影响的数据行数
+    """
+    rowcount = 0
+    conn = student_data['mysql_pool'].connection()
+    with conn.cursor() as cursor:
+        sql = "INSERT INTO `student` (`oid`, `code`, `name`, `klass`, `deputy`, `campus`, `semester`) " \
+              "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');" \
+              % (student_data['sid'], student_data['code'], student_data['name'], student_data['klass'],
+                 student_data['deputy'], student_data['campus'], student_data['semester'])
+        cursor.execute(sql)
+        rowcount += cursor.rowcount
+    return rowcount
+
+
+def entity_card_insert(card_data):
+    """
+    多线程处理函数
+    向数据库中写入该学期的卡片信息，不应该有冲突
+    :param card_data: 数据库连接句柄 + 数据
+    :return: 受影响的数据行数
+    """
+    rowcount = 0
+    conn = card_data['mysql_pool'].connection()
+    with conn.cursor() as cursor:
+        sql = "INSERT INTO `card` (`oid`, `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, " \
+              "`hour`, `type`, `klassID`, `roomID`, `semester`) " \
+              "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s', '%s');" \
+              % (card_data['cid'], card_data['name'], card_data['teacher'], card_data['week'], card_data['lesson'],
+                 card_data['room'], card_data['klass'], card_data['pick'], card_data['hour'], card_data['type'],
+                 card_data['klassID'], card_data['roomID'], card_data['semester'])
+        cursor.execute(sql)
+        rowcount += cursor.rowcount
+    return rowcount
+
+
+def entity_link_insert(link_data):
+    """
+    多线程处理函数
+    向数据库中写入该学期的卡片信息，不应该有冲突
+    :param link_data: 数据库连接句柄 + 数据
+    :return: 受影响的数据行数
+    """
+    rowcount = 0
+    conn = link_data['mysql_pool'].connection()
+    with conn.cursor() as cursor:
+        # 判读关联数据类型
+        if 'tid' in link_data.keys():
+            # 教师类型关联，查询原始数据的新编号
+            sql = "SELECT `tid` FROM `teacher` WHERE `semester`='%s' AND `oid`='%s';" \
+                  % (link_data['semester'], link_data['tid'])
+            cursor.execute(sql)
+            tid = cursor.fetchone()[0]
+            sql = "SELECT `cid` FROM `card` WHERE `semester`='%s' AND `oid`='%s';" \
+                  % (link_data['semester'], link_data['cid'])
+            cursor.execute(sql)
+            cid = cursor.fetchone()[0]
+            # 写入新的关联数据
+            sql = "INSERT INTO `teacher_link` (`tid`, `cid`, `semester`) VALUES (%d, %d, '%s')" \
+                  % (tid, cid, link_data['semester'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+        elif 'sid' in link_data.keys():
+            # 学生类型关联，查询原始数据的新编号
+            sql = "SELECT `sid` FROM `student` WHERE `semester`='%s' AND `oid`='%s';" \
+                  % (link_data['semester'], link_data['sid'])
+            cursor.execute(sql)
+            sid = cursor.fetchone()[0]
+            sql = "SELECT `cid` FROM `card` WHERE `semester`='%s' AND `oid`='%s';" \
+                  % (link_data['semester'], link_data['cid'])
+            cursor.execute(sql)
+            cid = cursor.fetchone()[0]
+            # 写入新的关联数据
+            sql = "INSERT INTO `teacher_link` (`tid`, `cid`, `semester`) VALUES (%d, %d, '%s')" \
+                  % (sid, cid, link_data['semester'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+    return rowcount

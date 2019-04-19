@@ -48,15 +48,29 @@ def error_class_update(conn, semester, error_klass_list):
         for count, error_klass in enumerate(error_klass_list):
             remove_list = list(repr(x) for x in error_klass['remove'])
             conn.begin()
-            sql = "DELETE FROM `student_link_%s` WHERE `cid` in ('%s');" % (semester, "','".join(remove_list))
+            sql = "DELETE FROM `student_link` WHERE `cid` in ('%s');" % ("','".join(remove_list))
             cursor.execute(sql)
             rowcount += cursor.rowcount
-            sql = "DELETE FROM `teacher_link_%s` WHERE `cid` in ('%s');" % (semester, "','".join(remove_list))
+            sql = "DELETE FROM `teacher_link` WHERE `cid` in ('%s');" % ("','".join(remove_list))
             cursor.execute(sql)
             rowcount += cursor.rowcount
-            sql = "DELETE FROM `card_%s` WHERE `cid` in ('%s');" % (semester, "','".join(remove_list))
+            sql = "DELETE FROM `card` WHERE `cid` in ('%s');" % ("','".join(remove_list))
             cursor.execute(sql)
             rowcount += cursor.rowcount
             conn.commit()
             util.process_bar(count + 1, len(error_klass_list), '已修正%d条错误教室数据' % (count + 1))
         return rowcount
+
+
+def entity_semester_delete(conn, table, semester):
+    """
+    删除entity数据库中的部分学生数据
+    :return: 受影响的记录数
+    """
+    rowcount = 0
+    with conn.cursor() as cursor:
+        sql = "DELETE FROM `%s` WHERE `semester`='%s';" % (table, semester)
+        cursor.execute(sql)
+        rowcount += cursor.rowcount
+    return rowcount
+

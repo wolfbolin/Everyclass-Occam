@@ -47,7 +47,7 @@ def correct_room_data(semester):
     error_room_list = database.error_room_select(mysql_conn, semester)
     if len(error_room_list) > 0:
         util.print_i('Step1.2:正在获取教室源数据')
-        room_list = database.room_select(mysql_conn, semester)
+        room_list = database.room_select(mysql_conn, 'room')
 
         util.print_i('Step1.3:正在纠正教室异常数据')
         # 纠正教室异常数据

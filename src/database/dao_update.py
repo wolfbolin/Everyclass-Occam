@@ -5,11 +5,12 @@ import pypinyin
 import util
 
 
-def room_update(room_data, conn):
+def room_update(conn, table, room_data):
     """
     单线程处理函数
     将所有的教室信息写入数据库中
     :param room_data: 教室信息
+    :param table: 更新的数据表
     :param conn: 数据库连接
     :return: 受影响的数据行数
     """
@@ -17,9 +18,9 @@ def room_update(room_data, conn):
     with conn.cursor() as cursor:
         for count, room in enumerate(room_data):
             # 尝试插入该教室信息，若出现UNIQUE重复则自动忽略
-            sql = "INSERT INTO  `room_all` (`code`, `name`, `campus`, `building`) VALUES ('%s', '%s', '%s', '%s') " \
-                  "ON DUPLICATE KEY UPDATE `rid` = '%s';" \
-                  % (room['code'], room['name'], room['campus'], room['building'], room['name'])
+            sql = "INSERT INTO  `%s` (`code`, `name`, `campus`, `building`) VALUES ('%s', '%s', '%s', '%s') " \
+                  "ON DUPLICATE KEY UPDATE `name` = '%s';" \
+                  % (table, room['code'], room['name'], room['campus'], room['building'], room['name'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
             util.process_bar(count + 1, len(room_data), '完成%s项，修改%s行' % (count + 1, rowcount))
@@ -144,8 +145,8 @@ def error_room_update(conn, semester, error_room_list):
     rowcount = 0
     with conn.cursor() as cursor:
         for count, error_room in enumerate(error_room_list):
-            sql = "UPDATE `card_%s` SET `roomID`='%s' WHERE `cid`=%s;" \
-                  % (semester, error_room['roomID'], error_room['cid'])
+            sql = "UPDATE `card` SET `roomID`='%s' WHERE `cid`=%s;" \
+                  % (error_room['roomID'], error_room['cid'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
             util.process_bar(count + 1, len(error_room_list), '已修正%d条错误教室数据' % (count + 1))

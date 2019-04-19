@@ -42,7 +42,7 @@ if __name__ == "__main__":
         builder.build_folder(semester=semester)
 
         # 创建本学期数据表
-        builder.build_table(semester=semester)
+        builder.build_occam_table(semester=semester)
 
         # 获取本学期教师的课程表
         builder.build_teacher_table(semester=semester)
