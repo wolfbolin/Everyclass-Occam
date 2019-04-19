@@ -37,7 +37,8 @@ def build_teacher():
     util.print_t('Step3:正在写入所有教师的数据')
     time_start = time.time()
     rowcount += util.multiprocess(task=database.teacher_update, main_data=teacher_all,
-                                  multithread=util.mysql_multithread, max_thread=10)
+                                  multithread=util.mysql_multithread, max_thread=10,
+                                  attach_data={'mysql_database': util.mysql_occam_database})
     time_end = time.time()
     util.print_d('教师数据写入数据库完成，耗时%d秒，操作数据库%d行' % (ceil(time_end - time_start), rowcount))
 
@@ -108,7 +109,8 @@ def build_teacher_table(semester):
     util.print_t('Step4:正在写入本学期教师课表信息')
     time_start = time.time()
     sql_count = util.multiprocess(task=database.teacher_insert, main_data=teacher_table, max_thread=10,
-                                  attach_data={'semester': semester}, multithread=util.mysql_multithread)
+                                  attach_data={'semester': semester, 'mysql_database': util.mysql_occam_database},
+                                  multithread=util.mysql_multithread)
     time_end = time.time()
     util.print_d('本学期教师信息写入数据库完成，耗时%d秒，操作数据库%d行' % (ceil(time_end - time_start), sql_count))
     rowcount += sql_count

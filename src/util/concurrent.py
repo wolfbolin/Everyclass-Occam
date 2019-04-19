@@ -56,7 +56,7 @@ def multiprocess(task, main_data, attach_data=None, multithread=None, max_thread
         return None
 
 
-def mysql_multithread(task, main_data, attach_data, max_thread, manager_list):
+def mysql_multithread(task, main_data, attach_data, max_thread, manager_list,):
     """
     自动完成多线程的任务分配，利用多线程完成对于数据库的写入
     :param task: 完成单个任务的函数
@@ -67,7 +67,7 @@ def mysql_multithread(task, main_data, attach_data, max_thread, manager_list):
     :return 操作数据库行数
     """
     if attach_data is None:
-        attach_data = {}
+        raise BaseException('未设定需要连接的数据库')
     executor = ThreadPoolExecutor(max_workers=max_thread)  # 建立线程池
     mysql_pool = PooledDB(creator=pymysql,
                           mincached=1, maxcached=max_thread,
@@ -75,7 +75,7 @@ def mysql_multithread(task, main_data, attach_data, max_thread, manager_list):
                           host=util.mysql_host,
                           user=util.mysql_user,
                           passwd=util.mysql_password,
-                          db=util.mysql_database,
+                          db=attach_data['mysql_database'],
                           port=util.mysql_port,
                           charset=util.mysql_charset,
                           setsession=['SET AUTOCOMMIT = 1'])  # 建立MySQL连接池

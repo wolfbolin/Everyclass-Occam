@@ -4,6 +4,24 @@
 import util
 
 
+def change_log_insert(conn, change_log):
+    """
+    写入该学期的修正日志
+    :param conn: 数据库连接句柄
+    :param change_log: 修正信息
+    :return: 受影响的数据条数
+    """
+    mongo_db = conn['change_log']
+    result = mongo_db.insert_many(
+        list({
+            'semester': it['semester'],
+            'type': it['type'],
+            'message': it['message'],
+        } for it in change_log)
+    )
+    return len(result.inserted_ids)
+
+
 def teacher_insert(teacher_data):
     """
     多线程处理函数
@@ -31,19 +49,29 @@ def teacher_insert(teacher_data):
 
         # 向数据库中添加卡片数据
         for card in teacher_data['table']:
-            sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
-                  "`pick`, `hour`, `type`, `klassID`, `roomID`)" \
-                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s') " \
-                  "ON DUPLICATE KEY UPDATE `teacher`=CONCAT(`teacher`, ';%s');" \
-                  % (teacher_data['semester'], card['name'], card['teacher'], card['week'],
-                     card['lesson'], card['room'], card['klass'], card['pick'], card['hour'],
-                     card['type'], card['klassID'], card['roomID'], card['teacher'])
+            # 先完成一次查询，为是否锁表做判断
+            sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (teacher_data['semester'], card['klassID'])
             cursor.execute(sql)
-            rowcount += cursor.rowcount
+            result = cursor.fetchone()
+            if result is None:
+                conn.begin()
+                sql = "LOCK TABLE `card_%s` WRITE;" % teacher_data['semester']
+                cursor.execute(sql)
+                sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
+                      "`pick`, `hour`, `type`, `klassID`, `roomID`)" \
+                      "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s') " \
+                      "ON DUPLICATE KEY UPDATE `teacher`=CONCAT(`teacher`, ';%s');" \
+                      % (teacher_data['semester'], card['name'], card['teacher'], card['week'],
+                         card['lesson'], card['room'], card['klass'], card['pick'], card['hour'],
+                         card['type'], card['klassID'], card['roomID'], card['teacher'])
+                cursor.execute(sql)
+                rowcount += cursor.rowcount
+                sql = "UNLOCK TABLES;"
+                cursor.execute(sql)
+                conn.commit()
             sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (teacher_data['semester'], card['klassID'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
-
             sql = "INSERT INTO `teacher_link_%s` (`tid`, `cid`) VALUES ('%s', '%s');" \
                   % (teacher_data['semester'], tid, cid)
             cursor.execute(sql)
@@ -79,22 +107,34 @@ def student_insert(student_data):
 
         # 向数据库中添加卡片数据
         for card in student_data['table']:
-            sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
-                  "`pick`, `hour`, `type`, `klassID`, `roomID`)" \
-                  "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s') " \
-                  "ON DUPLICATE KEY UPDATE cid = cid;" \
-                  % (student_data['semester'], card['name'], card['teacher'], card['week'],
-                     card['lesson'], card['room'], card['klass'], card['pick'], card['hour'],
-                     card['type'], card['klassID'], card['roomID'])
+            # 先完成一次查询，为是否锁表做判断
+            sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (student_data['semester'], card['klassID'])
             cursor.execute(sql)
-            rowcount += cursor.rowcount
+            result = cursor.fetchone()
+            if result is None:
+                conn.begin()
+                sql = "LOCK TABLE `card_%s` WRITE;" % student_data['semester']
+                cursor.execute(sql)
+                sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
+                      "`pick`, `hour`, `type`, `klassID`, `roomID`)" \
+                      "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s') " \
+                      "ON DUPLICATE KEY UPDATE cid = cid;" \
+                      % (student_data['semester'], card['name'], card['teacher'], card['week'],
+                         card['lesson'], card['room'], card['klass'], card['pick'], card['hour'],
+                         card['type'], card['klassID'], card['roomID'])
+                cursor.execute(sql)
+                rowcount += cursor.rowcount
+                sql = "UNLOCK TABLES;"
+                cursor.execute(sql)
+                conn.commit()
             sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (student_data['semester'], card['klassID'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
-
             sql = "INSERT INTO `student_link_%s` (`sid`, `cid`) VALUES ('%s', '%s');" \
                   % (student_data['semester'], sid, cid)
             cursor.execute(sql)
             rowcount += cursor.rowcount
+            sql = "UNLOCK TABLES;"
+            cursor.execute(sql)
 
         return rowcount

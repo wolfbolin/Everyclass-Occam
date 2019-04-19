@@ -7,23 +7,23 @@ import pymongo
 import util
 
 
-def mysql_connect():
+def mysql_connect(mysql_database):
     conn = pymysql.connect(host=util.mysql_host,
                            user=util.mysql_user,
                            passwd=util.mysql_password,
-                           db=util.mysql_database,
+                           db=mysql_database,
                            port=util.mysql_port,
                            charset=util.mysql_charset)
-    conn.autocommit(1)  # 定义数据库不自动提交
+    conn.autocommit(1)
     return conn
 
 
-def mongo_connect():
+def mongo_connect(mongo_database=util.mongo_occam_database):
     conn = pymongo.MongoClient(host=util.mongo_host,
                                port=util.mongo_port,
                                username=util.mongo_user,
                                password=util.mongo_password)
-    conn = conn[util.mongo_database]
+    conn = conn[mongo_database]
     return conn
 
 

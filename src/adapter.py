@@ -3,6 +3,7 @@
 import pymysql
 from warnings import filterwarnings
 # Personal package
+import database
 import builder
 import filter
 import util
@@ -11,41 +12,40 @@ import util
 filterwarnings('error', category=pymysql.Warning)
 
 if __name__ == "__main__":
-    # 完成所有学期搜索信息的更新
-    document = input("更新所有学期搜索数据库(y/n)：")
-    if document is 'y':
-        builder.build_search_all()
+    document = input("更新所有学期or某一学期的课程数据(y/20xx-20xx-x/other)：")
+    semester_list = []
+    if document == 'y':
+        # 检索数据库中已有的学期
+        mysql_conn = database.mysql_connect(util.mysql_occam_database)
+        semester_list = database.get_semester_list(mysql_conn)
+        mysql_conn.close()
+
+        # 刷新所有教师的信息
+        builder.build_teacher()
+
+        # 刷新所有学生的信息
+        builder.build_student()
+
+        # 刷新所有教室的信息
+        builder.build_room()
+
+    elif filter.check_semester(document) is True:
+        semester_list = document
+    else:
+        util.print_e('请做出正确的选择')
         exit()
 
-    # 设置运行的学期信息
-    semester = input("请输入需要更新的学期：")
-    if filter.check_semester(semester) is not True:
-        util.print_e('输入的学期信息错误，请检查您的输入')
-        exit()
+    for semester in semester_list:
+        util.print_w('正在更新%s学期的课程数据' % semester)
 
-    # 创建本地缓存文件夹
-    builder.build_folder(semester=semester)
+        # 创建本地缓存文件夹
+        builder.build_folder(semester=semester)
 
-    # 创建本学期数据表
-    builder.build_table(semester=semester)
+        # 创建本学期数据表
+        builder.build_table(semester=semester)
 
-    # 刷新所有教室的信息
-    builder.build_room()
+        # 获取本学期教师的课程表
+        builder.build_teacher_table(semester=semester)
 
-    # 刷新所有教师的信息
-    builder.build_teacher()
-
-    # 刷新所有学生的信息
-    builder.build_student()
-
-    # 获取本学期教师的课程表
-    builder.build_teacher_table(semester=semester)
-
-    # 获取本学期学生的课程表
-    builder.build_student_table(semester=semester)
-
-    # 修正本学期数据中的异常数据
-    builder.correct_error_data(semester=semester)
-
-    # 完成该学期搜索信息的更新
-    builder.build_search_semester(semester=semester)
+        # 获取本学期学生的课程表
+        builder.build_student_table(semester=semester)

@@ -18,10 +18,11 @@ def room_update(room_data, conn):
         for count, room in enumerate(room_data):
             # 尝试插入该教室信息，若出现UNIQUE重复则自动忽略
             sql = "INSERT INTO  `room_all` (`code`, `name`, `campus`, `building`) VALUES ('%s', '%s', '%s', '%s') " \
-                  "ON DUPLICATE KEY UPDATE rid = rid;" \
-                  % (room['code'], room['name'], room['campus'], room['building'])
+                  "ON DUPLICATE KEY UPDATE `rid` = '%s';" \
+                  % (room['code'], room['name'], room['campus'], room['building'], room['name'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
+            util.process_bar(count + 1, len(room_data), '完成%s项，修改%s行' % (count + 1, rowcount))
         return rowcount
 
 
@@ -137,7 +138,7 @@ def search_update_row(conn, key, code, name, type, semester, data):
 
 def error_room_update(conn, semester, error_room_list):
     """
-    更新数据库中错误的教室信息
+    更新数据库中错误的教室数据
     :return: 受影响的记录数
     """
     rowcount = 0
@@ -149,3 +150,5 @@ def error_room_update(conn, semester, error_room_list):
             rowcount += cursor.rowcount
             util.process_bar(count + 1, len(error_room_list), '已修正%d条错误教室数据' % (count + 1))
         return rowcount
+
+

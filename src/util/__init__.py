@@ -32,12 +32,14 @@ from .config import mysql_port
 from .config import mysql_user
 from .config import mysql_charset
 from .config import mysql_password
-from .config import mysql_database
+from .config import mysql_occam_database
+from .config import mysql_entity_database
 from .config import mongo_host
 from .config import mongo_port
 from .config import mongo_user
 from .config import mongo_password
-from .config import mongo_database
+from .config import mongo_occam_database
+from .config import mongo_entity_database
 
 from .config import base_headers
 from .config import csujwc_url

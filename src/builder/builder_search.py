@@ -50,14 +50,14 @@ def build_search_semester(semester):
 
     util.print_i('Step1.1:正在删除该学期的旧数据')
     mongo_conn = database.mongo_connect()
-    sql_count = database.semester_delete(mongo_conn, 'student', semester)
+    sql_count = database.search_semester_delete(mongo_conn, 'student', semester)
     rowcount += sql_count
 
     util.print_t('Step2:正在写入搜索文档数据')
 
     util.print_i('Step2.1:正在写入新的学生数据')
     time_start = time.time()
-    mysql_conn = database.mysql_connect()  # 建立MySQL连接
+    mysql_conn = database.mysql_connect(util.mysql_entity_database)  # 建立MySQL连接
     student_list = database.student_select(mysql_conn, semester)  # 查询学生信息
     mysql_conn.close()  # 关闭数据库连接
     sql_count = util.multiprocess(task=database.search_update, main_data=student_list, max_thread=10,
@@ -73,7 +73,7 @@ def build_search_semester(semester):
 
     util.print_i('Step2.2:正在写入新的教师数据')
     time_start = time.time()
-    mysql_conn = database.mysql_connect()  # 建立MySQL连接
+    mysql_conn = database.mysql_connect(util.mysql_entity_database)  # 建立MySQL连接
     teacher_list = database.teacher_select(mysql_conn, semester)  # 查询教师信息
     mysql_conn.close()
     sql_count = util.multiprocess(task=database.search_update, main_data=teacher_list, max_thread=10,
