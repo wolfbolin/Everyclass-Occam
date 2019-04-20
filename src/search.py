@@ -20,8 +20,8 @@ if __name__ == "__main__":
     document = input("更新所有学期数据or更新某学期数据(y/20xx-20xx-x/other)：")
     if document == 'y':
         # 清空数据库课程信息，使主键从1开始计算
-        builder.build_entity_table()
-        pass
+        util.print_t('即将更新以下学期数据')
+        util.print_i(' | '.join(semester_list))
     elif document in semester_list:
         semester_list = [document]
     else:
@@ -29,27 +29,9 @@ if __name__ == "__main__":
         exit()
 
     rowcount = 0
-    change_log = []
 
     for semester in semester_list:
-        util.print_w('正在修改%s学期的数据' % semester)
-
-        # 同步学期数据
-        builder.copy_mysql_data(semester)
-
-        # 修正教室数据
-        sql_count, change_log_room = builder.correct_room_data(semester)
-        rowcount += sql_count
-        change_log.extend(change_log_room)
-
-        # 修正课程数据
-        sql_count, change_log_klass = builder.correct_klass_data(semester)
-        rowcount += sql_count
-        change_log.extend(change_log_klass)
-
-        # 写入修改日志
-        sql_count = builder.save_change_log(semester, change_log)
-        rowcount += sql_count
+        util.print_w('正在重建%s学期的搜索数据' % semester)
 
         # 重建搜索数据
         sql_count = builder.build_search_semester(semester)

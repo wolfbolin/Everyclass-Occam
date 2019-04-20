@@ -85,29 +85,30 @@ def search_update(object_data):
     search_data = {k: object_data[k] for k in object_data['conversion']}
     # 写入学号索引
     rowcount += search_update_row(conn, object_data['code'], object_data['code'], object_data['name'],
-                                  object_data['type'], object_data['semester'], search_data)
+                                  object_data['type'], object_data['semester'], search_data, 'code')
     # 写入姓名索引
     rowcount += search_update_row(conn, object_data['name'], object_data['code'], object_data['name'],
-                                  object_data['type'], object_data['semester'], search_data)
+                                  object_data['type'], object_data['semester'], search_data, 'name')
     if len(full_pinyin) > 0:
         rowcount += search_update_row(conn, full_pinyin, object_data['code'], object_data['name'],
-                                      object_data['type'], object_data['semester'], search_data)
+                                      object_data['type'], object_data['semester'], search_data, 'quanpin')
     if len(first_pinyin) > 0:
         rowcount += search_update_row(conn, first_pinyin, object_data['code'], object_data['name'],
-                                      object_data['type'], object_data['semester'], search_data)
+                                      object_data['type'], object_data['semester'], search_data, 'jianpin')
     return rowcount
 
 
-def search_update_row(conn, key, code, name, type, semester, data):
+def search_update_row(conn, key, code, name, typer, semester, data, pattern):
     """
     向数据库中更新单条搜索关联
     :param conn: MongoDB数据库连接
     :param key: 索引值
     :param code: 实体编号
     :param name: 实体名称
-    :param type: 实体类型
+    :param typer: 实体类型
     :param semester: 学期列表
     :param data: 附加数据表
+    :param pattern: 索引模式
     :return: 受影响的记录数
     """
     # 设定文档集
@@ -122,8 +123,9 @@ def search_update_row(conn, key, code, name, type, semester, data):
         update={
             "$setOnInsert": {
                 "name": name,
-                "type": type,
+                "type": typer,
                 "data": data,
+                "pattern": pattern
             },
             "$addToSet": {
                 "semester": semester
@@ -137,7 +139,7 @@ def search_update_row(conn, key, code, name, type, semester, data):
         return result.modified_count
 
 
-def error_room_update(conn, semester, error_room_list):
+def error_room_update(conn, error_room_list):
     """
     更新数据库中错误的教室数据
     :return: 受影响的记录数

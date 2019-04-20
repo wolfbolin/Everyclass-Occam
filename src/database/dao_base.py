@@ -18,7 +18,7 @@ def mysql_connect(mysql_database):
     return conn
 
 
-def mongo_connect(mongo_database=util.mongo_occam_database):
+def mongo_connect(mongo_database):
     conn = pymongo.MongoClient(host=util.mongo_host,
                                port=util.mongo_port,
                                username=util.mongo_user,

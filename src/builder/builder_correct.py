@@ -55,7 +55,7 @@ def correct_room_data(semester):
 
         util.print_i('Step1.4:正在写入修正数据')
         # 交给数据库完成修改
-        sql_count = database.error_room_update(mysql_conn, semester, error_room_list)
+        sql_count = database.error_room_update(mysql_conn, error_room_list)
         # 完成修改，反馈结果
         time_end = time.time()
         util.print_d('%s学期的教室数据异常修正完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))

@@ -8,35 +8,6 @@ import util
 import database
 
 
-def build_search_all():
-    """
-    清除所有角色的检索信息并全部重新添加
-    :return: rowcount
-    """
-    util.print_a('开始重建搜索文档库')
-    rowcount = 0
-
-    # 检索数据库中已有的学期
-    mysql_conn = database.mysql_connect()
-    semester_list = database.get_semester_list(mysql_conn)
-    mysql_conn.close()
-
-    util.print_t('Step1:正在删除旧的搜索数据')
-    mongo_conn = database.mongo_connect()
-    sql_count = database.clean_document(mongo_conn, 'search')
-    rowcount += sql_count
-
-    util.print_t('Step2:正在写入新的搜索数据')
-    for index, semester in enumerate(semester_list):
-        util.print_w('Step2.{}:更新{}学期的学生文档数据'.format(index+1, semester))
-        sql_count = build_search_semester(semester)
-        rowcount += sql_count
-
-    util.print_d('所有学期的搜索数据更新完毕，操作数据库%d行' % (sql_count))
-
-    return rowcount
-
-
 def build_search_semester(semester):
     """
     清除所有角色本学期的检索信息并全部重新添加
@@ -49,8 +20,8 @@ def build_search_semester(semester):
     util.print_t('Step1:正在处理学生搜索文档数据')
 
     util.print_i('Step1.1:正在删除该学期的旧数据')
-    mongo_conn = database.mongo_connect()
-    sql_count = database.search_semester_delete(mongo_conn, 'student', semester)
+    mongo_conn = database.mongo_connect(util.mongo_entity_database)
+    sql_count = database.search_semester_delete(mongo_conn, 'search', semester)
     rowcount += sql_count
 
     util.print_t('Step2:正在写入搜索文档数据')

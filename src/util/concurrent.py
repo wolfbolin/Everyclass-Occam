@@ -160,7 +160,7 @@ def mongo_multithread(task, main_data, attach_data, max_thread, manager_list):
     if attach_data is None:
         attach_data = {}
     executor = ThreadPoolExecutor(max_workers=max_thread)  # 建立线程池
-    mongo_pool = database.mongo_connect()  # 建立MongoDB连接池
+    mongo_pool = database.mongo_connect(util.mongo_occam_database)  # 建立MongoDB连接池
     all_work = []
     rowcount = 0
     progress = 0
