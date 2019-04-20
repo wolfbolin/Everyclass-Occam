@@ -13,7 +13,7 @@ filterwarnings('error', category=pymysql.Warning)
 
 if __name__ == "__main__":
     document = input("更新所有学期or某一学期的课程数据(y/20xx-20xx-x/other)：")
-    semester_list = []
+    semester_list = ['2016-2017-1', '2016-2017-2', '2017-2018-1', '2017-2018-2', '2018-2019-1', '2018-2019-2']
     if document == 'y':
         # 检索数据库中已有的学期
         mysql_conn = database.mysql_connect(util.mysql_occam_database)
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     elif filter.check_semester(document) is True:
         semester_list = document
-    else:
+    elif len(semester_list) == 0:
         util.print_e('请做出正确的选择')
         exit()
 

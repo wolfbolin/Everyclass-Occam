@@ -236,7 +236,7 @@ def entity_link_insert(link_data):
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
             # 写入新的关联数据
-            sql = "INSERT INTO `teacher_link` (`tid`, `cid`, `semester`) VALUES (%d, %d, '%s')" \
+            sql = "INSERT INTO `student_link` (`sid`, `cid`, `semester`) VALUES (%d, %d, '%s')" \
                   % (sid, cid, link_data['semester'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
