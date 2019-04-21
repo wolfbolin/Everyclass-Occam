@@ -36,7 +36,8 @@ def build_search_semester(semester):
                                   attach_data={
                                       'semester': semester,
                                       'type': 'student',
-                                      'conversion': ['deputy', 'klass']
+                                      'conversion': ['deputy', 'klass'],
+                                      'mongo_database': util.mongo_entity_database
                                   })
     time_end = time.time()
     util.print_d('%s学期的学生文档数据更新完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))
@@ -52,7 +53,8 @@ def build_search_semester(semester):
                                   attach_data={
                                       'semester': semester,
                                       'type': 'teacher',
-                                      'conversion': ['unit', 'title']
+                                      'conversion': ['unit', 'title'],
+                                      'mongo_database': util.mongo_entity_database
                                   })
     time_end = time.time()
     util.print_d('%s学期的教师文档数据更新完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))

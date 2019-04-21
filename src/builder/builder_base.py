@@ -90,7 +90,7 @@ def build_room():
 def build_entity_table():
     """
     清空Entity数据库中与课程相关的所有数据
-    :return:
+    :return: rowcount
     """
     util.print_w('清空Entity数据库中所有课程数据')
     rowcount = 0

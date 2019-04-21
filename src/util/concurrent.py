@@ -56,7 +56,7 @@ def multiprocess(task, main_data, attach_data=None, multithread=None, max_thread
         return None
 
 
-def mysql_multithread(task, main_data, attach_data, max_thread, manager_list,):
+def mysql_multithread(task, main_data, attach_data, max_thread, manager_list):
     """
     自动完成多线程的任务分配，利用多线程完成对于数据库的写入
     :param task: 完成单个任务的函数
@@ -158,9 +158,9 @@ def mongo_multithread(task, main_data, attach_data, max_thread, manager_list):
     :return 操作数据库行数
     """
     if attach_data is None:
-        attach_data = {}
+        raise BaseException('未设定需要连接的数据库')
     executor = ThreadPoolExecutor(max_workers=max_thread)  # 建立线程池
-    mongo_pool = database.mongo_connect(util.mongo_occam_database)  # 建立MongoDB连接池
+    mongo_pool = database.mongo_connect(attach_data['mongo_database'])  # 建立MongoDB连接池
     all_work = []
     rowcount = 0
     progress = 0
