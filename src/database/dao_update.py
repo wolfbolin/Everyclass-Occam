@@ -131,7 +131,7 @@ def search_update_row(conn, key, code, name, typer, semester, data, pattern):
     # 设定文档集
     mongo_db = conn['search']
     # 尝试更新学期在已知字段中
-    # 此人记录不存在，创建该记录
+    # 此记录不存在，创建该记录
     result = mongo_db.update_one(
         filter={
             "key": key,

@@ -22,6 +22,8 @@ if __name__ == "__main__":
         # 清空数据库课程信息，使主键从1开始计算
         util.print_t('即将更新以下学期数据')
         util.print_i(' | '.join(semester_list))
+        mongo_conn = database.mongo_connect(util.mongo_entity_database)
+        database.search_clean_delete(mongo_conn)
     elif document in semester_list:
         semester_list = [document]
     else:

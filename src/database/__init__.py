@@ -35,6 +35,7 @@ from .dao_select import error_room_select
 from .dao_select import doubt_klass_list
 from .dao_select import klass_map_list
 
+from .dao_delete import search_clean_delete
 from .dao_delete import search_semester_delete
 from .dao_delete import change_log_delete
 from .dao_delete import error_class_update

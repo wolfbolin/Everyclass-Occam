@@ -4,15 +4,27 @@
 import util
 
 
-def search_semester_delete(conn, collection, semester):
+def search_clean_delete(conn):
+    """
+    清除指定文档集
+    :param conn: 数据库连接句柄
+    :return: 受影响的数据条数
+    """
+    mongo_db = conn['search']
+    result = mongo_db.delete_many(
+        filter={}
+    )
+    return result.deleted_count
+
+
+def search_semester_delete(conn, semester):
     """
     清除MongoDB的指定集合中指定的学期信息
     :param conn: 数据库连接句柄
-    :param collection: 需要清除的集合名称
     :param semester: 需要清除的学期
     :return: 受影响的数据条数
     """
-    mongo_db = conn[collection]
+    mongo_db = conn['search']
     result = mongo_db.update_many(
         filter={},
         update={
@@ -73,4 +85,3 @@ def entity_semester_delete(conn, table, semester):
         cursor.execute(sql)
         rowcount += cursor.rowcount
     return rowcount
-
