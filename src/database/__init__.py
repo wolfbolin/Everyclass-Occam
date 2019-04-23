@@ -12,7 +12,8 @@ from .dao_base import get_semester_list
 from .dao_update import room_update
 from .dao_update import teacher_update
 from .dao_update import student_update
-from .dao_update import search_update
+from .dao_update import classroom_search_update
+from .dao_update import personal_search_update
 from .dao_update import error_room_update
 
 from .dao_insert import change_log_insert

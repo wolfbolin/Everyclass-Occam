@@ -67,11 +67,27 @@ def student_update(student_data):
         return rowcount
 
 
-def search_update(object_data):
+def classroom_search_update(object_data):
     """
     多线程函数
-    将某学期学生的信息写入文档库中
-    :param object_data: 数据字典，一名学生的信息+数据库链接句柄+学期信息
+    :param object_data: 数据字典，一个信息+数据库链接句柄+学期信息
+    :return: 受影响的数据行数
+    """
+    rowcount = 0
+    conn = object_data['mongo_pool']
+    # 写入附加信息
+    search_data = {k: object_data[k] for k in object_data['conversion']}
+    # 写入搜索索引
+    rowcount += search_update_row(conn, object_data['name'].upper(), object_data['code'], object_data['name'],
+                                  object_data['type'], object_data['semester'], search_data, 'name')
+    return rowcount
+
+
+def personal_search_update(object_data):
+    """
+    多线程函数
+    将某学期学生和教师的信息写入文档库中
+    :param object_data: 数据字典，一个信息+数据库链接句柄+学期信息
     :return: 受影响的数据行数
     """
     rowcount = 0
@@ -81,12 +97,13 @@ def search_update(object_data):
     full_pinyin = ''.join(list(x[0] for x in full_pinyin)).strip()
     first_pinyin = pypinyin.pinyin(object_data['name'], errors='ignore', style=pypinyin.Style.FIRST_LETTER)
     first_pinyin = ''.join(list(x[0] for x in first_pinyin)).strip()
-    # 写入索引记录
+    # 写入附加信息
     search_data = {k: object_data[k] for k in object_data['conversion']}
     # 写入学号索引
+    object_data['code'] = object_data['code'].upper()  # 强制大写
     rowcount += search_update_row(conn, object_data['code'], object_data['code'], object_data['name'],
                                   object_data['type'], object_data['semester'], search_data, 'code')
-    # 写入姓名索引
+    # 写入搜索索引
     rowcount += search_update_row(conn, object_data['name'], object_data['code'], object_data['name'],
                                   object_data['type'], object_data['semester'], search_data, 'name')
     if len(full_pinyin) > 0:

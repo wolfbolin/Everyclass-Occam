@@ -31,7 +31,7 @@ def build_search_semester(semester):
     mysql_conn = database.mysql_connect(util.mysql_entity_database)  # 建立MySQL连接
     student_list = database.entity_student_select(mysql_conn, semester)  # 查询学生信息
     mysql_conn.close()  # 关闭数据库连接
-    sql_count = util.multiprocess(task=database.search_update, main_data=student_list, max_thread=10,
+    sql_count = util.multiprocess(task=database.personal_search_update, main_data=student_list, max_thread=10,
                                   multithread=util.mongo_multithread,
                                   attach_data={
                                       'semester': semester,
@@ -40,7 +40,7 @@ def build_search_semester(semester):
                                       'mongo_database': util.mongo_entity_database
                                   })
     time_end = time.time()
-    util.print_d('%s学期的学生文档数据更新完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))
+    util.print_d('%s学期的学生检索数据更新完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))
     rowcount += sql_count
 
     util.print_i('Step2.2:正在写入新的教师数据')
@@ -48,7 +48,7 @@ def build_search_semester(semester):
     mysql_conn = database.mysql_connect(util.mysql_entity_database)  # 建立MySQL连接
     teacher_list = database.entity_teacher_select(mysql_conn, semester)  # 查询教师信息
     mysql_conn.close()
-    sql_count = util.multiprocess(task=database.search_update, main_data=teacher_list, max_thread=10,
+    sql_count = util.multiprocess(task=database.personal_search_update, main_data=teacher_list, max_thread=10,
                                   multithread=util.mongo_multithread,
                                   attach_data={
                                       'semester': semester,
@@ -57,7 +57,24 @@ def build_search_semester(semester):
                                       'mongo_database': util.mongo_entity_database
                                   })
     time_end = time.time()
-    util.print_d('%s学期的教师文档数据更新完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))
+    util.print_d('%s学期的教师检索数据更新完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))
+    rowcount += sql_count
+
+    util.print_i('Step2.3:正在写入新的教室数据')
+    time_start = time.time()
+    mysql_conn = database.mysql_connect(util.mysql_entity_database)  # 建立MySQL连接
+    room_list = database.room_select(mysql_conn, 'room')  # 查询教师信息
+    mysql_conn.close()
+    sql_count = util.multiprocess(task=database.classroom_search_update, main_data=room_list, max_thread=10,
+                                  multithread=util.mongo_multithread,
+                                  attach_data={
+                                      'semester': semester,
+                                      'type': 'room',
+                                      'conversion': ['campus', 'building'],
+                                      'mongo_database': util.mongo_entity_database
+                                  })
+    time_end = time.time()
+    util.print_d('%s学期的教室检索数据更新完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))
     rowcount += sql_count
 
     return rowcount
