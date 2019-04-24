@@ -23,7 +23,7 @@ if __name__ == "__main__":
         util.print_t('即将更新以下学期数据')
         util.print_i(' | '.join(semester_list))
         mongo_conn = database.mongo_connect(util.mongo_entity_database)
-        database.search_clean_delete(mongo_conn)
+        database.clean_search(mongo_conn)
     elif document in semester_list:
         semester_list = [document]
     else:

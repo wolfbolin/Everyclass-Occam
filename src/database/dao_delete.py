@@ -4,7 +4,7 @@
 import util
 
 
-def search_clean_delete(conn):
+def clean_search(conn):
     """
     清除指定文档集
     :param conn: 数据库连接句柄
