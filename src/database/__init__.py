@@ -8,12 +8,14 @@ from .dao_base import add_tables
 from .dao_base import add_foreign
 from .dao_base import get_teacher_title
 from .dao_base import get_semester_list
+from .dao_base import search_converter
 
 from .dao_update import room_update
 from .dao_update import teacher_update
 from .dao_update import student_update
 from .dao_update import course_code_update
-from .dao_update import classroom_search_update
+from .dao_update import vague_search_update
+from .dao_update import room_search_update
 from .dao_update import personal_search_update
 from .dao_update import error_room_update
 
@@ -32,6 +34,7 @@ from .dao_select import occam_link_select
 from .dao_select import entity_teacher_select
 from .dao_select import entity_student_select
 from .dao_select import room_select
+from .dao_select import regex_room_select
 from .dao_select import error_room_select
 from .dao_select import doubt_klass_list
 from .dao_select import klass_map_list

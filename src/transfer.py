@@ -52,7 +52,7 @@ if __name__ == "__main__":
         rowcount += sql_count
 
         # 重建搜索数据
-        sql_count = builder.build_search_semester(semester)
+        sql_count = builder.build_search_base(semester)
         rowcount += sql_count
 
     util.print_d('操作完成，共计修改数据库%s行' % rowcount)

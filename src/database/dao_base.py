@@ -145,3 +145,16 @@ def get_semester_list(conn):
                 semester_list.append(group.group(1))
 
     return semester_list
+
+
+def search_converter(conn, typer):
+    """
+    获取某一类型的转换模版
+    :param conn: 数据库连接
+    :param typer: 模版类型
+    :return: 转换模版列表
+    """
+    mongo_db = conn['converter']
+    result = mongo_db.find({"type": typer}, {"_id": 0})
+    return result
+

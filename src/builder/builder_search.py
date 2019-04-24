@@ -4,10 +4,11 @@ import time
 from math import ceil
 # Personal package
 import util
+import filter
 import database
 
 
-def build_search_semester(semester):
+def build_search_base(semester):
     """
     清除所有角色本学期的检索信息并全部重新添加
     :param semester: 需要重建的学期
@@ -64,7 +65,7 @@ def build_search_semester(semester):
     mysql_conn = database.mysql_connect(util.mysql_entity_database)  # 建立MySQL连接
     room_list = database.room_select(mysql_conn, 'room')  # 查询教室信息
     mysql_conn.close()
-    sql_count = util.multiprocess(task=database.classroom_search_update, main_data=room_list, max_thread=10,
+    sql_count = util.multiprocess(task=database.room_search_update, main_data=room_list, max_thread=10,
                                   multithread=util.mongo_multithread,
                                   attach_data={
                                       'semester': semester,
@@ -77,3 +78,44 @@ def build_search_semester(semester):
     rowcount += sql_count
 
     return rowcount
+
+
+def build_search_advanced(semester):
+    """
+    清除所有角色本学期的检索信息并全部重新添加
+    :param semester: 需要重建的学期
+    :return: rowcount
+    """
+    util.print_a('开始重建该学期搜索文档库')
+    rowcount = 0
+
+    util.print_t('Step1:正在处理教室模糊搜索数据')
+
+    util.print_i('Step1.1:正在获取教室名转换规则')
+    mongo_conn = database.mongo_connect(util.mongo_entity_database)
+    room_converter = database.search_converter(mongo_conn, 'room')
+
+    util.print_i('Step1.2:正在根据正则查询教室数据')
+    mysql_conn = database.mysql_connect(util.mysql_entity_database)  # 建立MySQL连接
+    room_list = database.regex_room_select(mysql_conn, room_converter)  # 查询教室信息
+    mysql_conn.close()
+
+    util.print_i('Step1.3:正在根据正则生成查询数据')
+    room_list = filter.regex_converter(room_list)
+
+    util.print_i('Step1.4:正在写入模糊搜索教室数据')
+    time_start = time.time()
+    sql_count = util.multiprocess(task=database.vague_search_update, main_data=room_list, max_thread=10,
+                                  multithread=util.mongo_multithread,
+                                  attach_data={
+                                      'semester': semester,
+                                      'type': 'vague_room',
+                                      'conversion': ['campus', 'building'],
+                                      'mongo_database': util.mongo_entity_database
+                                  })
+    time_end = time.time()
+    util.print_d('%s学期的教室检索数据更新完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))
+    rowcount += sql_count
+
+    return rowcount
+

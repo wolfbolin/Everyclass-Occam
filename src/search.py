@@ -22,6 +22,7 @@ if __name__ == "__main__":
         # 清空数据库课程信息，使主键从1开始计算
         util.print_t('即将更新以下学期数据')
         util.print_i(' | '.join(semester_list))
+        util.print_w('正在清空搜索数据库')
         mongo_conn = database.mongo_connect(util.mongo_entity_database)
         database.clean_search(mongo_conn)
     elif document in semester_list:
@@ -36,7 +37,11 @@ if __name__ == "__main__":
         util.print_w('正在重建%s学期的搜索数据' % semester)
 
         # 重建搜索数据
-        sql_count = builder.build_search_semester(semester)
+        sql_count = builder.build_search_base(semester)
+        rowcount += sql_count
+
+        # 添加模糊搜索数据
+        sql_count = builder.build_search_advanced(semester)
         rowcount += sql_count
 
     util.print_d('操作完成，共计修改数据库%s行' % rowcount)

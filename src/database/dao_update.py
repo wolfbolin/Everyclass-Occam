@@ -83,7 +83,24 @@ def course_code_update(course_data):
         return rowcount
 
 
-def classroom_search_update(object_data):
+def vague_search_update(object_data):
+    """
+    多线程函数
+    :param object_data: 数据字典，一个信息+数据库链接句柄+学期信息
+    :return: 受影响的数据行数
+    """
+    rowcount = 0
+    conn = object_data['mongo_pool']
+    # 写入附加信息
+    search_data = {k: object_data[k] for k in object_data['conversion']}
+    # 写入搜索索引
+    for key in object_data['key']:
+        rowcount += search_update_row(conn, key.upper(), object_data['code'], object_data['name'],
+                                      object_data['type'], object_data['semester'], search_data, 'name')
+    return rowcount
+
+
+def room_search_update(object_data):
     """
     多线程函数
     :param object_data: 数据字典，一个信息+数据库链接句柄+学期信息
@@ -116,17 +133,16 @@ def personal_search_update(object_data):
     # 写入附加信息
     search_data = {k: object_data[k] for k in object_data['conversion']}
     # 写入学号索引
-    object_data['code'] = object_data['code'].upper()  # 强制大写
-    rowcount += search_update_row(conn, object_data['code'], object_data['code'], object_data['name'],
+    rowcount += search_update_row(conn, object_data['code'].upper(), object_data['code'], object_data['name'],
                                   object_data['type'], object_data['semester'], search_data, 'code')
     # 写入搜索索引
-    rowcount += search_update_row(conn, object_data['name'], object_data['code'], object_data['name'],
+    rowcount += search_update_row(conn, object_data['name'].upper(), object_data['code'], object_data['name'],
                                   object_data['type'], object_data['semester'], search_data, 'name')
     if len(full_pinyin) > 0:
-        rowcount += search_update_row(conn, full_pinyin, object_data['code'], object_data['name'],
+        rowcount += search_update_row(conn, full_pinyin.upper(), object_data['code'], object_data['name'],
                                       object_data['type'], object_data['semester'], search_data, 'quanpin')
     if len(first_pinyin) > 0:
-        rowcount += search_update_row(conn, first_pinyin, object_data['code'], object_data['name'],
+        rowcount += search_update_row(conn, first_pinyin.upper(), object_data['code'], object_data['name'],
                                       object_data['type'], object_data['semester'], search_data, 'jianpin')
     return rowcount
 

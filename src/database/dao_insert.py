@@ -189,11 +189,11 @@ def entity_card_insert(card_data):
     conn = card_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
         sql = "INSERT INTO `card` (`oid`, `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, " \
-              "`hour`, `type`, `klassID`, `roomID`, `semester`) " \
-              "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s', '%s');" \
+              "`hour`, `type`, `klassID`, `roomID`, `course_code`, `semester`) " \
+              "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s', '%s', '%s');" \
               % (card_data['cid'], card_data['name'], card_data['teacher'], card_data['week'], card_data['lesson'],
                  card_data['room'], card_data['klass'], card_data['pick'], card_data['hour'], card_data['type'],
-                 card_data['klassID'], card_data['roomID'], card_data['semester'])
+                 card_data['klassID'], card_data['roomID'], card_data['course_code'], card_data['semester'])
         cursor.execute(sql)
         rowcount += cursor.rowcount
     return rowcount

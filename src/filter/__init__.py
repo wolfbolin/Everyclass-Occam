@@ -1,5 +1,6 @@
 from .filter_base import room_all
 from .filter_base import check_semester
+from .filter_base import regex_converter
 
 from .filter_teacher import teacher_all
 from .filter_teacher import teacher_list

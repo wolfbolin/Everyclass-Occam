@@ -42,3 +42,27 @@ def check_semester(semester):
         return True
     else:
         return False
+
+
+def regex_converter(data_set):
+    """
+    根据正则处理生成搜索数据
+    :param data_set: 数据集
+    :return: 完成匹配的数据
+    """
+    for item in data_set:
+        result = re.match(item['regex'], item['name'])
+        key = []
+        if result:
+            for pattern in item['pattern']:
+                key_slice = []
+                for mark in pattern:
+                    if type(mark) == 'str':
+                        key_slice.append(mark)
+                    else:
+                        key_slice.append(result.group(int(mark)))
+                key.append(''.join(key_slice))
+        else:
+            raise BaseException('正则：{}，文本：{}。无法匹配！！！'.format(item['regex'], item['name']))
+        item['key'] = key
+    return data_set

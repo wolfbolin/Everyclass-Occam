@@ -73,7 +73,7 @@ def occam_card_select(conn, semester):
         data_count = cursor.fetchone()[0]
         # 查询卡片的信息
         sql = 'SELECT `cid`, `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, ' \
-              '`hour`, `type`, `klassID`, `roomID` FROM `card_%s`;' % semester
+              '`hour`, `type`, `klassID`, `roomID`, `course_code` FROM `card_%s`;' % semester
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, teacher in enumerate(result):
@@ -90,6 +90,7 @@ def occam_card_select(conn, semester):
                 'type': teacher[9],
                 'klassID': teacher[10],
                 'roomID': teacher[11],
+                'course_code': teacher[12],
             })
             util.process_bar(count + 1, data_count, '已查询%d条卡片数据' % (count + 1))
         return card_list
@@ -164,7 +165,7 @@ def entity_student_select(conn, semester):
 
 def entity_teacher_select(conn, semester):
     """
-    在Occam数据库中查询某学期全部教师的信息
+    在Entity数据库中查询某学期全部教师的信息
     :return: 教师信息数据
     """
     teacher_list = []
@@ -209,6 +210,35 @@ def room_select(conn, table):
             })
             util.process_bar(count + 1, len(result), '已读取到%d条教室数据' % (count + 1))
         return room_list
+
+
+def regex_room_select(conn, room_converter):
+    """
+    利用正则抽取教室信息
+    :param conn: 数据库连接
+    :param room_converter: 正则列表
+    :return: 教室信息列表
+    """
+    room_list = []
+    with conn.cursor() as cursor:
+        for converter in room_converter:
+            # 查询教室数据
+            sql = "SELECT `code`, `name`, `campus`, `building` FROM `room` WHERE `name` REGEXP '^%s$';" \
+                  % converter['regex']
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            for count, item in enumerate(result):
+                room_list.append({
+                    'regex': converter['regex'],
+                    'pattern': converter['pattern'],
+                    'type': converter['type'],
+                    'code': item[0],
+                    'name': item[1],
+                    'campus': item[2],
+                    'building': item[2],
+                })
+                util.process_bar(count + 1, len(result), '已读取到%d条教室数据' % (count + 1))
+    return room_list
 
 
 def error_room_select(conn, semester):
