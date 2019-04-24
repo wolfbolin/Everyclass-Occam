@@ -52,6 +52,8 @@ from .config import kbkb_url
 from .config import jgs_url
 from .config import usa_url
 from .config import jspk_url
+from .config import qxzbk_url
+from .config import tkgl_url
 
 from .common import student_info
 from .common import teacher_info

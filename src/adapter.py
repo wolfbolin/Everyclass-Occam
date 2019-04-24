@@ -30,7 +30,7 @@ if __name__ == "__main__":
         builder.build_room()
 
     elif filter.check_semester(document) is True:
-        semester_list = document
+        semester_list = [document]
     elif len(semester_list) == 0:
         util.print_e('请做出正确的选择')
         exit()
@@ -49,3 +49,6 @@ if __name__ == "__main__":
 
         # 获取本学期学生的课程表
         builder.build_student_table(semester=semester)
+
+        # 获取本学期课程的相关信息
+        builder.build_course_info(semester=semester)

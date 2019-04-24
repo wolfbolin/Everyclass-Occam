@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # Common package
-import re
 import time
 from math import ceil
 # Personal package

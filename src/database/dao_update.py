@@ -67,6 +67,22 @@ def student_update(student_data):
         return rowcount
 
 
+def course_code_update(course_data):
+    """
+    多线程函数
+    补充课程的课程编号到空缺的列
+    :param course_data: 数据字典
+    :return: 受影响的数据行数
+    """
+    conn = course_data['mysql_pool'].connection()
+    with conn.cursor() as cursor:
+        sql = "UPDATE `card_{}` SET `course_code`='{}' WHERE `name` LIKE '{}%';" \
+            .format(course_data['semester'], course_data['code'], course_data['name'])
+        cursor.execute(sql)
+        rowcount = cursor.rowcount
+        return rowcount
+
+
 def classroom_search_update(object_data):
     """
     多线程函数
@@ -170,5 +186,3 @@ def error_room_update(conn, error_room_list):
             rowcount += cursor.rowcount
             util.process_bar(count + 1, len(error_room_list), '已修正%d条错误教室数据' % (count + 1))
         return rowcount
-
-
