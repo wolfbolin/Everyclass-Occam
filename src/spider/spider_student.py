@@ -80,7 +80,7 @@ def student_info(page_data):
         student_line = copy.deepcopy(util.student_info)
         student_line['code'] = cells[2].string
         student_line['name'] = cells[3].string
-        student_line['klass'] = cells[5].string
+        student_line['class'] = cells[5].string
         student_line['deputy'] = cells[6].string
         student_line['campus'] = cells[7].string
         result.append(student_line)

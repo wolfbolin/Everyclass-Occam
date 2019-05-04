@@ -20,8 +20,10 @@ if __name__ == "__main__":
     document = input("更新所有学期数据or更新某学期数据(y/20xx-20xx-x/other)：")
     if document == 'y':
         # 清空数据库课程信息，使主键从1开始计算
+        util.print_w('正在清空关联数据库')
         builder.build_entity_table()
-        pass
+        util.print_w('正在清空搜索数据库')
+        mongo_conn = database.mongo_connect(util.mongo_entity_database)
     elif document in semester_list:
         semester_list = [document]
     else:
@@ -43,9 +45,9 @@ if __name__ == "__main__":
         change_log.extend(change_log_room)
 
         # 修正课程数据
-        sql_count, change_log_klass = builder.correct_klass_data(semester)
+        sql_count, change_log_card = builder.correct_card_data(semester)
         rowcount += sql_count
-        change_log.extend(change_log_klass)
+        change_log.extend(change_log_card)
 
         # 写入修改日志
         sql_count = builder.save_change_log(semester, change_log)
@@ -53,6 +55,10 @@ if __name__ == "__main__":
 
         # 重建搜索数据
         sql_count = builder.build_search_base(semester)
+        rowcount += sql_count
+
+        # 添加模糊搜索数据
+        sql_count = builder.build_search_advanced(semester)
         rowcount += sql_count
 
     util.print_d('操作完成，共计修改数据库%s行' % rowcount)

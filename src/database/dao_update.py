@@ -57,11 +57,11 @@ def student_update(student_data):
     conn = student_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
         # 尝试插入该学生信息，若出现UNIQUE重复则自动更新数据
-        sql = "INSERT INTO `student_all`(`code`,`name`,`klass`,`deputy`,`campus`)VALUES('%s','%s','%s','%s','%s') " \
-              "ON DUPLICATE KEY UPDATE `name`='%s',`klass`='%s',`deputy`='%s',`campus`='%s';" \
+        sql = "INSERT INTO `student_all`(`code`,`name`,`class`,`deputy`,`campus`)VALUES('%s','%s','%s','%s','%s') " \
+              "ON DUPLICATE KEY UPDATE `name`='%s',`class`='%s',`deputy`='%s',`campus`='%s';" \
               % (student_data['code'],
-                 student_data['name'], student_data['klass'], student_data['deputy'], student_data['campus'],
-                 student_data['name'], student_data['klass'], student_data['deputy'], student_data['campus'])
+                 student_data['name'], student_data['class'], student_data['deputy'], student_data['campus'],
+                 student_data['name'], student_data['class'], student_data['deputy'], student_data['campus'])
         cursor.execute(sql)
         rowcount = cursor.rowcount
         return rowcount
@@ -96,7 +96,7 @@ def vague_search_update(object_data):
     # 写入搜索索引
     for key in object_data['key']:
         rowcount += search_update_row(conn, key.upper(), object_data['code'], object_data['name'],
-                                      object_data['type'], object_data['semester'], search_data, 'name')
+                                      object_data['type'], object_data['semester'], search_data, 'vague')
     return rowcount
 
 
@@ -196,8 +196,8 @@ def error_room_update(conn, error_room_list):
     rowcount = 0
     with conn.cursor() as cursor:
         for count, error_room in enumerate(error_room_list):
-            sql = "UPDATE `card` SET `roomID`='%s' WHERE `cid`=%s;" \
-                  % (error_room['roomID'], error_room['cid'])
+            sql = "UPDATE `card` SET `room_code`='%s' WHERE `cid`=%s;" \
+                  % (error_room['room_code'], error_room['cid'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
             util.process_bar(count + 1, len(error_room_list), '已修正%d条错误教室数据' % (count + 1))

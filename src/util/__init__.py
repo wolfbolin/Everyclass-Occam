@@ -40,7 +40,7 @@ from .config import mongo_user
 from .config import mongo_password
 from .config import mongo_occam_database
 from .config import mongo_entity_database
-
+from .config import semester_list
 from .config import base_headers
 from .config import csujwc_url
 from .config import kblogin_url

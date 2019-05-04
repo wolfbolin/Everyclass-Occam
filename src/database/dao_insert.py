@@ -50,26 +50,26 @@ def occam_teacher_insert(teacher_data):
         # 向数据库中添加卡片数据
         for card in teacher_data['table']:
             # 先完成一次查询，为是否锁表做判断
-            sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (teacher_data['semester'], card['klassID'])
+            sql = "SELECT `cid` FROM `card_%s` WHERE `code`='%s';" % (teacher_data['semester'], card['code'])
             cursor.execute(sql)
             result = cursor.fetchone()
             if result is None:
                 conn.begin()
                 sql = "LOCK TABLE `card_%s` WRITE;" % teacher_data['semester']
                 cursor.execute(sql)
-                sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
-                      "`pick`, `hour`, `type`, `klassID`, `roomID`)" \
-                      "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s') " \
-                      "ON DUPLICATE KEY UPDATE `teacher`=CONCAT(`teacher`, ';%s');" \
-                      % (teacher_data['semester'], card['name'], card['teacher'], card['week'],
-                         card['lesson'], card['room'], card['klass'], card['pick'], card['hour'],
-                         card['type'], card['klassID'], card['roomID'], card['teacher'])
+                sql = "INSERT INTO  `card_%s` (`pick`, `hour`, `type`, `code`, `name`, `room`, `week`, `lesson`, " \
+                      "`teacher`, `tea_class`, `room_code`)" \
+                      "VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s') " \
+                      "ON DUPLICATE KEY UPDATE `cid`=`cid`;" \
+                      % (teacher_data['semester'], card['pick'], card['hour'], card['type'],
+                         card['code'], card['name'], card['room'], card['week'], card['lesson'],
+                         card['teacher'], card['tea_class'], card['room_code'])
                 cursor.execute(sql)
                 rowcount += cursor.rowcount
                 sql = "UNLOCK TABLES;"
                 cursor.execute(sql)
                 conn.commit()
-            sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (teacher_data['semester'], card['klassID'])
+            sql = "SELECT `cid` FROM `card_%s` WHERE `code`='%s';" % (teacher_data['semester'], card['code'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
             sql = "INSERT INTO `teacher_link_%s` (`tid`, `cid`) VALUES ('%s', '%s');" \
@@ -91,14 +91,14 @@ def occam_student_insert(student_data):
     conn = student_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
         # 先将学生从数据总表中添加到本学期数据表
-        sql = "SELECT `code`, `name`, `klass`, `deputy`, `campus` FROM `student_all` WHERE `code`='%s';" \
+        sql = "SELECT `code`, `name`, `class`, `deputy`, `campus` FROM `student_all` WHERE `code`='%s';" \
               % student_data['student_code']
         cursor.execute(sql)
         student_info = cursor.fetchone()
         if student_info is None:
             util.print_e('学号为%s的学生不在数据总表中' % student_data['student_code'])
             return 0
-        sql = "INSERT INTO `student_%s` (`code`,`name`,`klass`,`deputy`,`campus`) VALUES ('%s','%s','%s','%s','%s');" \
+        sql = "INSERT INTO `student_%s` (`code`,`name`,`class`,`deputy`,`campus`) VALUES ('%s','%s','%s','%s','%s');" \
               % (student_data['semester'], student_info[0], student_info[1],
                  student_info[2], student_info[3], student_info[4])
         cursor.execute(sql)
@@ -108,26 +108,26 @@ def occam_student_insert(student_data):
         # 向数据库中添加卡片数据
         for card in student_data['table']:
             # 先完成一次查询，为是否锁表做判断
-            sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (student_data['semester'], card['klassID'])
+            sql = "SELECT `cid` FROM `card_%s` WHERE `code`='%s';" % (student_data['semester'], card['code'])
             cursor.execute(sql)
             result = cursor.fetchone()
             if result is None:
                 conn.begin()
                 sql = "LOCK TABLE `card_%s` WRITE;" % student_data['semester']
                 cursor.execute(sql)
-                sql = "INSERT INTO  `card_%s` (`name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
-                      "`pick`, `hour`, `type`, `klassID`, `roomID`)" \
-                      "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s') " \
-                      "ON DUPLICATE KEY UPDATE cid = cid;" \
-                      % (student_data['semester'], card['name'], card['teacher'], card['week'],
-                         card['lesson'], card['room'], card['klass'], card['pick'], card['hour'],
-                         card['type'], card['klassID'], card['roomID'])
+                sql = "INSERT INTO  `card_%s` (`pick`, `hour`, `type`, `code`, `name`, `room`, `week`, `lesson`, " \
+                      "`teacher`, `tea_class`, `room_code`)" \
+                      "VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s') " \
+                      "ON DUPLICATE KEY UPDATE `cid` = `cid`;" \
+                      % (student_data['semester'], card['pick'], card['hour'], card['type'],
+                         card['code'], card['name'], card['room'], card['week'], card['lesson'],
+                         card['teacher'], card['tea_class'], card['room_code'])
                 cursor.execute(sql)
                 rowcount += cursor.rowcount
                 sql = "UNLOCK TABLES;"
                 cursor.execute(sql)
                 conn.commit()
-            sql = "SELECT `cid` FROM `card_%s` WHERE `klassID`='%s';" % (student_data['semester'], card['klassID'])
+            sql = "SELECT `cid` FROM `card_%s` WHERE `code`='%s';" % (student_data['semester'], card['code'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
             sql = "INSERT INTO `student_link_%s` (`sid`, `cid`) VALUES ('%s', '%s');" \
@@ -169,9 +169,9 @@ def entity_student_insert(student_data):
     rowcount = 0
     conn = student_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
-        sql = "INSERT INTO `student` (`oid`, `code`, `name`, `klass`, `deputy`, `campus`, `semester`) " \
+        sql = "INSERT INTO `student` (`oid`, `code`, `name`, `class`, `deputy`, `campus`, `semester`) " \
               "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');" \
-              % (student_data['sid'], student_data['code'], student_data['name'], student_data['klass'],
+              % (student_data['sid'], student_data['code'], student_data['name'], student_data['class'],
                  student_data['deputy'], student_data['campus'], student_data['semester'])
         cursor.execute(sql)
         rowcount += cursor.rowcount
@@ -188,12 +188,12 @@ def entity_card_insert(card_data):
     rowcount = 0
     conn = card_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
-        sql = "INSERT INTO `card` (`oid`, `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, " \
-              "`hour`, `type`, `klassID`, `roomID`, `course_code`, `semester`) " \
-              "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s', '%s', '%s');" \
-              % (card_data['cid'], card_data['name'], card_data['teacher'], card_data['week'], card_data['lesson'],
-                 card_data['room'], card_data['klass'], card_data['pick'], card_data['hour'], card_data['type'],
-                 card_data['klassID'], card_data['roomID'], card_data['course_code'], card_data['semester'])
+        sql = "INSERT INTO `card` (`oid`, `pick`, `hour`, `type`, `code`, `name`, `room`, `week`, `lesson`, " \
+              "`teacher`, `tea_class`, `room_code`, `course_code`, `semester`) " \
+              "VALUES (%d, %d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');" \
+              % (card_data['cid'], card_data['pick'], card_data['hour'], card_data['type'], card_data['code'],
+                 card_data['name'], card_data['room'], card_data['week'], card_data['lesson'], card_data['teacher'],
+                 card_data['tea_class'], card_data['room_code'], card_data['course_code'], card_data['semester'])
         cursor.execute(sql)
         rowcount += cursor.rowcount
     return rowcount

@@ -35,7 +35,7 @@ teacher_info = {
 student_info = {
     'code': '',
     'name': '',
-    'klass': '',
+    'class': '',
     'deputy': '',
     'campus': ''
 }
@@ -52,12 +52,12 @@ card_info = {
     'week': '',  # 周次信息的合成数据
     'lesson': '',
     'room': '',
-    'klass': '',
+    'tea_class': '',
     # 以下内容为老师课表附加内容
     'pick': 0,
     'hour': 0,
     'type': '',
     # 系统隐藏ID
-    'klassID': '',
-    'roomID': ''
+    'code': '',
+    'room_code': ''
 }

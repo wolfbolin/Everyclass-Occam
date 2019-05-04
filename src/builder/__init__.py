@@ -15,6 +15,6 @@ from .builder_search import build_search_advanced
 
 from .builder_correct import save_change_log
 from .builder_correct import correct_room_data
-from .builder_correct import correct_klass_data
+from .builder_correct import correct_card_data
 
-from .builder_klass import build_course_info
+from .builder_course import build_course_info

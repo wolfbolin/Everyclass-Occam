@@ -25,11 +25,11 @@ def error_room(semester, error_room_list, room_list):
             change_log.append({
                 'semester': semester,
                 'type': '无效的教室信息映射',
-                'message': '教室%s将修改%s为%s' % (room['room'], room['roomID'], new_room['code'])
+                'message': '教室%s将修改%s为%s' % (room['room'], room['room_code'], new_room['code'])
             })
             util.print_w(change_log[-1]['message'])
             # 修改数据
-            room['roomID'] = new_room['code']
+            room['room_code'] = new_room['code']
         else:
             # 写入修改日志
             change_log.append({
@@ -39,11 +39,11 @@ def error_room(semester, error_room_list, room_list):
             })
             util.print_w(change_log[-1]['message'])
             # 修改数据
-            room['roomID'] = ''
+            room['room_code'] = ''
     return error_room_list, change_log
 
 
-def error_klass(semester, doubt_list):
+def error_card(semester, doubt_list):
     """
     纠正课程异常数据
     :param semester: 数据学期

@@ -14,7 +14,7 @@ def build_search_base(semester):
     :param semester: 需要重建的学期
     :return: rowcount
     """
-    util.print_a('开始重建该学期搜索文档库')
+    util.print_a('开始重建该学期普通搜索文档库')
     rowcount = 0
 
     util.print_t('Step1:正在处理学生搜索文档数据')
@@ -36,7 +36,7 @@ def build_search_base(semester):
                                   attach_data={
                                       'semester': semester,
                                       'type': 'student',
-                                      'conversion': ['deputy', 'klass'],
+                                      'conversion': ['deputy', 'class'],
                                       'mongo_database': util.mongo_entity_database
                                   })
     time_end = time.time()
@@ -86,7 +86,7 @@ def build_search_advanced(semester):
     :param semester: 需要重建的学期
     :return: rowcount
     """
-    util.print_a('开始重建该学期搜索文档库')
+    util.print_a('开始重建该学期高级搜索文档库')
     rowcount = 0
 
     util.print_t('Step1:正在处理教室模糊搜索数据')
@@ -109,7 +109,7 @@ def build_search_advanced(semester):
                                   multithread=util.mongo_multithread,
                                   attach_data={
                                       'semester': semester,
-                                      'type': 'vague_room',
+                                      'type': 'room',
                                       'conversion': ['campus', 'building'],
                                       'mongo_database': util.mongo_entity_database
                                   })

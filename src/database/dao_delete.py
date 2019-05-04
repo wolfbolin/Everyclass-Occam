@@ -50,15 +50,15 @@ def change_log_delete(conn, semester):
     return result.deleted_count
 
 
-def error_class_update(conn, semester, error_klass_list):
+def error_class_update(conn, semester, error_class_list):
     """
     更新数据库中错误的课程数据
     :return: 受影响的记录数
     """
     rowcount = 0
     with conn.cursor() as cursor:
-        for count, error_klass in enumerate(error_klass_list):
-            remove_list = list(repr(x) for x in error_klass['remove'])
+        for count, error_class in enumerate(error_class_list):
+            remove_list = list(repr(x) for x in error_class['remove'])
             conn.begin()
             sql = "DELETE FROM `student_link` WHERE `cid` in ('%s');" % ("','".join(remove_list))
             cursor.execute(sql)
@@ -70,7 +70,7 @@ def error_class_update(conn, semester, error_klass_list):
             cursor.execute(sql)
             rowcount += cursor.rowcount
             conn.commit()
-            util.process_bar(count + 1, len(error_klass_list), '已修正%d条错误教室数据' % (count + 1))
+            util.process_bar(count + 1, len(error_class_list), '已修正%d条错误教室数据' % (count + 1))
         return rowcount
 
 

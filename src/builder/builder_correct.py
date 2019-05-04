@@ -19,7 +19,7 @@ def save_change_log(semester, change_log):
         # 无修改，不记录
         return 0
     # 连接到数据库
-    mongo_conn = database.mongo_connect(util.mongo_entity_database)
+    mongo_conn = database.mongo_connect(util.mongo_occam_database)
     # 删除旧的修改日志
     sql_count = database.change_log_delete(mongo_conn, semester)
     rowcount += sql_count
@@ -67,7 +67,7 @@ def correct_room_data(semester):
     return rowcount, change_log
 
 
-def correct_klass_data(semester):
+def correct_card_data(semester):
     """
     修正数据库中的异常数据
     :return: rowcount
@@ -81,19 +81,19 @@ def correct_klass_data(semester):
 
     util.print_i('Step1.1:正在获取课程号异常数据')
     # 检测异常数据
-    doubt_klass_list = database.doubt_klass_list(mysql_conn, semester)
-    if len(doubt_klass_list) > 0:
+    doubt_card_list = database.doubt_card_list(mysql_conn, semester)
+    if len(doubt_card_list) > 0:
         util.print_i('Step1.2:正在获取重复的课程映射信息')
-        klass_map_list = database.klass_map_list(mysql_conn, semester, doubt_klass_list)
-        util.save_to_output('klass_map_list', json.dumps(klass_map_list))
+        card_map_list = database.card_map_list(mysql_conn, semester, doubt_card_list)
+        util.save_to_output('card_map_list', json.dumps(card_map_list))
 
         util.print_i('Step1.3:正在纠正课程号异常数据')
         # 纠正课程号异常数据
-        error_klass_list, change_log = filter.error_klass(semester, klass_map_list)
+        error_card_list, change_log = filter.error_card(semester, card_map_list)
 
         util.print_i('Step1.4:正在写入修正数据')
         # 交给数据库完成修改
-        sql_count = database.error_class_update(mysql_conn, semester, error_klass_list)
+        sql_count = database.error_class_update(mysql_conn, semester, error_card_list)
         # 完成修改，反馈结果
         time_end = time.time()
         util.print_d('%s学期的教室数据异常修正完毕，耗时%d秒，操作数据库%d行' % (semester, ceil(time_end - time_start), sql_count))

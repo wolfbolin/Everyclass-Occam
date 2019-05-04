@@ -16,7 +16,7 @@ def occam_student_select(conn, semester):
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询学生的信息
-        sql = 'SELECT `sid`, `code`, `name`, `klass`, `deputy`, `campus` FROM `student_%s`;' % semester
+        sql = 'SELECT `sid`, `code`, `name`, `class`, `deputy`, `campus` FROM `student_%s`;' % semester
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, student in enumerate(result):
@@ -24,7 +24,7 @@ def occam_student_select(conn, semester):
                 'sid': student[0],
                 'code': student[1],
                 'name': student[2],
-                'klass': student[3],
+                'class': student[3],
                 'deputy': student[4],
                 'campus': student[5]
             })
@@ -72,24 +72,24 @@ def occam_card_select(conn, semester):
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询卡片的信息
-        sql = 'SELECT `cid`, `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, ' \
-              '`hour`, `type`, `klassID`, `roomID`, `course_code` FROM `card_%s`;' % semester
+        sql = 'SELECT `cid`, `pick`, `hour`, `type`, `code`, `name`, `room`, `week`, `lesson`, `teacher`, ' \
+              '`tea_class`, `room_code`, `course_code` FROM `card_%s`;' % semester
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, teacher in enumerate(result):
             card_list.append({
                 'cid': teacher[0],
-                'name': teacher[1],
-                'teacher': teacher[2],
-                'week': teacher[3],
-                'lesson': teacher[4],
-                'room': teacher[5],
-                'klass': teacher[6],
-                'pick': teacher[7],
-                'hour': teacher[8],
-                'type': teacher[9],
-                'klassID': teacher[10],
-                'roomID': teacher[11],
+                'pick': teacher[1],
+                'hour': teacher[2],
+                'type': teacher[3],
+                'code': teacher[4],
+                'name': teacher[5],
+                'room': teacher[6],
+                'week': teacher[7],
+                'lesson': teacher[8],
+                'teacher': teacher[9],
+                'tea_class': teacher[10],
+                'room_code': teacher[11],
                 'course_code': teacher[12],
             })
             util.process_bar(count + 1, data_count, '已查询%d条卡片数据' % (count + 1))
@@ -148,14 +148,14 @@ def entity_student_select(conn, semester):
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询学生的信息
-        sql = "SELECT `code`, `name`, `klass`, `deputy`, `campus` FROM `student` WHERE `semester`='%s';" % semester
+        sql = "SELECT `code`, `name`, `class`, `deputy`, `campus` FROM `student` WHERE `semester`='%s';" % semester
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, student in enumerate(result):
             student_list.append({
                 'code': student[0],
                 'name': student[1],
-                'klass': student[2],
+                'class': student[2],
                 'deputy': student[3],
                 'campus': student[4]
             })
@@ -206,7 +206,7 @@ def room_select(conn, table):
                 'code': item[0],
                 'name': item[1],
                 'campus': item[2],
-                'building': item[2],
+                'building': item[3],
             })
             util.process_bar(count + 1, len(result), '已读取到%d条教室数据' % (count + 1))
         return room_list
@@ -235,7 +235,7 @@ def regex_room_select(conn, room_converter):
                     'code': item[0],
                     'name': item[1],
                     'campus': item[2],
-                    'building': item[2],
+                    'building': item[3],
                 })
                 util.process_bar(count + 1, len(result), '已读取到%d条教室数据' % (count + 1))
     return room_list
@@ -249,8 +249,8 @@ def error_room_select(conn, semester):
     error_list = []
     with conn.cursor() as cursor:
         # 查询异常数据
-        sql = "SELECT `cid`, `room`, `roomID` FROM `card` WHERE `semester`='%s' AND " \
-              "LENGTH( `roomID` ) > 0 AND `roomID` NOT IN ( SELECT `code` FROM `room` );" \
+        sql = "SELECT `cid`, `room`, `room_code` FROM `card` WHERE `semester`='%s' AND " \
+              "LENGTH( `room_code` ) > 0 AND `room_code` NOT IN ( SELECT `code` FROM `room` );" \
               % semester
         cursor.execute(sql)
         result = cursor.fetchall()
@@ -258,13 +258,13 @@ def error_room_select(conn, semester):
             error_list.append({
                 'cid': item[0],
                 'room': item[1],
-                'roomID': item[2],
+                'room_code': item[2],
             })
             util.process_bar(count + 1, len(result), '已监测到%d条映射异常' % (count + 1))
         return error_list
 
 
-def doubt_klass_list(conn, semester):
+def doubt_card_list(conn, semester):
     """
     检查重复的课程信息
     :return: 整合的重复课程
@@ -272,9 +272,9 @@ def doubt_klass_list(conn, semester):
     doubt_list = []
     with conn.cursor() as cursor:
         # 查询异常数据
-        sql = "SELECT `name`, `teacher`, `week`, `lesson`, `room`, `klass`, `pick`, `hour`, `type`, `roomID` " \
-              "FROM `card` WHERE `semester`='%s' GROUP BY `name`, `teacher`, `week`, `lesson`, `room`, `klass`, " \
-              "`pick`, `hour`, `type`, `roomID` HAVING COUNT(*) > 1;" % semester
+        sql = "SELECT `name`, `teacher`, `week`, `lesson`, `room`, `pick`, `hour`, `type`, `tea_class`, `room_code` " \
+              "FROM `card` WHERE `semester`='%s' GROUP BY `name`, `teacher`, `week`, `lesson`, `room`, " \
+              "`pick`, `hour`, `type`, `tea_class`, `room_code` HAVING COUNT(*) > 1;" % semester
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, item in enumerate(result):
@@ -284,30 +284,30 @@ def doubt_klass_list(conn, semester):
                 'week': item[2],
                 'lesson': item[3],
                 'room': item[4],
-                'klass': item[5],
-                'pick': item[6],
-                'hour': item[7],
-                'type': item[8],
-                'roomID': item[9],
+                'pick': item[5],
+                'hour': item[6],
+                'type': item[7],
+                'tea_class': item[8],
+                'room_code': item[9],
             })
             util.process_bar(count + 1, len(result), '已监测到%d条课程异常' % (count + 1))
         return doubt_list
 
 
-def klass_map_list(conn, semester, doubt_list):
+def card_map_list(conn, semester, doubt_list):
     """
     检索疑似错误的课程的映射
     :return: 课程映射表
     """
-    klass_map = []
+    card_map = []
     with conn.cursor() as cursor:
         for item in doubt_list:
             # 根据重复的信息查询现有的课程编号cid
             sql = "SELECT `cid` FROM `card` WHERE `semester`='%s' AND `name`='%s' AND `teacher`='%s' AND `week`='%s' " \
-                  "AND `lesson`='%s' AND `room`='%s' AND `klass`='%s' AND `pick`=%s AND `hour`=%s AND `type`='%s' " \
-                  "AND `roomID`='%s';" \
-                  % (semester, item['name'], item['teacher'], item['week'], item['lesson'], item['room'], item['klass'],
-                     item['pick'], item['hour'], item['type'], item['roomID'])
+                  "AND `lesson`='%s' AND `room`='%s' AND `tea_class`='%s' AND `pick`=%s AND `hour`=%s " \
+                  "AND `type`='%s' AND `room_code`='%s';" \
+                  % (semester, item['name'], item['teacher'], item['week'], item['lesson'], item['room'],
+                     item['tea_class'], item['pick'], item['hour'], item['type'], item['room_code'])
             cursor.execute(sql)
             result = cursor.fetchall()
             cid_list = []
@@ -323,8 +323,8 @@ def klass_map_list(conn, semester, doubt_list):
                 for sid in result:
                     sid_list.append(sid[0])
                 map_list[cid] = sid_list
-            klass_map.append({
+            card_map.append({
                 'key': item,
                 'map': map_list
             })
-        return klass_map
+        return card_map

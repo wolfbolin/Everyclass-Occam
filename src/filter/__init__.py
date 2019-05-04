@@ -11,6 +11,6 @@ from .filter_student import student_list
 from .filter_student import student_table
 
 from .filter_correct import error_room
-from .filter_correct import error_klass
+from .filter_correct import error_card
 
 from .filter_course import course_list

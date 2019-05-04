@@ -36,8 +36,8 @@ from .dao_select import entity_student_select
 from .dao_select import room_select
 from .dao_select import regex_room_select
 from .dao_select import error_room_select
-from .dao_select import doubt_klass_list
-from .dao_select import klass_map_list
+from .dao_select import doubt_card_list
+from .dao_select import card_map_list
 
 from .dao_delete import clean_search
 from .dao_delete import search_semester_delete
