@@ -27,12 +27,10 @@ from .dao_insert import entity_teacher_insert
 from .dao_insert import entity_card_insert
 from .dao_insert import entity_link_insert
 
-from .dao_select import occam_student_select
-from .dao_select import occam_teacher_select
+from .dao_select import student_select
+from .dao_select import teacher_select
 from .dao_select import occam_card_select
 from .dao_select import occam_link_select
-from .dao_select import entity_teacher_select
-from .dao_select import entity_student_select
 from .dao_select import room_select
 from .dao_select import regex_room_select
 from .dao_select import error_room_select

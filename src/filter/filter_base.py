@@ -22,6 +22,7 @@ def room_all(data_set):
         room['campus'] = room['campus'].replace('\xa0', '').replace('\u3000', '').strip()
         room['building'] = room['building'].replace('\xa0', '').replace('\u3000', '').strip()
         room['name'] = util.sbc2dbc(room['name'])
+        room['building'] = util.sbc2dbc(room['building'])
         if room not in result:
             result.append(room)
     return result

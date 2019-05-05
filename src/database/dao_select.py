@@ -4,7 +4,7 @@
 import util
 
 
-def occam_student_select(conn, semester):
+def student_select(conn, table):
     """
     在Occam数据库中查询某学期全部学生的信息
     :return: 学生信息数据
@@ -12,11 +12,11 @@ def occam_student_select(conn, semester):
     student_list = []
     with conn.cursor() as cursor:
         # 查询学生信息总数
-        sql = 'SELECT COUNT(*) FROM `student_%s`;' % semester
+        sql = 'SELECT COUNT(*) FROM `%s`;' % table
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询学生的信息
-        sql = 'SELECT `sid`, `code`, `name`, `class`, `deputy`, `campus` FROM `student_%s`;' % semester
+        sql = 'SELECT `sid`, `code`, `name`, `class`, `deputy`, `campus` FROM `%s`;' % table
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, student in enumerate(result):
@@ -32,7 +32,7 @@ def occam_student_select(conn, semester):
         return student_list
 
 
-def occam_teacher_select(conn, semester):
+def teacher_select(conn, table):
     """
     在Occam数据库中查询某学期全部教师的信息
     :return: 教师信息数据
@@ -40,11 +40,11 @@ def occam_teacher_select(conn, semester):
     teacher_list = []
     with conn.cursor() as cursor:
         # 查询教师信息总数
-        sql = 'SELECT COUNT(*) FROM `teacher_%s`;' % semester
+        sql = 'SELECT COUNT(*) FROM `%s`;' % table
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询教师的信息
-        sql = 'SELECT `tid`, `code`, `name`, `unit`, `title`, `degree` FROM `teacher_%s`;' % semester
+        sql = 'SELECT `tid`, `code`, `name`, `unit`, `title`, `degree` FROM `%s`;' % table
         cursor.execute(sql)
         result = cursor.fetchall()
         for count, teacher in enumerate(result):
@@ -108,13 +108,18 @@ def occam_link_select(conn, semester):
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询教师的信息
-        sql = 'SELECT `tid`, `cid` FROM `teacher_link_%s`;' % semester
+        sql = 'SELECT card.`code`, `cid`, `tid`, teacher.`code` FROM `teacher_link_%s` ' \
+              'JOIN `teacher_%s` AS teacher USING(`tid`) ' \
+              'JOIN `card_%s` AS card USING(`cid`);' \
+              % (semester, semester, semester)
         cursor.execute(sql)
         result = cursor.fetchall()
-        for count, teacher in enumerate(result):
+        for count, link in enumerate(result):
             link_list.append({
-                'tid': teacher[0],
-                'cid': teacher[1]
+                'card_code': link[0],
+                'cid': link[1],
+                'tid': link[2],
+                'teacher_code': link[3]
             })
             util.process_bar(count + 1, data_count, '已查询%d条教师关联数据' % (count + 1))
 
@@ -123,71 +128,22 @@ def occam_link_select(conn, semester):
         cursor.execute(sql)
         data_count = cursor.fetchone()[0]
         # 查询学生关联的信息
-        sql = 'SELECT `sid`, `cid` FROM `student_link_%s`;' % semester
+        sql = 'SELECT card.`code`, `cid`, `sid`, student.`code` FROM `student_link_%s` ' \
+              'JOIN `student_%s` AS student USING(`sid`) ' \
+              'JOIN `card_%s` AS card USING(`cid`);' \
+              % (semester, semester, semester)
         cursor.execute(sql)
         result = cursor.fetchall()
-        for count, teacher in enumerate(result):
+        for count, link in enumerate(result):
             link_list.append({
-                'sid': teacher[0],
-                'cid': teacher[1]
+                'card_code': link[0],
+                'cid': link[1],
+                'sid': link[2],
+                'student_code': link[3]
             })
             util.process_bar(count + 1, data_count, '已查询%d条学生关联数据' % (count + 1))
 
         return link_list
-
-
-def entity_student_select(conn, semester):
-    """
-    在Occam数据库中查询某学期全部学生的信息
-    :return: 学生信息数据
-    """
-    student_list = []
-    with conn.cursor() as cursor:
-        # 查询学生信息总数
-        sql = "SELECT COUNT(*) FROM `student` WHERE `semester`='%s';" % semester
-        cursor.execute(sql)
-        data_count = cursor.fetchone()[0]
-        # 查询学生的信息
-        sql = "SELECT `code`, `name`, `class`, `deputy`, `campus` FROM `student` WHERE `semester`='%s';" % semester
-        cursor.execute(sql)
-        result = cursor.fetchall()
-        for count, student in enumerate(result):
-            student_list.append({
-                'code': student[0],
-                'name': student[1],
-                'class': student[2],
-                'deputy': student[3],
-                'campus': student[4]
-            })
-            util.process_bar(count + 1, data_count, '已查询%d条学生数据' % (count + 1))
-        return student_list
-
-
-def entity_teacher_select(conn, semester):
-    """
-    在Entity数据库中查询某学期全部教师的信息
-    :return: 教师信息数据
-    """
-    teacher_list = []
-    with conn.cursor() as cursor:
-        # 查询教师信息总数
-        sql = "SELECT COUNT(*) FROM `teacher` WHERE `semester`='%s';" % semester
-        cursor.execute(sql)
-        data_count = cursor.fetchone()[0]
-        # 查询教师的信息
-        sql = "SELECT `code`, `name`, `unit`, `title`, `degree` FROM `teacher` WHERE `semester`='%s';" % semester
-        cursor.execute(sql)
-        result = cursor.fetchall()
-        for count, teacher in enumerate(result):
-            teacher_list.append({
-                'code': teacher[0],
-                'name': teacher[1],
-                'unit': teacher[2],
-                'title': teacher[3],
-                'degree': teacher[4]
-            })
-            util.process_bar(count + 1, data_count, '已查询%d条教师数据' % (count + 1))
-        return teacher_list
 
 
 def room_select(conn, table):

@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import pymysql
 # Personal package
 import util
 
@@ -150,12 +151,18 @@ def entity_teacher_insert(teacher_data):
     rowcount = 0
     conn = teacher_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
-        sql = "INSERT INTO `teacher` (`oid`, `code`, `name`, `unit`, `title`, `degree`, `semester`) " \
-              "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');" \
-              % (teacher_data['tid'], teacher_data['code'], teacher_data['name'], teacher_data['unit'],
-                 teacher_data['title'], teacher_data['degree'], teacher_data['semester'])
-        cursor.execute(sql)
-        rowcount += cursor.rowcount
+        try:
+            sql = "INSERT INTO `teacher` (`code`,`name`,`unit`,`title`,`degree`) VALUES ('%s','%s','%s','%s','%s')" \
+                  % (teacher_data['code'], teacher_data['name'], teacher_data['unit'],
+                     teacher_data['title'], teacher_data['degree'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+        except pymysql.err.IntegrityError as e:
+            sql = "UPDATE `teacher` SET `name`='%s', `unit`='%s', `title`='%s', `degree`='%s' WHERE `code`='%s'" \
+                  % (teacher_data['name'], teacher_data['unit'], teacher_data['title'],
+                     teacher_data['degree'], teacher_data['code'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
     return rowcount
 
 
@@ -169,12 +176,19 @@ def entity_student_insert(student_data):
     rowcount = 0
     conn = student_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
-        sql = "INSERT INTO `student` (`oid`, `code`, `name`, `class`, `deputy`, `campus`, `semester`) " \
-              "VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');" \
-              % (student_data['sid'], student_data['code'], student_data['name'], student_data['class'],
-                 student_data['deputy'], student_data['campus'], student_data['semester'])
-        cursor.execute(sql)
-        rowcount += cursor.rowcount
+        try:
+            sql = "INSERT INTO `student` (`code`, `name`, `class`, `deputy`, `campus`) " \
+                  "VALUES ('%s','%s','%s','%s','%s')" \
+                  % (student_data['code'], student_data['name'], student_data['class'],
+                     student_data['deputy'], student_data['campus'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+        except pymysql.err.IntegrityError as e:
+            sql = "UPDATE `student` SET `name`='%s', `class`='%s', `deputy`='%s', `campus`='%s' WHERE `code`='%s'" \
+                  % (student_data['name'], student_data['class'], student_data['deputy'],
+                     student_data['campus'], student_data['code'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
     return rowcount
 
 
@@ -212,12 +226,11 @@ def entity_link_insert(link_data):
         # 判读关联数据类型
         if 'tid' in link_data.keys():
             # 教师类型关联，查询原始数据的新编号
-            sql = "SELECT `tid` FROM `teacher` WHERE `semester`='%s' AND `oid`='%s';" \
-                  % (link_data['semester'], link_data['tid'])
+            sql = "SELECT `tid` FROM `teacher` WHERE `code`='%s';" % link_data['teacher_code']
             cursor.execute(sql)
             tid = cursor.fetchone()[0]
-            sql = "SELECT `cid` FROM `card` WHERE `semester`='%s' AND `oid`='%s';" \
-                  % (link_data['semester'], link_data['cid'])
+            sql = "SELECT `cid` FROM `card` WHERE `semester`='%s' AND `code`='%s';" \
+                  % (link_data['semester'], link_data['card_code'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
             # 写入新的关联数据
@@ -227,12 +240,11 @@ def entity_link_insert(link_data):
             rowcount += cursor.rowcount
         elif 'sid' in link_data.keys():
             # 学生类型关联，查询原始数据的新编号
-            sql = "SELECT `sid` FROM `student` WHERE `semester`='%s' AND `oid`='%s';" \
-                  % (link_data['semester'], link_data['sid'])
+            sql = "SELECT `sid` FROM `student` WHERE `code`='%s';" % link_data['student_code']
             cursor.execute(sql)
             sid = cursor.fetchone()[0]
-            sql = "SELECT `cid` FROM `card` WHERE `semester`='%s' AND `oid`='%s';" \
-                  % (link_data['semester'], link_data['cid'])
+            sql = "SELECT `cid` FROM `card` WHERE `semester`='%s' AND `code`='%s';" \
+                  % (link_data['semester'], link_data['card_code'])
             cursor.execute(sql)
             cid = cursor.fetchone()[0]
             # 写入新的关联数据

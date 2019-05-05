@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     elif filter.check_semester(document) is True:
         semester_list = [document]
-    elif len(semester_list) == 0:
+    else:
         util.print_e('请做出正确的选择')
         exit()
 

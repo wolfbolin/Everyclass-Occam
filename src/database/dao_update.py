@@ -19,8 +19,9 @@ def room_update(conn, table, room_data):
         for count, room in enumerate(room_data):
             # 尝试插入该教室信息，若出现UNIQUE重复则自动忽略
             sql = "INSERT INTO  `%s` (`code`, `name`, `campus`, `building`) VALUES ('%s', '%s', '%s', '%s') " \
-                  "ON DUPLICATE KEY UPDATE `name` = '%s';" \
-                  % (table, room['code'], room['name'], room['campus'], room['building'], room['name'])
+                  "ON DUPLICATE KEY UPDATE `name` = '%s', `campus` = '%s', `building` = '%s';" \
+                  % (table, room['code'], room['name'], room['campus'], room['building'],
+                     room['name'], room['campus'], room['building'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
             util.process_bar(count + 1, len(room_data), '完成%s项，修改%s行' % (count + 1, rowcount))

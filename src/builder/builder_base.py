@@ -117,22 +117,18 @@ def copy_mysql_data(semester):
 
     util.print_t('Step1:正在拷贝教师数据')
 
-    util.print_i('Step1.1:正在删除旧的教师数据')
-    rowcount += database.entity_semester_delete(entity_conn, 'teacher', semester)
-    util.print_i('Step1.2:正在读取新的教师数据')
-    teacher_list = database.occam_teacher_select(occam_conn, semester)
-    util.print_i('Step1.3:正在写入新的教师数据')
+    util.print_i('Step1.1:正在读取新的教师数据')
+    teacher_list = database.teacher_select(occam_conn, 'teacher_%s' % semester)
+    util.print_i('Step1.2:正在写入新的教师数据')
     rowcount += util.multiprocess(task=database.entity_teacher_insert, main_data=teacher_list, max_thread=30,
                                   attach_data={'semester': semester, 'mysql_database': util.mysql_entity_database},
                                   multithread=util.mysql_multithread)
 
     util.print_t('Step2:正在拷贝学生数据')
 
-    util.print_i('Step2.1:正在删除旧的学生数据')
-    rowcount += database.entity_semester_delete(entity_conn, 'student', semester)
-    util.print_i('Step2.2:正在读取新的学生数据')
-    student_list = database.occam_student_select(occam_conn, semester)
-    util.print_i('Step2.3:正在写入新的学生数据')
+    util.print_i('Step2.1:正在读取新的学生数据')
+    student_list = database.student_select(occam_conn, 'student_%s' % semester)
+    util.print_i('Step2.2:正在写入新的学生数据')
     rowcount += util.multiprocess(task=database.entity_student_insert, main_data=student_list, max_thread=30,
                                   attach_data={'semester': semester, 'mysql_database': util.mysql_entity_database},
                                   multithread=util.mysql_multithread)
