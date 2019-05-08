@@ -23,7 +23,7 @@ if __name__ == "__main__":
     document = input("更新所有学期数据or更新某学期数据(y/20xx-20xx-x/other)：")
     if document == 'y':
         # 清空数据库课程信息，使主键从1开始计算
-        util.print_w('正在清空实体数据库')
+        util.print_w('正在清空Entity数据库')
         builder.build_entity_table()
         util.print_w('正在清空搜索数据库')
         mongo_conn = database.mongo_connect(util.mongo_entity_database)
