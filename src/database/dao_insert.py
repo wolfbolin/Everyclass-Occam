@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import json
 import pymysql
 # Personal package
 import util
@@ -151,6 +152,7 @@ def entity_teacher_insert(teacher_data):
     rowcount = 0
     conn = teacher_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
+        # 写入拷贝数据
         try:
             sql = "INSERT INTO `teacher` (`code`,`name`,`unit`,`title`,`degree`) VALUES ('%s','%s','%s','%s','%s')" \
                   % (teacher_data['code'], teacher_data['name'], teacher_data['unit'],
@@ -161,6 +163,22 @@ def entity_teacher_insert(teacher_data):
             sql = "UPDATE `teacher` SET `name`='%s', `unit`='%s', `title`='%s', `degree`='%s' WHERE `code`='%s'" \
                   % (teacher_data['name'], teacher_data['unit'], teacher_data['title'],
                      teacher_data['degree'], teacher_data['code'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+        # 写入实体数据
+        data = {
+            'unit': teacher_data['unit'],
+            'title': teacher_data['title'],
+            'degree': teacher_data['degree']
+        }
+        try:
+            sql = "INSERT INTO `entity` (`code`,`name`,`type`,`data`) VALUES ('%s','%s','%s','%s');" \
+                  % (teacher_data['code'], teacher_data['name'], 'teacher', json.dumps(data, ensure_ascii=False))
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+        except pymysql.err.IntegrityError as e:
+            sql = "UPDATE `entity` SET `name`='%s', `data`='%s' WHERE `code`='%s'" \
+                  % (teacher_data['name'], json.dumps(data, ensure_ascii=False), teacher_data['code'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
     return rowcount
@@ -176,6 +194,7 @@ def entity_student_insert(student_data):
     rowcount = 0
     conn = student_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
+        # 写入拷贝数据
         try:
             sql = "INSERT INTO `student` (`code`, `name`, `class`, `deputy`, `campus`) " \
                   "VALUES ('%s','%s','%s','%s','%s')" \
@@ -187,6 +206,22 @@ def entity_student_insert(student_data):
             sql = "UPDATE `student` SET `name`='%s', `class`='%s', `deputy`='%s', `campus`='%s' WHERE `code`='%s'" \
                   % (student_data['name'], student_data['class'], student_data['deputy'],
                      student_data['campus'], student_data['code'])
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+        # 写入实体数据
+        data = {
+            'class': student_data['class'],
+            'deputy': student_data['deputy'],
+            'campus': student_data['campus']
+        }
+        try:
+            sql = "INSERT INTO `entity` (`code`,`name`,`type`,`data`) VALUES ('%s','%s','%s','%s');" \
+                  % (student_data['code'], student_data['name'], 'student', json.dumps(data, ensure_ascii=False))
+            cursor.execute(sql)
+            rowcount += cursor.rowcount
+        except pymysql.err.IntegrityError as e:
+            sql = "UPDATE `entity` SET `name`='%s', `data`='%s' WHERE `code`='%s'" \
+                  % (student_data['name'], json.dumps(data, ensure_ascii=False), student_data['name'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
     return rowcount

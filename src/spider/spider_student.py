@@ -79,10 +79,10 @@ def student_info(page_data):
         cells = line.find_all('td')
         student_line = copy.deepcopy(util.student_info)
         student_line['code'] = cells[2].string
-        student_line['name'] = cells[3].string
-        student_line['class'] = cells[5].string
-        student_line['deputy'] = cells[6].string
-        student_line['campus'] = cells[7].string
+        student_line['name'] = cells[7].string
+        student_line['class'] = cells[4].string
+        student_line['deputy'] = cells[5].string
+        student_line['campus'] = cells[6].string
         result.append(student_line)
     return result
 

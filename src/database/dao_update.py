@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # Common package
+import json
 import pypinyin
 # Personal package
 import util
@@ -24,6 +25,19 @@ def room_update(conn, table, room_data):
                      room['name'], room['campus'], room['building'])
             cursor.execute(sql)
             rowcount += cursor.rowcount
+            # 根据需要更新实体库
+            if table == 'room':
+                # 写入实体信息
+                data = {
+                    'campus': room['campus'],
+                    'building': room['building']
+                }
+                sql = "INSERT INTO `entity` (`code`,`name`,`type`,`data`) VALUES ('%s','%s','%s','%s') " \
+                      "ON DUPLICATE KEY UPDATE `name`='%s', `data`='%s'" \
+                      % (room['code'], room['name'], 'room', json.dumps(data, ensure_ascii=False),
+                         room['name'], json.dumps(data, ensure_ascii=False))
+                cursor.execute(sql)
+                rowcount += cursor.rowcount
             util.process_bar(count + 1, len(room_data), '完成%s项，修改%s行' % (count + 1, rowcount))
         return rowcount
 

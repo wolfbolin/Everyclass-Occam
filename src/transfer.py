@@ -11,6 +11,9 @@ import util
 filterwarnings('error', category=pymysql.Warning)
 
 if __name__ == "__main__":
+    rowcount = 0
+    change_log = []
+
     # 预读取学期列表
     mysql_conn = database.mysql_connect(util.mysql_occam_database)
     semester_list = database.get_semester_list(mysql_conn)
@@ -20,24 +23,22 @@ if __name__ == "__main__":
     document = input("更新所有学期数据or更新某学期数据(y/20xx-20xx-x/other)：")
     if document == 'y':
         # 清空数据库课程信息，使主键从1开始计算
-        util.print_w('正在清空关联数据库')
+        util.print_w('正在清空实体数据库')
         builder.build_entity_table()
         util.print_w('正在清空搜索数据库')
         mongo_conn = database.mongo_connect(util.mongo_entity_database)
+        database.clean_search(mongo_conn)
     elif document in semester_list:
         semester_list = [document]
     else:
         util.print_e('请做出正确的选择')
         exit()
 
-    rowcount = 0
-    change_log = []
-
     for semester in semester_list:
         util.print_w('正在修改%s学期的数据' % semester)
 
         # 同步学期数据
-        builder.copy_mysql_data(semester)
+        builder.build_copy_data(semester)
 
         # 修正教室数据
         sql_count, change_log_room = builder.correct_room_data(semester)

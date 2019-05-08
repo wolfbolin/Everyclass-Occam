@@ -99,12 +99,13 @@ def build_entity_table():
     rowcount += database.clean_table(entity_conn, 'teacher_link')
     rowcount += database.clean_table(entity_conn, 'student')
     rowcount += database.clean_table(entity_conn, 'teacher')
+    rowcount += database.clean_table(entity_conn, 'entity')
     rowcount += database.clean_table(entity_conn, 'card')
     rowcount += database.clean_table(entity_conn, 'room')
     return rowcount
 
 
-def copy_mysql_data(semester):
+def build_copy_data(semester):
     """
     将该学期的数据复制到线上服务数据中
     :param semester: 需要聚合的学期

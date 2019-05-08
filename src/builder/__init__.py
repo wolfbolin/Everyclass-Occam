@@ -2,7 +2,7 @@ from .builder_base import build_folder
 from .builder_base import build_occam_table
 from .builder_base import build_room
 from .builder_base import build_entity_table
-from .builder_base import copy_mysql_data
+from .builder_base import build_copy_data
 
 from .builder_teacher import build_teacher
 from .builder_teacher import build_teacher_table
