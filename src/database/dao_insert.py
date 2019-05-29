@@ -62,10 +62,10 @@ def occam_teacher_insert(teacher_data):
                 sql = "INSERT INTO  `card_%s` (`pick`, `hour`, `type`, `code`, `name`, `room`, `week`, `lesson`, " \
                       "`teacher`, `tea_class`, `room_code`)" \
                       "VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s') " \
-                      "ON DUPLICATE KEY UPDATE `cid`=`cid`;" \
+                      "ON DUPLICATE KEY UPDATE `teacher`=CONCAT(`teacher`, ';%s');" \
                       % (teacher_data['semester'], card['pick'], card['hour'], card['type'],
                          card['code'], card['name'], card['room'], card['week'], card['lesson'],
-                         card['teacher'], card['tea_class'], card['room_code'])
+                         card['teacher'], card['tea_class'], card['room_code'], teacher_data['teacher_name'])
                 cursor.execute(sql)
                 rowcount += cursor.rowcount
                 sql = "UNLOCK TABLES;"
@@ -119,11 +119,11 @@ def occam_student_insert(student_data):
                 cursor.execute(sql)
                 sql = "INSERT INTO  `card_%s` (`pick`, `hour`, `type`, `code`, `name`, `room`, `week`, `lesson`, " \
                       "`teacher`, `tea_class`, `room_code`)" \
-                      "VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s') " \
+                      "VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '', '%s', '%s') " \
                       "ON DUPLICATE KEY UPDATE `cid` = `cid`;" \
                       % (student_data['semester'], card['pick'], card['hour'], card['type'],
                          card['code'], card['name'], card['room'], card['week'], card['lesson'],
-                         card['teacher'], card['tea_class'], card['room_code'])
+                         card['tea_class'], card['room_code'])
                 cursor.execute(sql)
                 rowcount += cursor.rowcount
                 sql = "UNLOCK TABLES;"
