@@ -69,6 +69,30 @@ def student_update(student_data):
         return rowcount
 
 
+def course_update(course_data):
+    """
+    多线程函数
+    完成学生的信息在学生总表上插入，若学生编号已存在则跳过
+    学生信息的批量插入需要由控制器完成
+    :param course_data: 数据字典，一名学生的信息+数据库链接句柄
+    :return: 受影响的数据行数
+    """
+    conn = course_data['mysql_pool'].connection()
+    with conn.cursor() as cursor:
+        # 尝试插入该学生信息，若出现UNIQUE重复则自动更新数据
+        sql = "INSERT INTO `course_all`(`code`,`name`,`unit`,`type`,`credit`, `essence`)" \
+              "VALUES('%s','%s','%s','%s','%s','%s') " \
+              "ON DUPLICATE KEY UPDATE `name`='%s',`unit`='%s',`type`='%s',`credit`='%s',`essence`='%s';" \
+              % (course_data['code'],
+                 course_data['name'], course_data['unit'], course_data['type'], course_data['credit'],
+                 course_data['essence'],
+                 course_data['name'], course_data['unit'], course_data['type'], course_data['credit'],
+                 course_data['essence'])
+        cursor.execute(sql)
+        rowcount = cursor.rowcount
+        return rowcount
+
+
 def course_code_update(course_data):
     """
     多线程函数

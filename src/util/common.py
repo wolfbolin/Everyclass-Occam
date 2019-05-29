@@ -40,6 +40,16 @@ student_info = {
     'campus': ''
 }
 
+# 课程的信息数据结构
+course_info = {
+    'code': '',
+    'name': '',
+    'unit': '',
+    'type': '',
+    'credit': '',
+    'essence': ''
+}
+
 # 课程卡片信息数据结构
 card_info = {
     # 课程卡片信息

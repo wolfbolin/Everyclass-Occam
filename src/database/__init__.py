@@ -13,6 +13,7 @@ from .dao_base import search_converter
 from .dao_update import room_update
 from .dao_update import teacher_update
 from .dao_update import student_update
+from .dao_update import course_update
 from .dao_update import course_code_update
 from .dao_update import vague_search_update
 from .dao_update import room_search_update

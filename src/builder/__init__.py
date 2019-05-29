@@ -17,4 +17,5 @@ from .builder_correct import save_change_log
 from .builder_correct import correct_room_data
 from .builder_correct import correct_card_data
 
+from .builder_course import build_course
 from .builder_course import build_course_info

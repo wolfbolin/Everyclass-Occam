@@ -54,11 +54,15 @@ from .config import usa_url
 from .config import jspk_url
 from .config import qxzbk_url
 from .config import tkgl_url
+from .config import kbxx_kc
+from .config import kcxx_url
+from .config import kcxx2_url
 
 from .common import student_info
 from .common import teacher_info
 from .common import room_info
 from .common import card_info
+from .common import course_info
 from .common import table_name_template
 
 from .proxy import get_proxy

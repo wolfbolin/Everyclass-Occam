@@ -9,4 +9,5 @@ from .spider_student import student_all
 from .spider_student import student_list
 from .spider_student import student_table
 
+from .spider_course import course_all
 from .spider_course import course_list

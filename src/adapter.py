@@ -29,6 +29,9 @@ if __name__ == "__main__":
         # 刷新所有教室的信息
         builder.build_room()
 
+        # 刷新所有课程的信息
+        builder.build_course()
+
     elif filter.check_semester(document) is True:
         semester_list = [document]
     else:
