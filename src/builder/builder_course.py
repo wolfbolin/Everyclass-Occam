@@ -30,19 +30,19 @@ def build_course():
         util.print_d('已从网络获取数据并缓存')
 
     # 数据过滤代码片段
-    util.print_t('Step2:正在校验所有教室的数据')
+    util.print_t('Step2:正在校验所有课程的数据')
     course_all = filter.course_all(course_all)
 
     # 向数据库中写入数据
-    util.print_t('Step3:正在写入所有教室的数据')
+    util.print_t('Step3:正在写入所有课程的数据')
     time_start = time.time()
     rowcount += util.multiprocess(task=database.course_update, main_data=course_all,
                                   multithread=util.mysql_multithread, max_thread=10,
                                   attach_data={'mysql_database': util.mysql_occam_database})
     time_end = time.time()
-    util.print_d('学生数据写入数据库完成，耗时%d秒，操作数据库%d行' % (ceil(time_end - time_start), rowcount))
+    util.print_d('课程数据写入数据库完成，耗时%d秒，操作数据库%d行' % (ceil(time_end - time_start), rowcount))
 
-    util.print_d('所有学生的数据已处理完毕')
+    util.print_d('所有课程的数据已处理完毕')
     return rowcount
 
 
@@ -66,11 +66,19 @@ def build_course_info(semester):
         util.save_to_cache(semester, '', 'course_list', json.dumps(course_list))
         util.print_d('已从网络获取数据并缓存')
 
+    util.print_t('Step2:正在读取全体课程信息')
+    course_all = util.read_from_cache('global', '', 'course_all')
+    course_all = json.loads(course_all)
+    util.print_d('已从缓存中读取数据')
+
     # 数据过滤代码片段
     util.print_t('Step2:正在解析并范化本学期课程信息')
 
-    util.print_i('Step2.1:正在解析并范化课程信息')
-    course_list = filter.course_list(course_list)
+    util.print_t('Step2.1:正在校验所有课程的数据')
+    course_all = filter.course_all(course_all)
+
+    util.print_i('Step2.2:正在解析并范化课程信息')
+    course_list = filter.course_list(course_list, course_all)
 
     # 将数据写入数据库
     util.print_t('Step3:正在写入本学期学生课表信息')

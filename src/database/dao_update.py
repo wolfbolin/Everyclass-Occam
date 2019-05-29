@@ -102,8 +102,8 @@ def course_code_update(course_data):
     """
     conn = course_data['mysql_pool'].connection()
     with conn.cursor() as cursor:
-        sql = "UPDATE `card_{}` SET `course_code`='{}' WHERE `name` LIKE '{}%';" \
-            .format(course_data['semester'], course_data['code'], course_data['name'])
+        sql = "UPDATE `card_{}` SET `course_code`='{}', `credit`={} WHERE `name` LIKE '{}%';" \
+            .format(course_data['semester'], course_data['code'], course_data['credit'], course_data['name'])
         cursor.execute(sql)
         rowcount = cursor.rowcount
         return rowcount
