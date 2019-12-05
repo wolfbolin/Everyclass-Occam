@@ -10,6 +10,10 @@ from requests.adapters import HTTPAdapter
 useragent_path = os.path.dirname(__file__) + '/fake_useragent.json'
 
 
+def purify_string(str):
+    return str.replace('\xa0', '').replace('\u3000', '').strip()
+
+
 def write_log(name="", data=""):
     log_path = os.path.abspath(Util.code_dir() + "/../log")
     if not os.path.exists(log_path):

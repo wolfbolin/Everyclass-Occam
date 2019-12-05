@@ -2,7 +2,7 @@
 import Util
 
 
-def read_room_list(conn, version):
+def read_room_list_html(conn, version):
     cursor = conn.cursor()
     sql = "SELECT `page`, `data` FROM `list_html` WHERE `group`='room' AND `version`=%s"
     cursor.execute(sql, args=[version])
@@ -18,11 +18,23 @@ def read_room_list(conn, version):
     return room_list
 
 
-def write_room_list(conn, version, page, data):
+def write_room_list_html(conn, version, page, data):
     cursor = conn.cursor()
-    sql = "INSERT INTO `list_html` (`time`, `data`, `page`, `group`, `version`) " \
+    sql = "REPLACE INTO `list_html` (`time`, `data`, `page`, `group`, `version`) " \
           "VALUES (%s, %s, %s, %s, %s)"
     cursor.execute(sql, args=[Util.str_time(), str(data), int(page), "room", str(version)])
     conn.commit()
 
-    Util.print_white("插入【教室列表】第[%s]页 (RC: %d)" % (page, cursor.rowcount))
+    Util.print_white("插入【教室列表】原始数据-第[%s]页 (RC: %d)" % (page, cursor.rowcount))
+
+
+def write_room_list_json(conn, version, page, data):
+    cursor = conn.cursor()
+    sql = "REPLACE INTO `list_json` (`time`, `data`, `page`, `group`, `version`) " \
+          "VALUES (%s, %s, %s, %s, %s) "
+    cursor.execute(sql, args=[Util.str_time(), str(data), int(page), "room", str(version)])
+    conn.commit()
+
+    Util.print_white("插入【教室列表】解析数据-第[%s]页 (RC: %d)" % (page, cursor.rowcount))
+
+

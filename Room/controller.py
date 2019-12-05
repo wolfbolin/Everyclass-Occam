@@ -20,3 +20,4 @@ def update_room(config):
 
 def update_room_list(config, version):
     pull_room_list(config, version)
+    parse_room_list(config, version)
