@@ -42,6 +42,10 @@ def print_white(message, tag="INFO"):
     print('\033[0;37m[{}] {}\033[0m'.format(tag, str(message)))  # 白色
 
 
+def print_none(message, tag="DEBUG"):
+    print('[{}] {}'.format(tag, str(message)))  # 白色
+
+
 def process_bar(now, total, attach=''):
     # 在窗口底部动态显示进度条
     rate = now / total
@@ -161,6 +165,16 @@ def parse_cookie(cookies):
     return cookie_dict
 
 
-def random_ip():
-    return "{}.{}.{}.{}".format(random.randint(50, 250), random.randint(50, 250),
-                                random.randint(50, 250), random.randint(50, 250))
+def random_ip(model="all"):
+    if model == "A":
+        return "%d.%d.%d.%d" % (random.randint(1, 126), random.randint(1, 254),
+                                random.randint(1, 254), random.randint(1, 254))
+    elif model == "B":
+        return "%d.%d.%d.%d" % (random.randint(128, 191), random.randint(1, 254),
+                                random.randint(1, 254), random.randint(1, 254))
+    elif model == "C":
+        return "%d.%d.%d.%d" % (random.randint(192, 223), random.randint(1, 254),
+                                random.randint(1, 254), random.randint(1, 254))
+    else:
+        return "%d.%d.%d.%d" % (random.randint(1, 254), random.randint(1, 254),
+                                random.randint(1, 254), random.randint(1, 254))
