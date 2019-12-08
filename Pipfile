@@ -11,6 +11,8 @@ fake-useragent = "*"
 "beautifulsoup4" = "*"
 lxml = "==4.2.5"
 pymysql = "*"
+dbutils = "*"
+pypinyin = "*"
 
 [requires]
 python_version = "3.7"

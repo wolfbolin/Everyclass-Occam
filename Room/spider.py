@@ -19,7 +19,7 @@ def pull_room_list(config, version):
     headers = Util.access_header(url)
     http_data = {
         "PageNum": 1,
-        "pageSize": "50"
+        "pageSize": "30"
     }
     http_result, cookies = Util.safe_http_request("POST", url, headers=headers, cookies=auth_cookies,
                                                   data=http_data, proxies=config["proxy"])
@@ -80,6 +80,9 @@ def parse_room_list(config, version):
         "building": 0
     }
 
+    if len(room_list_html) == 0:
+        return False
+
     # 预分析标签列
     try:
         soup = BeautifulSoup(room_list_html[0]["data"], "lxml")
@@ -90,7 +93,7 @@ def parse_room_list(config, version):
             tag_key = tag_meaning[tag.string]
             tag_index[tag_key] = index
     except AttributeError:
-        Util.write_log("room_list_html", room_list_html[0]["data"])
+        Util.write_log("room_list_html", room_list_html["data"])
         raise Util.ParseError("【教室列表】解析标签列失败，解析页面已写入日志")
 
     # 解析页面数据
@@ -117,12 +120,14 @@ def parse_room_list(config, version):
             Util.write_log("room_list_html", room_list_html[0]["data"])
             raise Util.ParseError("【教室列表】第%d页解析失败，解析页面已写入日志" % html["page"])
 
+    return True
+
 
 if __name__ == '__main__':
     # 测试获取教室列表
     # _config = Util.get_config("../config")
-    # pull_room_list(_config, Util.str_time("%Y-%m-%d"))
+    # pull_room_list(_config, Util.str_time("2019-11-27"))
 
     # 测试解析教室列表
     _config = Util.get_config("../config")
-    parse_room_list(_config, Util.str_time("%Y-%m-%d"))
+    parse_room_list(_config, Util.str_time("2019-11-27"))
