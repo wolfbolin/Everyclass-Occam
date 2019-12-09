@@ -51,13 +51,12 @@ def process_bar(now, total, attach=''):
     rate = now / total
     rate_num = int(rate * 100)
     bar_length = int(rate_num / 2)
-    blank = ' ' * 100
     if rate_num == 100:
-        bar = 'Pid:%5d: %s%s' % (os.getpid(), attach, blank)
+        bar = 'Pid:[%5d]: %s' % (os.getpid(), attach.center(10, " "))
         bar = '\r' + bar[0:40]
         bar += '%s>%d%%\n' % ('=' * bar_length, rate_num)
     else:
-        bar = 'Pid:%5d: %s%s' % (os.getpid(), attach, blank)
+        bar = 'Pid:[%5d]: %s' % (os.getpid(), attach.center(10, " "))
         bar = '\r' + bar[0:40]
         bar += '%s>%d%%' % ('=' * bar_length, rate_num)
     sys.stdout.write(bar)

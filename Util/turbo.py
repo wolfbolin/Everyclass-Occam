@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 import Util
+import time
 import json
 import pymysql
 import multiprocessing
@@ -34,10 +35,17 @@ def turbo_multiprocess(config, task_func, comm_data, task_data, max_thread=4, my
         process.start()
         process_bin.append(process)
 
+    # 等待进程创建
+    time.sleep(1)
+    Util.print_purple("进程创建成功，即将下发 [%d] 条数据" % len(task_data))
+
     # 下发任务数据
-    for data in task_data:
+    for num, data in enumerate(task_data):
         data.update(comm_data)
+        while task_queue.qsize() > core_num * max_thread + 16:
+            time.sleep(0.1)
         task_queue.put(data)
+        Util.process_bar(num + 1, len(task_data), "多进程数据下发")
 
     # 下发终止指令
     for i in range(core_num):
