@@ -58,7 +58,7 @@ def read_room_list_json(conn, version):
 
 
 def write_room_info(data):
-    conn = data["conn"].connection()
+    conn = data["mysql_pool"].connection()
     cursor = conn.cursor()
 
     sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED"
@@ -90,3 +90,7 @@ def write_room_info(data):
         break
 
     conn.commit()
+
+
+def read_room_info(conn, code):
+    pass

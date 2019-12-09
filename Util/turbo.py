@@ -80,7 +80,7 @@ def turbo_multithread(config, task_func, task_queue, manager_list, max_thread=4,
             break
 
         if mysql_pool is not None:
-            task_data["conn"] = mysql_pool
+            task_data["mysql_pool"] = mysql_pool
 
         if cookies is not None:
             task_data["cookies"] = cookies
