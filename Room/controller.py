@@ -53,8 +53,15 @@ def write_room_list(config, version):
 
 
 def update_room_table(config, version, code_list):
-    # if code_list is False:
     pass
+    # if code_list is False:
+    #     conn = Util.mysql_conn(config, "mysql-entity")
+    #     room_info_data = read_room_info(conn, None)
+    #
+    #
+    # pull_room_table(config, version)
+    # # parse_room_table(config, version)
+    # # write_room_table(config, version)
 
 
 if __name__ == '__main__':

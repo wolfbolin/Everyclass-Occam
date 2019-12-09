@@ -79,20 +79,25 @@ def turbo_multithread(config, task_func, task_queue, manager_list, max_thread=4,
         if isinstance(task_data, Util.ExitSignal):
             break
 
+        task_args = {
+            "mysql_pool": None,
+            "task_data": task_data,
+            "cookies": None
+        }
         if mysql_pool is not None:
-            task_data["mysql_pool"] = mysql_pool
+            task_args["mysql_pool"] = mysql_pool
 
         if cookies is not None:
-            task_data["cookies"] = cookies
+            task_args["cookies"] = cookies
 
-        worker = executor.submit(task_func, task_data)
+        worker = executor.submit(task_func, **task_args)
         worker_list.append(worker)
 
     for worker in as_completed(worker_list):
         manager_list.append(json.dumps(worker.result()))
 
 
-def unit_test(task_data):
+def unit_test(mysql_pool, task_data, cookies):
     if "conn" in task_data.keys():
         del (task_data["conn"])
 

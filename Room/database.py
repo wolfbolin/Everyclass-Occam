@@ -57,8 +57,9 @@ def read_room_list_json(conn, version):
     return room_list
 
 
-def write_room_info(data):
-    conn = data["mysql_pool"].connection()
+# 多线程处理
+def write_room_info(mysql_pool, task_data, cookies):
+    conn = mysql_pool.connection()
     cursor = conn.cursor()
 
     sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED"
@@ -70,8 +71,8 @@ def write_room_info(data):
             sql = "REPLACE INTO `room` (`code`, `name`, `campus`, `building`, `version`)" \
                   "VALUES (%s, %s, %s, %s, %s)"
             # print(sql % (data["code"], data["name"], data["campus"], data["building"], data["version"]))
-            cursor.execute(sql, args=[data["code"], data["name"],
-                                      data["campus"], data["building"], data["version"]])
+            cursor.execute(sql, args=[task_data["code"], task_data["name"],
+                                      task_data["campus"], task_data["building"], task_data["version"]])
 
             # 获取教室编号
             sql = "SELECT LAST_INSERT_ID()"
@@ -82,7 +83,7 @@ def write_room_info(data):
             sql = "REPLACE INTO `entity` (`code`, `name`, `alias`, `group`, `obj_id`, `version`)" \
                   "VALUES (%s, %s, %s, %s, %s, %s)"
             # print(sql % (data["code"], data["name"], "", "room", str(rid), data["version"]))
-            cursor.execute(sql, args=[data["code"], data["name"], "", "room", str(rid), data["version"]])
+            cursor.execute(sql, args=[task_data["code"], task_data["name"], "", "room", str(rid), task_data["version"]])
         except pymysql.err.OperationalError:
             Util.print_yellow("MySQL deadlock error. Retry [%d]" % (time + 1))
             conn.rollback()
