@@ -4,7 +4,6 @@ import Util
 import time
 import json
 import random
-# from Student.database import *
 from bs4 import BeautifulSoup
 
 
@@ -49,36 +48,36 @@ def pull_student_list(config, version):
     task_page_num = list(set(range(1, all_page_num + 1)) - set(exist_page_num))
     Util.print_white("【学生列表】缺失 [%d] 页" % len(task_page_num))
 
-    # Util.print_blue("获取【学生列表】原始数据 [%s] 页" % len(task_page_num))
-    # comm_data = {
-    #     "url": url,
-    #     "method": "POST",
-    #     "http_data": http_data,
-    #     "proxies": config["proxy"],
-    #     "version": str(version)
-    # }
-    # task_page_data = list({"page_num": page} for page in task_page_num)
-    # result_list = Util.turbo_multiprocess(config, student_list_concurrent, comm_data, task_page_data, add_cookies=True,
-    #                                       max_core=1, max_thread=1, mysql_config=config["mysql-occam"])
-    # Util.print_azure("插入【学生列表】原始数据 [%s] 条 (RC: %d)" % (len(task_page_data), sum(result_list)))
+    Util.print_blue("获取【学生列表】原始数据 [%s] 页" % len(task_page_num))
+    comm_data = {
+        "url": url,
+        "method": "POST",
+        "http_data": http_data,
+        "proxies": config["proxy"],
+        "version": str(version)
+    }
+    task_page_data = list({"page_num": page} for page in task_page_num)
+    result_list = Util.turbo_multiprocess(config, student_list_concurrent, comm_data, task_page_data, add_cookies=True,
+                                          max_core=2, max_thread=4, mysql_config=config["mysql-occam"])
+    Util.print_azure("插入【学生列表】原始数据 [%s] 条 (RC: %d)" % (len(task_page_data), sum(result_list)))
     #################################
-    for page_num in task_page_num:
-        http_data["PageNum"] = page_num
-        http_result, _cookie = Util.safe_http_request("POST", url, headers=cookies.get_headers(),
-                                                      cookies=cookies.get_cookies(),
-                                                      data=http_data, proxies=config["proxy"])
-        if http_result is None:
-            Util.print_red("获取【教室列表】第 [%d] 页失败" % page_num)
-            continue
-        Util.print_white("获取【教室列表】第 [%d] 页成功" % page_num)
-
-        Util.write_html_list_data(conn, "student", version, page_num, http_result)
+    # for page_num in task_page_num:
+    #     http_data["PageNum"] = page_num
+    #     http_result, _cookie = Util.safe_http_request("POST", url, headers=cookies.get_headers(),
+    #                                                   cookies=cookies.get_cookies(),
+    #                                                   data=http_data, proxies=config["proxy"])
+    #     if http_result is None:
+    #         Util.print_red("获取【教室列表】第 [%d] 页失败" % page_num)
+    #         continue
+    #     Util.print_white("获取【教室列表】第 [%d] 页成功" % page_num)
+    #
+    #     Util.write_html_list_data(conn, "student", version, page_num, http_result)
 
 
 def student_list_concurrent(mysql_pool, task_data, cookies):
     http_data = task_data["http_data"]
     http_data["PageNum"] = task_data["page_num"]
-    http_result, cookies = Util.safe_http_request(task_data["method"], task_data["url"], headers=task_data["headers"],
+    http_result, _cookie = Util.safe_http_request(task_data["method"], task_data["url"], headers=task_data["headers"],
                                                   cookies=cookies, data=http_data, proxies=task_data["proxies"])
     if http_result is None:
         Util.print_red("Pull student list page [%d] error" % task_data["page_num"])

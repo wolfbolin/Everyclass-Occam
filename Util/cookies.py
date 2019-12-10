@@ -18,9 +18,14 @@ class Cookies:
             'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
             'Cache-Control': 'no-cache',
             'Host': "",
+            'Referer': "",
             'Pragma': 'no-cache',
             'Connection': 'keep-alive',
             'Proxy-Connection': 'keep-alive',
+            'CLIENT-IP': rand_ip,
+            'REMOTE_ADDR': rand_ip,
+            'HTTP_CLIENT_IP': rand_ip,
+            'HTTP_X_FORWARDED_FOR': rand_ip,
             'User-Agent': UserAgent(path=useragent_path).random,
         }
 
@@ -35,9 +40,14 @@ class Cookies:
         self.headers["Host"] = url_obj.netloc
         return self
 
+    def set_ref(self, url):
+        self.headers["Referer"] = url
+        return self
+
     def reset_ip(self, model="A"):
         rand_ip = Util.random_ip(model)
         self.headers["CLIENT-IP"] = rand_ip
+        self.headers["HTTP_CLIENT_IP"] = rand_ip
         self.headers["HTTP_X_FORWARDED_FOR"] = rand_ip
 
         return self

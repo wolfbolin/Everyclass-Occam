@@ -7,10 +7,10 @@ import pymysql
 import multiprocessing
 from inspect import isfunction
 from DBUtils.PooledDB import PooledDB
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 
 
-def turbo_multiprocess(config, task_func, comm_data, task_data, max_core=64, max_thread=4, mysql_config=None,
+def turbo_multiprocess(config, task_func, comm_data, task_data, max_core=32, max_thread=64, mysql_config=None,
                        add_cookies=False):
     # 类型校验
     if not isfunction(task_func):
@@ -27,7 +27,7 @@ def turbo_multiprocess(config, task_func, comm_data, task_data, max_core=64, max
     result_list = []
     core_num = min(Util.cpu_core(), max_core)
     manager_list = multiprocessing.Manager().list()
-    task_queue = multiprocessing.Queue(maxsize=2)
+    task_queue = multiprocessing.Queue(maxsize=max_core * max_thread)
 
     # 创建进程
     for i in range(core_num):
@@ -76,44 +76,51 @@ def turbo_multithread(config, task_func, task_queue, manager_list, max_thread=4,
     if add_cookies:
         cookies = Util.Cookies()
         cookies.auth_cookies(config)
+        cookies.set_ref(config["url"]["sykb"])
     else:
         cookies = None
 
-    exit_flag = False
+    worker_list = []
     executor = ThreadPoolExecutor(max_workers=max_thread)
-    while exit_flag is False:
-        worker_list = []
-        for task_num in range(max_thread):
-            task_data = task_queue.get()
-            if isinstance(task_data, Util.ExitSignal):
-                exit_flag = True
-                break
+    while True:
+        # 读取线程信息
+        task_data = task_queue.get()
+        if isinstance(task_data, Util.ExitSignal):
+            for worker in as_completed(worker_list):
+                manager_list.append(json.dumps(worker.result()))
+            break
 
-            task_args = {
-                "mysql_pool": None,
-                "task_data": task_data,
-                "cookies": None
-            }
-            if mysql_pool is not None:
-                task_args["mysql_pool"] = mysql_pool
+        # 新建线程任务
+        task_args = {
+            "mysql_pool": None,
+            "task_data": task_data,
+            "cookies": None
+        }
+        if mysql_pool is not None:
+            task_args["mysql_pool"] = mysql_pool
 
-            if cookies is not None:
-                task_args["task_data"]["headers"] = cookies.get_headers()
-                task_args["cookies"] = cookies.get_cookies()
+        if cookies is not None:
+            task_args["task_data"]["headers"] = cookies.get_headers()
+            task_args["cookies"] = cookies.get_cookies()
 
-            worker = executor.submit(task_func, **task_args)
-            worker_list.append(worker)
+        worker = executor.submit(task_func, **task_args)
+        worker_list.append(worker)
 
-        if add_cookies:
-            time.sleep(2)
-
-        for worker in as_completed(worker_list):
-            manager_list.append(json.dumps(worker.result()))
+        # 等待释放空间
+        while len(worker_list) >= max_thread:
+            wait_list = wait(worker_list, return_when='FIRST_COMPLETED')
+            for worker in wait_list[0]:
+                manager_list.append(json.dumps(worker.result()))
+            worker_list = list(wait_list[1])
 
 
 def unit_test(mysql_pool, task_data, cookies):
     if "conn" in task_data.keys():
         del (task_data["conn"])
+
+    time.sleep(3)
+
+    print("Done")
 
     return {
         "status": "ok",
@@ -124,5 +131,5 @@ def unit_test(mysql_pool, task_data, cookies):
 
 if __name__ == '__main__':
     _config = Util.get_config("../config")
-    print(turbo_multiprocess(_config, unit_test, {"comm": "info"}, [{"no": "data1"}],
-                             mysql_config=_config["mysql-entity"]))
+    print(turbo_multiprocess(_config, unit_test, {"comm": "info"}, [{} for i in range(10)],
+                             max_core=1, max_thread=1, mysql_config=_config["mysql-entity"]))

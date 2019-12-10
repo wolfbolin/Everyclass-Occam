@@ -3,22 +3,6 @@ import Util
 import pymysql
 
 
-def read_room_list_json(conn, version):
-    cursor = conn.cursor()
-    sql = "SELECT `page`, `data` FROM `list_json` WHERE `group`='room' AND `version`=%s"
-    cursor.execute(sql, args=[str(version)])
-
-    room_list = []
-    for result in cursor.fetchall():
-        room_list.append({
-            "page": result[0],
-            "data": result[1]
-        })
-
-    Util.print_white("读取【教室列表】解析数据 [%d] 页" % len(room_list))
-    return room_list
-
-
 # 多线程处理
 def write_room_info(mysql_pool, task_data, cookies):
     conn = mysql_pool.connection()

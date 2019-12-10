@@ -2,7 +2,7 @@
 import os
 import json
 import Util
-from Room.spider import *
+import Room
 
 
 # def update_room(config):
@@ -40,17 +40,22 @@ from Room.spider import *
 def write_room_list(config, version):
     # 读取已下载页面
     conn = Util.mysql_conn(config, "mysql-occam")
-    room_list_json = read_room_list_json(conn, version)
+    room_list_json = Util.read_json_list_data(conn, "room", version)
 
     # 合并多页数据
     room_info_list = []
+    room_page_count = []
     for room in room_list_json:
+        room_page_count.append(int(room["page"]))
         room_info_list.extend(json.loads(room["data"]))
+    if len(room_page_count) != max(room_page_count):
+        Util.print_yellow("【教室列表】页码与页数不相符，可能出现页面缺漏。count：%d，page：%d"
+                          % (len(room_page_count), max(room_page_count)))
 
     Util.print_blue("插入【教室】基础数据 [%s] 条" % len(room_info_list))
     comm_data = {"version": str(version)}
-    manager_list = Util.turbo_multiprocess(config, write_room_info, comm_data, room_info_list,
-                                           max_thread=4, mysql_config=config["mysql-entity"])
+    manager_list = Util.turbo_multiprocess(config, Room.write_room_info, comm_data, room_info_list,
+                                           max_core=4, max_thread=8, mysql_config=config["mysql-entity"])
     Util.print_azure("插入【教室】基础数据 [%s] 条 (RC: %d)" % (len(room_info_list), sum(manager_list)))
 
 
