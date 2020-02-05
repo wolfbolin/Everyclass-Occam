@@ -14,36 +14,44 @@ import platform
 
 # Print tools
 
-def print_red(message, tag="ERROR"):
-    print('\033[0;31m[{}] {}\033[0m'.format(tag, str(message)))  # 红色
+def _print(message, code=None, tag=None, end=None):
+    if tag is None:
+        message = '[{}] {}'.format(tag, message)
+    if code is not None:
+        message = '\033[0;{}m{}\033[0m'.format(code, message)
+    print(message, end=end)
 
 
-def print_green(message, tag="DONE"):
-    print('\033[5;32m[{}] {}\033[0m'.format(tag, str(message)))  # 绿色
+def print_red(message, tag="ERROR", end=None):
+    _print(message, 31, tag, end)  # 红色
 
 
-def print_yellow(message, tag="WARNING"):
-    print('\033[0;33m[{}] {}\033[0m'.format(tag, str(message)))  # 黄色
+def print_green(message, tag="DONE", end='\n'):
+    _print(message, 32, tag, end)  # 绿色
 
 
-def print_blue(message, tag="BEG"):
-    print('\033[0;34m[{}] {}\033[0m'.format(tag, str(message)))  # 深蓝色
+def print_yellow(message, tag="WARNING", end='\n'):
+    _print(message, 33, tag, end)  # 黄色
 
 
-def print_purple(message, tag="MID"):
-    print('\033[0;35m[{}] {}\033[0m'.format(tag, str(message)))  # 紫色
+def print_blue(message, tag="BEG", end='\n'):
+    _print(message, 34, tag, end)  # 深蓝色
 
 
-def print_azure(message, tag="END"):
-    print('\033[0;36m[{}] {}\033[0m'.format(tag, str(message)))  # 浅蓝色
+def print_purple(message, tag="MID", end='\n'):
+    _print(message, 35, tag, end)  # 紫色
 
 
-def print_white(message, tag="INFO"):
-    print('\033[0;37m[{}] {}\033[0m'.format(tag, str(message)))  # 白色
+def print_azure(message, tag="END", end='\n'):
+    _print(message, 36, tag, end)  # 浅蓝色
 
 
-def print_none(message, tag="DEBUG"):
-    print('[{}] {}'.format(tag, str(message)))  # 白色
+def print_white(message, tag="INFO", end='\n'):
+    _print(message, 37, tag, end)  # 白色
+
+
+def print_none(message, tag="DEBUG", end='\n'):
+    _print(message, None, tag, end)  # 默认
 
 
 def process_bar(now, total, attach=''):

@@ -71,7 +71,7 @@ def auth_cookie(config):
     headers = modify_mask_host(headers, url)
     res = Util.http_request("GET", url, headers=headers, proxies=config["proxy"])
 
-    return cookies
+    return headers, cookies
 
 
 if __name__ == '__main__':
