@@ -1,2 +1,5 @@
 
 .idea/
+__pycache__/
+Config/*.ini
+!Config/default.ini
