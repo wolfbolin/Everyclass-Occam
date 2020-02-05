@@ -8,6 +8,10 @@ verify_ssl = true
 [packages]
 requests = "*"
 pymysql = "*"
+lxml = "*"
+fake-useragent = "*"
+beautifulsoup4 = "*"
+update = "*"
 
 [requires]
 python_version = "3.7"

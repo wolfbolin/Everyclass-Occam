@@ -25,7 +25,7 @@ def write_log(name="", data=""):
     log_file.write(data)
 
 
-def safe_http_request(method, url, **kwargs):
+def http_request(method, url, keep_cookie=False, **kwargs):
     client = requests.session()
     client.keep_alive = False
     client.mount("http://", HTTPAdapter(max_retries=5))
@@ -41,8 +41,10 @@ def safe_http_request(method, url, **kwargs):
     except requests.exceptions.ConnectionError:
         Util.print_yellow("requests.exceptions.ConnectionError:[%s]" % url)
 
-    if http_result:
+    if http_result and keep_cookie:
         return http_result.text, http_result.cookies.get_dict()
+    elif http_result:
+        return http_result.text
     else:
         return None, None
 
