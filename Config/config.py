@@ -4,8 +4,8 @@ import Util
 import configparser
 
 
+# 读取配置文件
 def load_config(config_path):
-    # 读取配置文件
     run_env = 'develop'
     if 'SERVICE_ENV' in os.environ:
         run_env = os.environ['SERVICE_ENV']
