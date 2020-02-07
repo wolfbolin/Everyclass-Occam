@@ -9,6 +9,10 @@ def update_list_data(config, version):
         "序号": "id",
         "教室编号": "code",
         "教室名称": "name",
+        "教室类型": "type",
+        "座位数": "seat",
+        "有效座位": "effect_seat",
+        "考试座位数": "exam_seat",
         "所在校区": "campus",
         "所在教学楼": "building",
     }
