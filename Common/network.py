@@ -3,6 +3,7 @@ import os
 import Util
 import Config
 from urllib import parse
+from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
 useragent_path = os.path.dirname(__file__) + '/fake_useragent.json'

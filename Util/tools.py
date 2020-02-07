@@ -17,12 +17,14 @@ def write_log(name="", data=""):
     if not os.path.exists(log_path):
         os.makedirs(log_path)
 
-    name = name + str(Util.unix_time())
-    log_path = os.path.join(log_path, "%s.log" % name)
+    name = name + str(Util.unix_time()) + ".log"
+    log_path = os.path.join(log_path, name)
     Util.print_white("写入日志：%s" % log_path)
 
     log_file = open(log_path, "w", encoding="utf-8")
     log_file.write(data)
+
+    return name
 
 
 def http_request(method, url, keep_cookie=False, **kwargs):
