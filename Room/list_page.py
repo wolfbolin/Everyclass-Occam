@@ -3,13 +3,14 @@ import Util
 import json
 import Config
 import Common
+import Room.database as Dao
 from bs4 import BeautifulSoup
 
 
 def update_list_data(config, version):
     headers, cookies = Common.auth_cookie(_config)
     all_page_num, tag_index = list_page_info(_config)
-    _, exist_page_num = read_html_data(config, version)
+    _, exist_page_num = read_exist_data(config, version)
     task_page_num = list(set(range(1, all_page_num + 1)) - set(exist_page_num))
 
     if len(task_page_num) == 0:
@@ -20,24 +21,16 @@ def update_list_data(config, version):
         pull_room_list(config, version, tag_index, headers, page_num)
         Util.print_green("OK", tag='')
 
-    room_json_list, _ = read_html_data(config, version)
-
-    data_pack = list()
-    for page in room_json_list:
-        data_pack.extend(json.loads(page["data"]))
-
-    print(data_pack)
-
 
 # 读取已完成的页面
-def read_html_data(config, version):
+def read_exist_data(config, version):
     conn = Util.mysql_conn(config, "mysql-occam")
-    room_json_list = Common.read_json_list_data(conn, "room", version)
+    json_list = Common.read_json_list_data(conn, "room", version)
     exist_page_num = set()
-    for page in room_json_list:
+    for page in json_list:
         exist_page_num.add(int(page["page"]))
-    Util.print_white("读取【教室列表】共%d页" % len(room_json_list))
-    return room_json_list, exist_page_num
+    Util.print_white("读取【教室列表】共%d页" % len(json_list))
+    return json_list, exist_page_num
 
 
 # 获取总页数和映射
@@ -141,6 +134,23 @@ def pull_room_list(config, version, tag_index, headers, page_num):
         Util.print_red("【教室列表】第%d页解析失败，解析页面已写入日志，原数据已删除" % page_num)
 
 
+def merge_room_info(config, version):
+    occam_conn = Util.mysql_conn(config, "mysql-occam")
+    entity_conn = Util.mysql_conn(config, "mysql-entity")
+
+    # 读取页面信息
+    page_data_list = Common.read_json_list_data(occam_conn, "room", version)
+
+    data_bin = list()
+    for page_data in page_data_list:
+        data_bin.extend(json.loads(page_data["data"]))
+
+    for index, room_data in enumerate(data_bin):
+        Dao.write_room_info(entity_conn, version, room_data)
+        Util.process_bar(index+1, len(data_bin), "写入教室信息")
+
+
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    update_list_data(_config, "2019-11-27")
+    # update_list_data(_config, "2019-11-27")
+    merge_room_info(_config, "2019-11-27")

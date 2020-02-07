@@ -22,20 +22,20 @@ def delete_html_list_data(conn, group, version, page):
     return cursor.rowcount
 
 
-# # 读取列表数据
-# def read_html_list_data(conn, group, version):
-#     cursor = conn.cursor()
-#     sql = "SELECT `page`, `data` FROM `list_html` WHERE `group`=%s AND `version`=%s"
-#     cursor.execute(sql, args=[str(group), str(version)])
-#
-#     item_list = []
-#     for result in cursor.fetchall():
-#         item_list.append({
-#             "page": result[0],
-#             "data": result[1]
-#         })
-#
-#     return item_list
+# 读取列表数据
+def read_html_list_data(conn, group, version):
+    cursor = conn.cursor()
+    sql = "SELECT `page`, `data` FROM `list_html` WHERE `group`=%s AND `version`=%s"
+    cursor.execute(sql, args=[str(group), str(version)])
+
+    item_list = []
+    for result in cursor.fetchall():
+        item_list.append({
+            "page": result[0],
+            "data": result[1]
+        })
+
+    return item_list
 
 
 # 写入格式化数据
