@@ -1,12 +1,14 @@
 # coding=utf-8
+import time
 import json
 import Util
 import Config
 import Common
+from math import ceil
 from bs4 import BeautifulSoup
 
 
-def update_list_data(config, version, task_name, task_word, tag_dict, url_index):
+def update_list_data(config, version, task_name, task_word, tag_dict, url_index, page_size):
     """
     批量更新列表信息数据
     :param config:  配置文件
@@ -15,10 +17,10 @@ def update_list_data(config, version, task_name, task_word, tag_dict, url_index)
     :param task_word:  关键字 eg: student
     :param tag_dict:  表头映射关系
     :param url_index:  页面关键字
+    :param page_size:  分页大小
     :return:
     """
     # 预处理参数
-    page_size = 200
     task_key = (task_name, task_word)
     headers, cookies = Common.auth_cookie(config)
     tag_index = dict(zip(tag_dict.values(), [0] * len(tag_dict)))
@@ -40,12 +42,15 @@ def update_list_data(config, version, task_name, task_word, tag_dict, url_index)
         Util.print_white("【%s】正在下载第%s页..." % (task_name, page_num), end='')
 
         # 尝试获取页面
+        time_start = time.time()
         http_result = pull_list_page_data(config, version, task_key, url_index, headers, page_num, page_size)
+        time_end = time.time()
 
         # 解析页面信息
         parse_list_page(config, version, task_key, tag_index, http_result, page_num)
 
-        Util.print_green("OK", tag='')
+        Util.print_green("OK", tag='', end='')
+        Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
 
 
 # 预分析页面信息
@@ -89,7 +94,7 @@ def pull_list_page_data(config, version, task_key, url_index, headers, page_num,
     }
     http_result = Util.http_request("POST", url, headers=headers, data=http_data, proxies=config["proxy"])
     if http_result is None:
-        raise Util.NetworkError("获取【%s】第%s页时，网络请求失败" % (page_num, task_key[0]))
+        raise Util.NetworkError("获取【%s】第%s页时，网络请求失败" % (task_key[0], page_num))
 
     # 写入已获取的数据
     Common.write_html_list_data(conn, task_key[1], version, page_num, http_result)

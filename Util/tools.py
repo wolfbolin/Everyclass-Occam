@@ -35,7 +35,7 @@ def http_request(method, url, keep_cookie=False, **kwargs):
 
     http_result = None
     try:
-        http_result = client.request(method=method, url=url, timeout=5, **kwargs)
+        http_result = client.request(method=method, url=url, timeout=(2, 30), **kwargs)
     except requests.exceptions.ProxyError:
         Util.print_yellow("requests.exceptions.ProxyError:[%s]" % url)
     except requests.exceptions.ReadTimeout:
@@ -48,7 +48,7 @@ def http_request(method, url, keep_cookie=False, **kwargs):
     elif http_result:
         return http_result.text
     else:
-        return None, None
+        return None
 
 
 def mysql_conn(config, db_key):
