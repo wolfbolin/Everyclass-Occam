@@ -17,7 +17,7 @@ def update_list_data(config, version):
         "所在教学楼": "building",
     }
 
-    Common.update_list_data(config, version, "教室列表", "room", tag_meaning, "jspk")
+    Common.update_list_data(config, version, "教室列表", "room", tag_meaning, "jspk", 200)
     Common.merge_page_info(config, version, "教室列表", "room", dao.write_room_info)
 
 

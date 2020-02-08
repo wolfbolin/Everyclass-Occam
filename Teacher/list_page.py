@@ -15,7 +15,7 @@ def update_list_data(config, version):
         "所属教研室": "section",
     }
 
-    Common.update_list_data(config, version, "教师列表", "teacher", tag_meaning, "jgpk")
+    Common.update_list_data(config, version, "教师列表", "teacher", tag_meaning, "jgpk", 200)
     Common.merge_page_info(config, version, "教师列表", "teacher", dao.write_teacher_info)
 
 

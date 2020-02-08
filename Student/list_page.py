@@ -15,7 +15,7 @@ def update_list_data(config, version):
         "院系名称": "faculty",
     }
 
-    Common.update_list_data(config, version, "学生列表", "student", tag_meaning, "xspk")
+    Common.update_list_data(config, version, "学生列表", "student", tag_meaning, "xspk", 200)
     Common.merge_page_info(config, version, "学生列表", "student", dao.write_student_info)
 
 
