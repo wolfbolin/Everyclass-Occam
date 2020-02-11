@@ -13,7 +13,7 @@ def update_list_data(config, version):
         "开课单位": "faculty",
     }
 
-    Common.update_list_data(config, version, "课程列表", "course", tag_meaning, "kcpx", 100)
+    Common.fetch_list_data(config, version, "课程列表", "course", tag_meaning, "kcpx", 100)
     Common.merge_page_info(config, version, "课程列表", "course", dao.write_room_info)
 
 

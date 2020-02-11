@@ -72,6 +72,17 @@ def read_json_list_data(conn, group, version):
     return item_list
 
 
+# 读取已完成的页面
+def read_exist_data(config, version, task_key):
+    conn = Util.mysql_conn(config, "mysql-occam")
+    json_list = read_json_list_data(conn, task_key[1], version)
+    exist_page_num = set()
+    for page in json_list:
+        exist_page_num.add(int(page["page"]))
+    Util.print_white("【%s】读取已完成%s页" % (task_key[0], len(json_list)))
+    return json_list, exist_page_num
+
+
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
     _conn = Util.mysql_conn(_config, "mysql-occam")

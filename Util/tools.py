@@ -1,5 +1,7 @@
 # coding=utf-8
 import os
+import re
+import json
 import Util
 import pymysql
 import requests
@@ -10,6 +12,16 @@ useragent_path = os.path.dirname(__file__) + '/fake_useragent.json'
 
 def purify_string(str):
     return str.replace('\xa0', '').replace('\u3000', '').strip()
+
+
+def js2json(js_str):
+    data = str(js_str)
+    data = data.replace("'", '"')
+    data = data.replace("\\", "\\\\")
+    data = data.replace("]qz--1", "]")
+    data = re.sub(r'([,|{])([a-z]+)(:)', lambda x: '"'.join(x.groups()), data)
+    data = json.loads(data)
+    return data
 
 
 def write_log(name="", data=""):

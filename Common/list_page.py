@@ -8,7 +8,7 @@ from math import ceil
 from bs4 import BeautifulSoup
 
 
-def update_list_data(config, version, task_name, task_word, tag_dict, url_index, page_size):
+def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, page_size):
     """
     批量更新列表信息数据
     :param config:  配置文件
@@ -32,7 +32,7 @@ def update_list_data(config, version, task_name, task_word, tag_dict, url_index,
     all_page_num, tag_index = parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_size)
 
     # 获取已下载信息
-    _, exist_page_num = read_exist_data(config, version, task_key)
+    _, exist_page_num = Common.read_exist_data(config, version, task_key)
     task_page_num = list(set(range(1, all_page_num + 1)) - set(exist_page_num))
     if len(task_page_num) == 0:
         Util.print_white("该版本【%s】无需下载更新" % task_name)
@@ -102,17 +102,6 @@ def pull_list_page_data(config, version, task_key, url_index, headers, page_num,
     return http_result
 
 
-# 读取已完成的页面
-def read_exist_data(config, version, task_key):
-    conn = Util.mysql_conn(config, "mysql-occam")
-    json_list = Common.read_json_list_data(conn, task_key[1], version)
-    exist_page_num = set()
-    for page in json_list:
-        exist_page_num.add(int(page["page"]))
-    Util.print_white("【%s】读取已完成%s页" % (task_key[0], len(json_list)))
-    return json_list, exist_page_num
-
-
 def parse_list_page(config, version, task_key, tag_index, http_result, page_num):
     conn = Util.mysql_conn(config, "mysql-occam")
 
@@ -166,4 +155,4 @@ if __name__ == "__main__":
     }
 
     _config = Config.load_config("../Config")
-    update_list_data(_config, "2019-11-27", "学生列表", "student", tag_meaning, "xspk")
+    fetch_list_data(_config, "2019-11-27", "学生列表", "student", tag_meaning, "xspk", 200)
