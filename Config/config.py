@@ -4,6 +4,16 @@ import Util
 import configparser
 
 
+# 重写配置类
+# 该操作主要为了保留配置中的大小写
+class ConfigParserX(configparser.ConfigParser):
+    def __init__(self, defaults=None):
+        configparser.ConfigParser.__init__(self, defaults)
+
+    def optionxform(self, option_str):
+        return option_str
+
+
 # 读取配置文件
 def load_config(config_path):
     run_env = 'develop'
@@ -15,7 +25,7 @@ def load_config(config_path):
     Util.print_white(os.path.abspath(config_file))
 
     if os.path.isfile(config_file):
-        config = configparser.ConfigParser()
+        config = ConfigParserX()
         config.read(config_file, encoding='utf-8')
 
         app_config = dict()
