@@ -24,7 +24,7 @@ def fetch_active_list(config, version, task_name, task_word, url_index, semester
     headers, cookies = Common.auth_cookie(config)
 
     # 读取缓存数据
-    cache_data, _ = Common.read_exist_data(config, version, task_key)
+    cache_data, _ = Common.read_exist_json_data(config, version, task_key)
     if len(cache_data) != 0:
         Util.print_azure("该版本【%s】无需下载更新" % task_name)
         return json.loads(cache_data[0]["data"])

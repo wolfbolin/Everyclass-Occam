@@ -63,7 +63,6 @@ def auth_cookie(config):
     # 尝试访问教务网首页
     url = config["url"]["csujwc"]
     headers = modify_mask_host(headers, url)
-    print(config["proxy"])
     _, cookies = Util.http_request("GET", url, keep_cookie=True, headers=headers, proxies=config["proxy"])
     headers = modify_mask_cookies(headers, cookies)
     headers["Referer"] = url

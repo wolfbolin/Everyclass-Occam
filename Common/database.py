@@ -73,12 +73,23 @@ def read_json_data(conn, group, version):
 
 
 # 读取已完成的页面
-def read_exist_data(config, version, task_key):
+def read_exist_html_data(config, version, task_key):
+    conn = Util.mysql_conn(config, "mysql-occam")
+    json_list = read_html_data(conn, task_key[1], version)
+    exist_page_mark = list()
+    for page in json_list:
+        exist_page_mark.append(page["mark"])
+    Util.print_white("【%s】读取已完成%s页" % (task_key[0], len(json_list)))
+    return json_list, exist_page_mark
+
+
+# 读取已完成的数据
+def read_exist_json_data(config, version, task_key):
     conn = Util.mysql_conn(config, "mysql-occam")
     json_list = read_json_data(conn, task_key[1], version)
-    exist_page_mark = set()
+    exist_page_mark = list()
     for page in json_list:
-        exist_page_mark.add(page["mark"])
+        exist_page_mark.append(page["mark"])
     Util.print_white("【%s】读取已完成%s页" % (task_key[0], len(json_list)))
     return json_list, exist_page_mark
 

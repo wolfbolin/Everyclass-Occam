@@ -37,22 +37,24 @@ def fetch_class_schedule(config, version, task_name, task_word, url_index, semes
     headers, cookies = Common.auth_cookie(config)
 
     # 读取缓存数据
-    cache_data, exist_mark = Common.read_exist_data(config, version, task_key)
+    cache_data, exist_mark = Common.read_exist_html_data(config, version, task_key)
     if len(exist_mark) == len(active_list):
         Util.print_white("该版本【%s】无需下载更新" % task_name)
 
     # 获取课表信息
     for obj_data in active_list:
+        time_start = time.time()
         extra_data = Util.dict_link(config[task_key[1] + "_extra"], obj_data)
-        if extra_data["code"] in exist_mark:
-            continue
-
-        Util.print_white("【%s】正在下载 <%s> 课表..." % (task_name, extra_data["name"]), end='')
 
         # 尝试获取页面
-        time_start = time.time()
-        obj_data["semester"] = semester
-        http_result = pull_table_page(config, version, task_key, url_index, headers, obj_data)
+        if extra_data["code"] in exist_mark:
+            Util.print_white("【%s】重新计算 <%s> 课表..." % (task_name, extra_data["name"]), end='')
+            cache = cache_data[exist_mark.index(extra_data["code"])]
+            http_result = cache["data"]
+        else:
+            Util.print_white("【%s】正在下载 <%s> 课表..." % (task_name, extra_data["name"]), end='')
+            obj_data["semester"] = semester
+            http_result = pull_table_page(config, version, task_key, url_index, headers, obj_data)
 
         # 解析页面信息
         parse_list_page(config, version, task_key, http_result, obj_data)
@@ -105,9 +107,14 @@ def parse_list_page(config, version, task_key, http_result, obj_data):
 
                     lesson_list.append(lesson_info)
 
+        remark = soup.find(id="bzdiv").string
+        table_data = {
+            "remark": remark,
+            "lesson": lesson_list
+        }
         # 写入已获取的数据
-        lesson_list = json.dumps(lesson_list, ensure_ascii=False)
-        Common.write_json_data(conn, task_key[1], version, extra_data["code"], lesson_list)
+        table_data = json.dumps(table_data, ensure_ascii=False)
+        Common.write_json_data(conn, task_key[1], version, extra_data["code"], table_data)
     except AttributeError as e:
         Util.write_log("pull_%s_data" % task_key[1], http_result)
         # Common.delete_html_data(conn, task_key[1], version, extra_data["code"])
@@ -132,6 +139,15 @@ def calc_purify_string(navigable_string):
     for string in navigable_string.stripped_strings:
         res += Util.purify_string(string)
     return str(res)
+
+
+def merge_page_info(config, version, task_name, task_word, dao_func):
+    task_key = (task_name, task_word)
+    occam_conn = Util.mysql_conn(config, "mysql-occam")
+    entity_conn = Util.mysql_conn(config, "mysql-entity")
+
+    # 读取页面信息
+    page_data_list = Common.read_json_data(occam_conn, task_word, version)
 
 
 if __name__ == '__main__':

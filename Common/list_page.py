@@ -32,7 +32,7 @@ def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, 
     all_page_num, tag_index = parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_size)
 
     # 获取已下载信息
-    _, exist_page_num = Common.read_exist_data(config, version, task_key)
+    _, exist_page_num = Common.read_exist_json_data(config, version, task_key)
     task_page_num = list(set(range(1, all_page_num + 1)) - set(map(int, exist_page_num)))
     if len(task_page_num) == 0:
         Util.print_azure("该版本【%s】无需下载更新" % task_name)
@@ -54,6 +54,7 @@ def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, 
         Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
 
     return True
+
 
 # 预分析页面信息
 def parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_size):
@@ -127,12 +128,13 @@ def parse_list_page(config, version, task_key, tag_index, http_result, page_num)
         Util.print_red("【%s】第%d页解析失败，解析页面已写入日志，原数据已删除" % (task_key[0], page_num))
 
 
-def merge_page_info(config, version, task_name, keyword, dao_func):
+def merge_page_info(config, version, task_name, task_word, dao_func):
+    task_key = (task_name, task_word)
     occam_conn = Util.mysql_conn(config, "mysql-occam")
     entity_conn = Util.mysql_conn(config, "mysql-entity")
 
     # 读取页面信息
-    page_data_list = Common.read_json_data(occam_conn, keyword, version)
+    page_data_list = Common.read_json_data(occam_conn, task_key[1], version)
 
     data_bin = list()
     for page_data in page_data_list:
@@ -140,7 +142,7 @@ def merge_page_info(config, version, task_name, keyword, dao_func):
 
     for index, line_data in enumerate(data_bin):
         dao_func(entity_conn, version, line_data)
-        Util.process_bar(index + 1, len(data_bin), "写入【%s】" % task_name)
+        Util.process_bar(index + 1, len(data_bin), "写入【%s】" % task_key[0])
 
 
 if __name__ == "__main__":
