@@ -44,6 +44,9 @@ def fetch_class_schedule(config, version, task_name, task_word, url_index, semes
     # 获取课表信息
     for obj_data in active_list:
         extra_data = Util.dict_link(config[task_key[1] + "_extra"], obj_data)
+        if extra_data["code"] in exist_mark:
+            continue
+
         Util.print_white("【%s】正在下载 <%s> 课表..." % (task_name, extra_data["name"]), end='')
 
         # 尝试获取页面
@@ -134,9 +137,11 @@ def calc_purify_string(navigable_string):
 if __name__ == '__main__':
     _config = Config.load_config("../Config")
     _conn = Util.mysql_conn(_config, "mysql-occam")
-    # _act_room_list = Common.read_json_data(_conn, "act_room", "2019-11-27")
-    # _act_room_list = json.loads(_act_room_list[0]["data"])
-    # fetch_schedule_card(_config, "2019-11-27", "课表教室", "room_table", "jskb", "2019-2020-1", _act_room_list)
+    _act_room_list = [{
+        "jsid": "2420104",
+        "jsmc": "世Ａ104"
+    }]
+    fetch_class_schedule(_config, "2019-11-27", "课表教室", "room_table", "jskb", "2019-2020-1", _act_room_list)
     # _task_key = ("课表教室", "room_table")
     # _test_html = Common.read_html_data(_conn, "room_table", "2019-11-27")
     # parse_list_page(_config, "2019-11-27", _task_key, _test_html[0]["data"],

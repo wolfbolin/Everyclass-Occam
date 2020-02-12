@@ -32,7 +32,7 @@ def fetch_active_list(config, version, task_name, task_word, url_index, semester
     # 获取指定页面
     Util.print_white("【%s】正在下载..." % task_name, end='')
     time_start = time.time()
-    http_result = pull_empty_table_page(config, version, task_key, url_index, headers, semester)
+    http_result = pull_active_list_page(config, version, task_key, url_index, headers, semester)
     time_end = time.time()
     Util.print_green("OK", tag='', end='')
     Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
@@ -47,7 +47,8 @@ def parse_name_list(config, version, task_key, http_result):
     conn = Util.mysql_conn(config, "mysql-occam")
 
     # 提取数据
-    page_data = re.findall('var bj="(.*?)";', http_result, re.S | re.M)[0]
+    page_data = re.search(r'(var bj="\[|^\[)(.*?)("\];|\])', http_result, re.S | re.M)
+    page_data = "[{}]".format(page_data.group(2))
     page_data = page_data.replace("'", '"')
     page_data = page_data.replace("\\", "\\\\")
     page_data = page_data.replace("]qz--1", "]")
@@ -60,15 +61,21 @@ def parse_name_list(config, version, task_key, http_result):
     return page_data
 
 
-def pull_empty_table_page(config, version, task_key, url_index, headers, semester):
+def pull_active_list_page(config, version, task_key, url_index, headers, semester):
     conn = Util.mysql_conn(config, "mysql-occam")
 
     url = config["url"][url_index]
-    params = {
-        "xnxq01id": str(semester),
-        "isview": 1,
-        "init": 1,
-    }
+    if url_index == "jslb":
+        params = {
+            "method": "queryjs",
+            "xnxq01id": semester
+        }
+    else:
+        params = {
+            "xnxq01id": str(semester),
+            "isview": 1,
+            "init": 1,
+        }
     http_result = Util.http_request("POST", url, headers=headers, params=params, proxies=config["proxy"])
     if http_result is None:
         raise Util.NetworkError("获取【%s】时，网络请求失败" % task_key[0])
