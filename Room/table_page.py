@@ -19,7 +19,7 @@ def pull_room_list(config, version, semester):
     print(act_room_list)
 
     conn = Util.mysql_conn(config, "mysql-occam")
-    Common.write_json_list_data(conn, "act_room", version, 1, json.dumps(act_room_list, ensure_ascii=False))
+    Common.write_json_data(conn, "act_room", version, 1, json.dumps(act_room_list, ensure_ascii=False))
 
 
 if __name__ == "__main__":

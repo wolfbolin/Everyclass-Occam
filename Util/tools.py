@@ -10,8 +10,17 @@ from requests.adapters import HTTPAdapter
 useragent_path = os.path.dirname(__file__) + '/fake_useragent.json'
 
 
-def purify_string(str):
-    return str.replace('\xa0', '').replace('\u3000', '').strip()
+def purify_string(input_str):
+    return input_str.replace('\xa0', '').replace('\u3000', '').strip()
+
+
+def dict_link(dict1, dict2):
+    res = dict1.copy()
+    for key1 in dict1.keys():
+        val = dict1[key1].strip("/")
+        if val in dict2.keys():
+            res[key1] = dict2[val]
+    return res
 
 
 def js2json(js_str):

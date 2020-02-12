@@ -16,7 +16,7 @@ def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, 
     :param task_name:  任务名称 eg: 学生列表
     :param task_word:  关键字 eg: student
     :param tag_dict:  表头映射关系
-    :param url_index:  页面关键字
+    :param url_index:  链接关键字
     :param page_size:  分页大小
     :return:
     """
@@ -26,14 +26,14 @@ def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, 
     tag_index = dict(zip(tag_dict.values(), [0] * len(tag_dict)))
 
     # 预获取页面信息
-    http_result = pull_list_page_data(config, version, task_key, url_index, headers, 1, page_size)
+    http_result = pull_list_page(config, version, task_key, url_index, headers, 1, page_size)
 
     # 预分析页面信息
     all_page_num, tag_index = parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_size)
 
     # 获取已下载信息
     _, exist_page_num = Common.read_exist_data(config, version, task_key)
-    task_page_num = list(set(range(1, all_page_num + 1)) - set(exist_page_num))
+    task_page_num = list(set(range(1, all_page_num + 1)) - set(map(int, exist_page_num)))
     if len(task_page_num) == 0:
         Util.print_white("该版本【%s】无需下载更新" % task_name)
 
@@ -43,7 +43,7 @@ def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, 
 
         # 尝试获取页面
         time_start = time.time()
-        http_result = pull_list_page_data(config, version, task_key, url_index, headers, page_num, page_size)
+        http_result = pull_list_page(config, version, task_key, url_index, headers, page_num, page_size)
         time_end = time.time()
 
         # 解析页面信息
@@ -84,7 +84,7 @@ def parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_siz
 
 
 # 获取列表页面
-def pull_list_page_data(config, version, task_key, url_index, headers, page_num, page_size):
+def pull_list_page(config, version, task_key, url_index, headers, page_num, page_size):
     conn = Util.mysql_conn(config, "mysql-occam")
 
     url = config["url"][url_index]
@@ -97,7 +97,7 @@ def pull_list_page_data(config, version, task_key, url_index, headers, page_num,
         raise Util.NetworkError("获取【%s】第%s页时，网络请求失败" % (task_key[0], page_num))
 
     # 写入已获取的数据
-    Common.write_html_list_data(conn, task_key[1], version, page_num, http_result)
+    Common.write_html_data(conn, task_key[1], version, page_num, http_result)
 
     return http_result
 
@@ -106,7 +106,6 @@ def parse_list_page(config, version, task_key, tag_index, http_result, page_num)
     conn = Util.mysql_conn(config, "mysql-occam")
 
     # 解析页面数据
-    crash_count = 0
     try:
         soup = BeautifulSoup(http_result, "lxml")
         table_list = soup.find('tbody').find_all('tr')
@@ -119,11 +118,10 @@ def parse_list_page(config, version, task_key, tag_index, http_result, page_num)
                 data_line[key] = Util.purify_string(cell[tag_index[key]].string.strip())
             page_data.append(data_line)
 
-        Common.write_json_list_data(conn, task_key[1], version, page_num, json.dumps(page_data, ensure_ascii=False))
+        Common.write_json_data(conn, task_key[1], version, page_num, json.dumps(page_data, ensure_ascii=False))
     except AttributeError:
-        crash_count += 1
         Util.write_log("pull_%s_data" % task_key[1], http_result)
-        Common.delete_html_list_data(conn, task_key[1], version, page_num)
+        Common.delete_html_data(conn, task_key[1], version, page_num)
         Util.print_red("【%s】第%d页解析失败，解析页面已写入日志，原数据已删除" % (task_key[0], page_num))
 
 
@@ -132,7 +130,7 @@ def merge_page_info(config, version, task_name, keyword, dao_func):
     entity_conn = Util.mysql_conn(config, "mysql-entity")
 
     # 读取页面信息
-    page_data_list = Common.read_json_list_data(occam_conn, keyword, version)
+    page_data_list = Common.read_json_data(occam_conn, keyword, version)
 
     data_bin = list()
     for page_data in page_data_list:
