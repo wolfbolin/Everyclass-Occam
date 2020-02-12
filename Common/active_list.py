@@ -8,7 +8,7 @@ import Common
 from math import ceil
 
 
-def fetch_available_list(config, version, task_name, task_word, url_index, semester):
+def fetch_active_list(config, version, task_name, task_word, url_index, semester):
     """
     获取指定学期可用的对象的列表
     :param config: 配置文件
@@ -26,7 +26,8 @@ def fetch_available_list(config, version, task_name, task_word, url_index, semes
     # 读取缓存数据
     cache_data, _ = Common.read_exist_data(config, version, task_key)
     if len(cache_data) != 0:
-        return cache_data[0]["data"]
+        Util.print_azure("该版本【%s】无需下载更新" % task_name)
+        return json.loads(cache_data[0]["data"])
 
     # 获取指定页面
     Util.print_white("【%s】正在下载..." % task_name, end='')
@@ -37,9 +38,9 @@ def fetch_available_list(config, version, task_name, task_word, url_index, semes
     Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
 
     # 解析页面信息
-    name_list = parse_name_list(config, version, task_key, http_result)
+    active_list = parse_name_list(config, version, task_key, http_result)
 
-    return name_list
+    return active_list
 
 
 def parse_name_list(config, version, task_key, http_result):
@@ -80,4 +81,4 @@ def pull_empty_table_page(config, version, task_key, url_index, headers, semeste
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    fetch_available_list(_config, "2019-11-27", "可用教室", "act_room", "jslb", "2019-2020-1")
+    fetch_active_list(_config, "2019-11-27", "可用教室", "act_room", "jslb", "2019-2020-1")

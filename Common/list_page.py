@@ -35,7 +35,8 @@ def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, 
     _, exist_page_num = Common.read_exist_data(config, version, task_key)
     task_page_num = list(set(range(1, all_page_num + 1)) - set(map(int, exist_page_num)))
     if len(task_page_num) == 0:
-        Util.print_white("该版本【%s】无需下载更新" % task_name)
+        Util.print_azure("该版本【%s】无需下载更新" % task_name)
+        return False
 
     # 下载完整数据
     for page_num in task_page_num:
@@ -44,14 +45,15 @@ def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, 
         # 尝试获取页面
         time_start = time.time()
         http_result = pull_list_page(config, version, task_key, url_index, headers, page_num, page_size)
-        time_end = time.time()
 
         # 解析页面信息
         parse_list_page(config, version, task_key, tag_index, http_result, page_num)
+        time_end = time.time()
 
         Util.print_green("OK", tag='', end='')
         Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
 
+    return True
 
 # 预分析页面信息
 def parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_size):
