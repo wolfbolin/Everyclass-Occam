@@ -141,7 +141,7 @@ def merge_page_info(config, version, task_name, task_word, dao_func):
         data_bin.extend(json.loads(page_data["data"]))
 
     for index, line_data in enumerate(data_bin):
-        dao_func(entity_conn, version, line_data)
+        dao_func(entity_conn, line_data)
         Util.process_bar(index + 1, len(data_bin), "写入【%s】" % task_key[0])
 
 
