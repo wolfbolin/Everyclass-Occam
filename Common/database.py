@@ -72,6 +72,30 @@ def read_json_data(conn, group, version):
     return item_list
 
 
+# 写入课表信息
+def write_lesson_info(conn, data):
+    cursor = conn.cursor()
+    sql = "REPLACE INTO `lesson` (`code`,`week`,`session`) VALUES (%s, %s, %s)"
+    cursor.execute(sql, args=[data["code"], data["week"], data["session"]])
+    conn.commit()
+
+
+# 写入关联信息
+def write_lesson_link(conn, data):
+    cursor = conn.cursor()
+    sql = "REPLACE INTO `link` (`lesson`,`session`,`object`, `group`) VALUES (%s, %s, %s, %s)"
+    cursor.execute(sql, args=[data["lesson"], data["session"], data["object"], data["group"]])
+    conn.commit()
+
+
+# 写入备注信息
+def write_remark_info(conn, data):
+    cursor = conn.cursor()
+    sql = "REPLACE INTO `remark` (`code`,`group`,`remark`) VALUES (%s, %s, %s)"
+    cursor.execute(sql, args=[data["code"], data["group"], data["remark"]])
+    conn.commit()
+
+
 # 读取已完成的页面
 def read_exist_html_data(config, version, task_key):
     conn = Util.mysql_conn(config, "mysql-occam")

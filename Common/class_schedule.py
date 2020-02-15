@@ -20,7 +20,7 @@ lesson_translation_table = {
 }
 
 
-def fetch_class_schedule(config, version, task_name, task_word, url_index, semester, active_list):
+def fetch_class_table(config, version, task_name, task_word, url_index, semester, active_list):
     """
     批量更新课表信息数据
     :param config:
@@ -141,24 +141,97 @@ def calc_purify_string(navigable_string):
     return str(res)
 
 
-def merge_page_info(config, version, task_name, task_word, dao_func):
-    task_key = (task_name, task_word)
+def merge_table_info(config, version, task_name, task_word, task_group):
+    task_key = (task_name, task_word, task_group)
     occam_conn = Util.mysql_conn(config, "mysql-occam")
     entity_conn = Util.mysql_conn(config, "mysql-entity")
 
     # 读取页面信息
-    page_data_list = Common.read_json_data(occam_conn, task_word, version)
+    class_table_data = Common.read_json_data(occam_conn, task_key[1], version)
+
+    for table_data in class_table_data:
+        obj_code = table_data["mark"]
+        obj_data = json.loads(table_data["data"])
+        Util.print_white("【%s】正在写入 <%s> 课表..." % (task_name, obj_code))
+
+        for lesson in obj_data["lesson"]:
+            week_str = lesson["week_str"]
+            if "loop_str" in lesson.keys():
+                week_str += "/" + lesson["loop_str"]
+            week = read_week_string(week_str)
+
+            lesson_info = {
+                "code": lesson["jxid"],
+                "week": json.dumps(week),
+                "session": lesson["session"],
+            }
+            Common.write_lesson_info(entity_conn, lesson_info)
+
+            lesson_link = {
+                "lesson": lesson["jxid"],
+                "session": lesson["session"],
+                "object": obj_code,
+                "group": task_key[2]
+            }
+            Common.write_lesson_link(entity_conn, lesson_link)
+
+        if obj_data["remark"].strip() != "":
+            remark_info = {
+                "code": obj_code,
+                "group": task_key[2],
+                "remark": obj_data["remark"].strip()
+            }
+            Common.write_remark_info(entity_conn, remark_info)
+
+
+def read_week_string(week_str):
+    # 排除双横杠的异常字符串 例如：4--5,7-18/全周
+    week_str = week_str.replace('--', '-')
+    length = week_str.split('/')[0]
+    try:
+        cycle = week_str.split('/')[1]
+    except IndexError:
+        cycle = 0
+
+    if cycle == '单周' or cycle == '单':
+        cycle = 1
+    elif cycle == '双周' or cycle == '双':
+        cycle = 2
+    else:
+        cycle = 0
+
+    week = []
+    try:
+        for part in length.split(','):
+            point = part.split('-')
+            if len(point) == 1:  # 说明没有时间跨度
+                if len(point[0]) == 0:
+                    continue
+                week.append(int(point[0]))
+            else:  # 说明具有时间跨度
+                for t in range(int(point[0]), int(point[1]) + 1):
+                    if cycle == 0:
+                        week.append(int(t))
+                    elif cycle == 1 and t % 2 == 1:
+                        week.append(int(t))
+                    elif cycle == 2 and t % 2 == 0:
+                        week.append(int(t))
+    except ValueError:
+        Util.print_red('奇怪的时间信息：{}'.format(week_str))
+    week.sort()
+    return week
 
 
 if __name__ == '__main__':
     _config = Config.load_config("../Config")
-    _conn = Util.mysql_conn(_config, "mysql-occam")
-    _act_room_list = [{
-        "jsid": "2420104",
-        "jsmc": "世Ａ104"
-    }]
-    fetch_class_schedule(_config, "2019-11-27", "课表教室", "room_table", "jskb", "2019-2020-1", _act_room_list)
+    # _conn = Util.mysql_conn(_config, "mysql-occam")
+    # _act_room_list = [{
+    #     "jsid": "2420104",
+    #     "jsmc": "世Ａ104"
+    # }]
+    # fetch_class_table(_config, "2019-11-27", "课表教室", "room_table", "jskb", "2019-2020-1", _act_room_list)
     # _task_key = ("课表教室", "room_table")
     # _test_html = Common.read_html_data(_conn, "room_table", "2019-11-27")
     # parse_list_page(_config, "2019-11-27", _task_key, _test_html[0]["data"],
     #                 {"jsid": "4080282", "jsmc": "S216"})
+    merge_table_info(_config, "2019-11-27", "课表教室", "room_table", "room")

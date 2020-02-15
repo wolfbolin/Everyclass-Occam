@@ -24,7 +24,7 @@ def main(config, semester, version):
     active_list = Common.fetch_active_list(config, version, "可用教室", "act_room", "jslb", semester)
 
     # 更新教室课表
-    Common.fetch_class_schedule(_config, "2019-11-27", "课表教室", "room_table", "jskb", "2019-2020-1", active_list)
+    Common.fetch_class_table(_config, "2019-11-27", "课表教室", "room_table", "jskb", "2019-2020-1", active_list)
 
 
 if __name__ == "__main__":
