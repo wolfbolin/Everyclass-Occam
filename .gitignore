@@ -1,12 +1,6 @@
 
-# Set for wolfbolin
-*.sql
-dumps
-.idea
-__pycache__
-venv*
-cache
-config*.py
-default.py
-test.py
-src/htmlstash
+.idea/
+log/
+__pycache__/
+Config/*.ini
+!Config/default.ini
