@@ -46,17 +46,18 @@ def fetch_class_table(config, version, task_name, task_word, url_index, semester
         Util.print_white("该版本【%s】无需下载更新" % task_name)
 
     # 获取课表信息
-    for obj_data in active_list:
+    for i, obj_data in enumerate(active_list):
         time_start = time.time()
         extra_data = Util.dict_link(config[task_key[1] + "_extra"], obj_data)
 
         # 尝试获取页面
+        Util.print_white("【%s】(%s/%s)" % (task_key[0], i + 1, len(active_list)), end='')
         if extra_data["code"] in exist_mark:
-            Util.print_white("【%s】重新计算 <%s> 课表..." % (task_name, extra_data["name"]), end='')
+            Util.print_white("重新计算 <%s> 课表..." % (extra_data["name"]), end='')
             cache = cache_data[exist_mark.index(extra_data["code"])]
             http_result = cache["data"]
         else:
-            Util.print_white("【%s】正在下载 <%s> 课表..." % (task_name, extra_data["name"]), end='')
+            Util.print_white("正在下载 <%s> 课表..." % (extra_data["name"]), end='')
             obj_data["semester"] = semester
             http_result = pull_table_page(config, version, task_key, url_index, headers, obj_data)
 
@@ -145,7 +146,7 @@ def calc_purify_string(navigable_string):
     return str(res)
 
 
-def merge_table_info(config, version, task_name, task_word, task_group):
+def merge_table_info(config, version, task_name, task_word, task_group, semester):
     task_key = (task_name, task_word, task_group)
     occam_conn = Util.mysql_conn(config, "mysql-occam")
     entity_conn = Util.mysql_conn(config, "mysql-entity")
@@ -153,10 +154,12 @@ def merge_table_info(config, version, task_name, task_word, task_group):
     # 读取页面信息
     class_table_data = Common.read_json_data(occam_conn, task_key[1], version)
 
-    for table_data in class_table_data:
+    # 写入课表信息
+    for i, table_data in enumerate(class_table_data):
         obj_code = table_data["mark"]
         obj_data = json.loads(table_data["data"])
-        Util.print_white("【%s】正在写入 <%s> 课表..." % (task_name, obj_code))
+        Util.print_white("【%s】(%s/%s)" % (task_key[0], i + 1, len(class_table_data)), end='')
+        Util.print_white("正在写入 <%s> 课表..." % obj_code)
 
         for lesson in obj_data["lesson"]:
             week_str = lesson["week_str"]
@@ -168,6 +171,7 @@ def merge_table_info(config, version, task_name, task_word, task_group):
                 "code": lesson["jxid"],
                 "week": json.dumps(week),
                 "session": lesson["session"],
+                "semester": semester,
             }
             Common.write_lesson_info(entity_conn, lesson_info)
 
@@ -175,7 +179,8 @@ def merge_table_info(config, version, task_name, task_word, task_group):
                 "lesson": lesson["jxid"],
                 "session": lesson["session"],
                 "object": obj_code,
-                "group": task_key[2]
+                "group": task_key[2],
+                "semester": semester,
             }
             Common.write_lesson_link(entity_conn, lesson_link)
 
@@ -183,7 +188,8 @@ def merge_table_info(config, version, task_name, task_word, task_group):
             remark_info = {
                 "code": obj_code,
                 "group": task_key[2],
-                "remark": obj_data["remark"].strip()
+                "remark": obj_data["remark"].strip(),
+                "semester": semester,
             }
             Common.write_remark_info(entity_conn, remark_info)
 

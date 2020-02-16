@@ -15,7 +15,7 @@ def main(config, semester, version):
         "校区名称": "campus",
         "院系名称": "faculty",
     }
-    if Common.fetch_list_data(config, version, "学生列表", "student_list", tag_meaning, "xsmd", 200):
+    if Common.fetch_list_data(config, version, "学生列表", "student_list", tag_meaning, "xsmd", 500):
         Common.merge_page_info(config, version, "学生列表", "student_list", dao.write_student_info)
 
     # 更新活跃教室
@@ -23,7 +23,7 @@ def main(config, semester, version):
 
     # 更新教室课表
     Common.fetch_class_table(_config, version, "学生课表", "student_table", "xskb", semester, active_list)
-    Common.merge_table_info(_config, version, "学生课表", "student_table", "student")
+    Common.merge_table_info(_config, version, "学生课表", "student_table", "student", semester)
 
 
 if __name__ == "__main__":

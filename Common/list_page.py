@@ -66,7 +66,7 @@ def parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_siz
         all_page_num = int(all_page_num)
         mev_line_num = all_page_num * int(page_size)
     except AttributeError:
-        Util.write_log("list_page_info", http_result)
+        Util.write_log("parse_%s_data" % task_key[1], http_result)
         raise Util.ParseError("【%s】页码解析失败，解析页面已写入日志" % task_key[0])
     Util.print_white("【%s】页码数据：共计 [%d] 页, 大约 [%d] 条" % (task_key[0], all_page_num, mev_line_num))
 
@@ -79,7 +79,7 @@ def parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_siz
             tag_key = tag_dict[tag.string]
             tag_index[tag_key] = index
     except AttributeError:
-        Util.write_log("list_page_info", http_result)
+        Util.write_log("parse_%s_data" % task_key[1], http_result)
         raise Util.ParseError("【%s】映射解析失败，解析页面已写入日志" % task_key[0])
     Util.print_white("【{}】映射关系：{}".format(task_key[0], tag_index))
 

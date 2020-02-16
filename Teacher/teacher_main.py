@@ -23,7 +23,7 @@ def main(config, semester, version):
 
     # 更新教室课表
     Common.fetch_class_table(_config, version, "教师课表", "teacher_table", "jgkb", semester, active_list)
-    Common.merge_table_info(_config, version, "教师课表", "teacher_table", "teacher")
+    Common.merge_table_info(_config, version, "教师课表", "teacher_table", "teacher", semester)
 
 
 if __name__ == "__main__":
