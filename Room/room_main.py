@@ -17,17 +17,17 @@ def main(config, semester, version):
         "所在校区": "campus",
         "所在教学楼": "building",
     }
-    if Common.fetch_list_data(config, version, "教室列表", "room", tag_meaning, "jsmd", 200):
-        Common.merge_page_info(config, version, "教室列表", "room", dao.write_room_info)
+    if Common.fetch_list_data(config, version, "教室列表", "room_list", tag_meaning, "jsmd", 200):
+        Common.merge_page_info(config, version, "教室列表", "room_list", dao.write_room_info)
 
     # 更新活跃教室
     active_list = Common.fetch_active_list(config, version, "可用教室", "act_room", "jslb", semester)
 
     # 更新教室课表
-    Common.fetch_class_table(_config, version, "教室课表", "room_table", "jskb", "2019-2020-1", active_list)
+    Common.fetch_class_table(_config, version, "教室课表", "room_table", "jskb", semester, active_list)
     Common.merge_table_info(_config, version, "教室课表", "room_table", "room")
 
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    main(_config, "2019-2020-1", "2019-11-27")
+    main(_config, "2019-2020-1", "2020-02-16")

@@ -72,6 +72,11 @@ def pull_active_list_page(config, version, task_key, url_index, headers, semeste
             "method": "queryjs",
             "xnxq01id": semester
         }
+    elif url_index == "jglb":
+        params = {
+            "method": "queryjg0101",
+            "xnxq01id": semester
+        }
     else:
         params = {
             "xnxq01id": str(semester),

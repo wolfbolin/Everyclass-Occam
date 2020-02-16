@@ -2,7 +2,7 @@
 
 
 # 写入教室信息
-def write_room_info(conn, room_data):
+def write_course_info(conn, room_data):
     cursor = conn.cursor()
     sql = "REPLACE INTO `course` (`code`, `name`, `type`, `faculty`) " \
           "VALUES (%s, %s, %s, %s)"

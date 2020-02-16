@@ -19,7 +19,8 @@ lesson_translation_table = {
     "节次": "session_str",
     "上课地点教室": "room_str",
     "课程类别": "category_str",
-    "课程性质": "nature_str"
+    "课程性质": "nature_str",
+    "上课总学时": "tea_hour_str",
 }
 
 
@@ -133,7 +134,7 @@ def calc_session(line_index, column_index):
 
 
 def calc_lesson_tag(tag_str):
-    res = re.search(r"jx0408id=(?P<jxid>\w+)&classroomID=(?P<rid>\w+)", tag_str)
+    res = re.search(r"jx0408id=(?P<jxid>\w+)&classroomID=(?P<rid>\w?)", tag_str)
     return res.groupdict()
 
 
