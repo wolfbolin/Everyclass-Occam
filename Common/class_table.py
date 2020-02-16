@@ -12,11 +12,14 @@ lesson_translation_table = {
     "课程名称": "name_str",
     "老师": "teacher_str",
     "教学班名称": "class_str",
+    "行政班级名称": "class_str",
     "选课人数": "pick_str",
     "周次": "week_str",
     "单双周": "loop_str",
     "节次": "session_str",
-    "上课地点教室": "room_str"
+    "上课地点教室": "room_str",
+    "课程类别": "category_str",
+    "课程性质": "nature_str"
 }
 
 

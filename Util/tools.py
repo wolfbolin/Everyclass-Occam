@@ -17,9 +17,8 @@ def purify_string(input_str):
 def dict_link(dict1, dict2):
     res = dict1.copy()
     for key1 in dict1.keys():
-        val = dict1[key1].strip("/")
-        if val in dict2.keys():
-            res[key1] = dict2[val]
+        for key2 in dict2.keys():
+            res[key1] = res[key1].replace("<{}>".format(key2), dict2[key2])
     return res
 
 

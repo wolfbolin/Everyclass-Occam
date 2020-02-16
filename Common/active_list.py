@@ -21,7 +21,6 @@ def fetch_active_list(config, version, task_name, task_word, url_index, semester
     """
     # 预处理参数
     task_key = (task_name, task_word)
-    headers, cookies = Common.auth_cookie(config)
 
     # 读取缓存数据
     cache_data, _ = Common.read_exist_json_data(config, version, task_key)
@@ -30,6 +29,7 @@ def fetch_active_list(config, version, task_name, task_word, url_index, semester
         return json.loads(cache_data[0]["data"])
 
     # 获取指定页面
+    headers, cookies = Common.auth_cookie(config)
     Util.print_white("【%s】正在下载..." % task_name, end='')
     time_start = time.time()
     http_result = pull_active_list_page(config, version, task_key, url_index, headers, semester)
@@ -49,10 +49,12 @@ def parse_name_list(config, version, task_key, http_result):
     # 提取数据
     page_data = re.search(r'(var bj="\[|^\[)(.*?)("\];|\])', http_result, re.S | re.M)
     page_data = "[{}]".format(page_data.group(2))
+    page_data = re.sub(r'\s', "", page_data)
     page_data = page_data.replace("'", '"')
     page_data = page_data.replace("\\", "\\\\")
     page_data = page_data.replace("]qz--1", "]")
     page_data = re.sub(r'([,|{])([\w]+)(:)', lambda x: '"'.join(x.groups()), page_data)
+    Util.write_log("parse_name_list", page_data)
     page_data = json.loads(page_data)
 
     Common.write_json_data(conn, task_key[1], version, 1, json.dumps(page_data, ensure_ascii=False))
