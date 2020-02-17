@@ -75,24 +75,24 @@ def read_json_data(conn, group, version):
 # 写入课表信息
 def write_lesson_info(conn, data):
     cursor = conn.cursor()
-    sql = "REPLACE INTO `lesson` (`code`,`week`,`session`) VALUES (%s, %s, %s)"
-    cursor.execute(sql, args=[data["code"], data["week"], data["session"]])
+    sql = "REPLACE INTO `lesson` (`code`,`week`,`session`,`semester`) VALUES (%s, %s, %s, %s)"
+    cursor.execute(sql, args=[data["code"], data["week"], data["session"], data["semester"]])
     conn.commit()
 
 
 # 写入关联信息
 def write_lesson_link(conn, data):
     cursor = conn.cursor()
-    sql = "REPLACE INTO `link` (`lesson`,`session`,`object`, `group`) VALUES (%s, %s, %s, %s)"
-    cursor.execute(sql, args=[data["lesson"], data["session"], data["object"], data["group"]])
+    sql = "REPLACE INTO `link` (`lesson`,`session`,`object`, `group`,`semester`) VALUES (%s, %s, %s, %s, %s)"
+    cursor.execute(sql, args=[data["lesson"], data["session"], data["object"], data["group"], data["semester"]])
     conn.commit()
 
 
 # 写入备注信息
 def write_remark_info(conn, data):
     cursor = conn.cursor()
-    sql = "REPLACE INTO `remark` (`code`,`group`,`remark`) VALUES (%s, %s, %s)"
-    cursor.execute(sql, args=[data["code"], data["group"], data["remark"]])
+    sql = "REPLACE INTO `remark` (`code`,`group`,`remark`,`semester`) VALUES (%s, %s, %s, %s)"
+    cursor.execute(sql, args=[data["code"], data["group"], data["remark"], data["semester"]])
     conn.commit()
 
 

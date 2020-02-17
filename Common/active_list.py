@@ -54,7 +54,6 @@ def parse_name_list(config, version, task_key, http_result):
     page_data = page_data.replace("\\", "\\\\")
     page_data = page_data.replace("]qz--1", "]")
     page_data = re.sub(r'([,|{])([\w]+)(:)', lambda x: '"'.join(x.groups()), page_data)
-    Util.write_log("parse_name_list", page_data)
     page_data = json.loads(page_data)
 
     Common.write_json_data(conn, task_key[1], version, 1, json.dumps(page_data, ensure_ascii=False))
@@ -70,6 +69,11 @@ def pull_active_list_page(config, version, task_key, url_index, headers, semeste
     if url_index == "jslb":
         params = {
             "method": "queryjs",
+            "xnxq01id": semester
+        }
+    elif url_index == "jglb":
+        params = {
+            "method": "queryjg0101",
             "xnxq01id": semester
         }
     else:
