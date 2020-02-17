@@ -14,7 +14,7 @@ def preprocess_search_data(config):
     course_base = read_object_base(config, "course")
     delete_search_group(config, "course")
     for i, course in enumerate(course_base):
-        Util.print_white("【搜索课程】(%s/%s)" % (i, len(course_base)), end="")
+        Util.print_white("【搜索课程】(%s/%s)" % (i + 1, len(course_base)), end="")
         Util.print_white("正在写入 <%s:%s> 课程搜索数据..." % (course["name"], course["code"]))
         name_list = convert_search_name(rename_rule, course["name"])
         for name in name_list:
@@ -24,7 +24,7 @@ def preprocess_search_data(config):
     room_base = read_object_base(config, "room")
     delete_search_group(config, "room")
     for i, room in enumerate(room_base):
-        Util.print_white("【搜索教室】(%s/%s)" % (i, len(room_base)), end="")
+        Util.print_white("【搜索教室】(%s/%s)" % (i + 1, len(room_base)), end="")
         Util.print_white("正在写入 <%s:%s> 课程教室数据..." % (room["name"], room["code"]))
         name_list = convert_search_name(rename_rule, room["name"])
         for name in name_list:
@@ -34,7 +34,7 @@ def preprocess_search_data(config):
     teacher_base = read_object_base(config, "teacher")
     delete_search_group(config, "teacher")
     for i, teacher in enumerate(teacher_base):
-        Util.print_white("【搜索教师】(%s/%s)" % (i, len(teacher_base)), end="")
+        Util.print_white("【搜索教师】(%s/%s)" % (i + 1, len(teacher_base)), end="")
         Util.print_white("正在写入 <%s:%s> 教师搜索数据..." % (teacher["name"], teacher["code"]))
         name_list = convert_pinyin_name([teacher["name"]])
         for name in name_list:
@@ -44,7 +44,7 @@ def preprocess_search_data(config):
     student_base = read_object_base(config, "student")
     delete_search_group(config, "student")
     for i, student in enumerate(student_base):
-        Util.print_white("【搜索学生】(%s/%s)" % (i, len(student_base)), end="")
+        Util.print_white("【搜索学生】(%s/%s)" % (i + 1, len(student_base)), end="")
         Util.print_white("正在写入 <%s:%s> 学生搜索数据..." % (student["name"], student["code"]))
         name_list = convert_pinyin_name([student["name"]])
         for name in name_list:
