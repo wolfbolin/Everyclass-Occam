@@ -7,6 +7,8 @@ import Config
 import Common
 from math import ceil
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import as_completed
 
 lesson_translation_table = {
     "课程名称": "name_str",
@@ -43,7 +45,7 @@ def fetch_class_table(config, version, task_name, task_word, url_index, semester
     # 读取缓存数据
     cache_data, exist_mark = Common.read_exist_html_data(config, version, task_key)
     if len(exist_mark) == len(active_list):
-        Util.print_white("该版本【%s】无需下载更新" % task_name)
+        Util.print_azure("该版本【%s】无需下载更新" % task_name)
 
     # 获取课表信息
     for i, obj_data in enumerate(active_list):
@@ -161,37 +163,41 @@ def merge_table_info(config, version, task_name, task_word, task_group, semester
         Util.print_white("【%s】(%s/%s)" % (task_key[0], i + 1, len(class_table_data)), end='')
         Util.print_white("正在写入 <%s> 课表..." % obj_code)
 
-        for lesson in obj_data["lesson"]:
-            week_str = lesson["week_str"]
-            if "loop_str" in lesson.keys():
-                week_str += "/" + lesson["loop_str"]
-            week = read_week_string(week_str)
+        write_table_info(entity_conn, semester, task_key[2], obj_code, obj_data)
 
-            lesson_info = {
-                "code": lesson["jxid"],
-                "week": json.dumps(week),
-                "session": lesson["session"],
-                "semester": semester,
-            }
-            Common.write_lesson_info(entity_conn, lesson_info)
 
-            lesson_link = {
-                "lesson": lesson["jxid"],
-                "session": lesson["session"],
-                "object": obj_code,
-                "group": task_key[2],
-                "semester": semester,
-            }
-            Common.write_lesson_link(entity_conn, lesson_link)
+def write_table_info(conn, semester, group, obj_code, obj_data):
+    for lesson in obj_data["lesson"]:
+        week_str = lesson["week_str"]
+        if "loop_str" in lesson.keys():
+            week_str += "/" + lesson["loop_str"]
+        week = read_week_string(week_str)
 
-        if obj_data["remark"].strip() != "":
-            remark_info = {
-                "code": obj_code,
-                "group": task_key[2],
-                "remark": obj_data["remark"].strip(),
-                "semester": semester,
-            }
-            Common.write_remark_info(entity_conn, remark_info)
+        lesson_info = {
+            "code": lesson["jxid"],
+            "week": json.dumps(week),
+            "session": lesson["session"],
+            "semester": semester,
+        }
+        Common.write_lesson_info(conn, lesson_info)
+
+        lesson_link = {
+            "lesson": lesson["jxid"],
+            "session": lesson["session"],
+            "object": obj_code,
+            "group": group,
+            "semester": semester,
+        }
+        Common.write_lesson_link(conn, lesson_link)
+
+    if obj_data["remark"].strip() != "":
+        remark_info = {
+            "code": obj_code,
+            "group": group,
+            "remark": obj_data["remark"].strip(),
+            "semester": semester,
+        }
+        Common.write_remark_info(conn, remark_info)
 
 
 def read_week_string(week_str):

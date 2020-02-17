@@ -22,8 +22,8 @@ def main(config, semester, version):
     active_list = Common.fetch_active_list(config, version, "可用学生", "act_student", "xslb", semester)
 
     # 更新教室课表
-    Common.fetch_class_table(_config, version, "学生课表", "student_table", "xskb", semester, active_list)
-    Common.merge_table_info(_config, version, "学生课表", "student_table", "student", semester)
+    Common.fetch_class_table(config, version, "学生课表", "student_table", "xskb", semester, active_list)
+    Common.merge_table_info(config, version, "学生课表", "student_table", "student", semester)
 
 
 if __name__ == "__main__":

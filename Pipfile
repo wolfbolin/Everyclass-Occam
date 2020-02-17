@@ -8,10 +8,12 @@ verify_ssl = true
 [packages]
 requests = "*"
 pymysql = "*"
+dbutils = "*"
 lxml = "*"
 fake-useragent = "*"
 beautifulsoup4 = "*"
 update = "*"
+pypinyin = "*"
 
 [requires]
 python_version = "3.7"
