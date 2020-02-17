@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 requests = "*"
 pymysql = "*"
+dbutils = "*"
 lxml = "*"
 fake-useragent = "*"
 beautifulsoup4 = "*"
