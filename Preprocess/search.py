@@ -1,5 +1,6 @@
 # coding=utf-8
 import re
+import json
 import Util
 import Config
 import pymysql
@@ -10,45 +11,38 @@ def preprocess_search_data(config):
     # 读取改名规则
     rename_rule = read_rename_rule(config)
 
-    # 更新课程搜索数据
-    course_base = read_object_base(config, "course")
-    delete_search_group(config, "course")
-    for i, course in enumerate(course_base):
-        Util.print_white("【搜索课程】(%s/%s)" % (i + 1, len(course_base)), end="")
-        Util.print_white("正在写入 <%s:%s> 课程搜索数据..." % (course["name"], course["code"]))
-        name_list = convert_search_name(rename_rule, course["name"])
-        for name in name_list:
-            write_search_key(config, name, "course", course["code"])
-
     # 更新教室搜索数据
-    room_base = read_object_base(config, "room")
-    delete_search_group(config, "room")
-    for i, room in enumerate(room_base):
-        Util.print_white("【搜索教室】(%s/%s)" % (i + 1, len(room_base)), end="")
-        Util.print_white("正在写入 <%s:%s> 课程教室数据..." % (room["name"], room["code"]))
-        name_list = convert_search_name(rename_rule, room["name"])
-        for name in name_list:
-            write_search_key(config, name, "room", room["code"])
+    recalculation_search_key(config, rename_rule, "room", ["campus", "building"])
+
+    # 更新课程搜索数据
+    recalculation_search_key(config, rename_rule, "course", ["type", "faculty"])
+
+    # 更新教师搜索数据
+    recalculation_search_key(config, rename_rule, "teacher", ["title", "department"])
 
     # 更新学生搜索数据
-    teacher_base = read_object_base(config, "teacher")
-    delete_search_group(config, "teacher")
-    for i, teacher in enumerate(teacher_base):
-        Util.print_white("【搜索教师】(%s/%s)" % (i + 1, len(teacher_base)), end="")
-        Util.print_white("正在写入 <%s:%s> 教师搜索数据..." % (teacher["name"], teacher["code"]))
-        name_list = convert_pinyin_name([teacher["name"]])
-        for name in name_list:
-            write_search_key(config, name, "teacher", teacher["code"])
+    recalculation_search_key(config, rename_rule, "student", ["class", "department"])
 
-    # 更新学生搜索数据
-    student_base = read_object_base(config, "student")
-    delete_search_group(config, "student")
-    for i, student in enumerate(student_base):
-        Util.print_white("【搜索学生】(%s/%s)" % (i + 1, len(student_base)), end="")
-        Util.print_white("正在写入 <%s:%s> 学生搜索数据..." % (student["name"], student["code"]))
-        name_list = convert_pinyin_name([student["name"]])
+
+def recalculation_search_key(config, rename_rule, group, params):
+    conn = Util.mysql_conn(config, "mysql-entity")
+    base_info = read_object_base(conn, group, params)
+    delete_search_group(conn, group)
+    for i, info in enumerate(base_info):
+        Util.print_white("【搜索处理】(%s/%s)" % (i + 1, len(base_info)), end="")
+        Util.print_white("正在写入 <%s:%s:%s> 搜索数据..." % (group, info["name"], info["code"]))
+
+        # 计算名称改写与拼音
+        name_list = convert_search_name(rename_rule, info["name"])
+        name_list = convert_pinyin_name(name_list)
+
+        # 计算对象可用学期
+        semester_list = read_available_semester(conn, group, info["code"])
+        semester_list = json.dumps(semester_list)
+
         for name in name_list:
-            write_search_key(config, name, "student", student["code"])
+            write_search_key(conn, group, name, info["code"], info["name"],
+                             info[params[0]], info[params[1]], semester_list)
 
 
 def convert_search_name(rename_rule, name):
@@ -83,28 +77,34 @@ def read_rename_rule(config):
     return cursor.fetchall()
 
 
-def read_object_base(config, table):
-    conn = Util.mysql_conn(config, "mysql-entity")
+def read_object_base(conn, table, key):
+    key.extend(["name", "code"])
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT `code`,`name` FROM `%s`" % table
+    sql = "SELECT `%s` FROM `%s`" % ("`,`".join(key), table)
     cursor.execute(sql)
     return cursor.fetchall()
 
 
-def write_search_key(config, key, group, code):
-    conn = Util.mysql_conn(config, "mysql-entity")
+def write_search_key(conn, group, key, code, name, info1, info2, semester):
     cursor = conn.cursor()
-    sql = "REPLACE INTO `search`(`key`,`code`,`group`) VALUES(%s,%s,%s)"
-    cursor.execute(sql, args=[key, code, group])
+    sql = "REPLACE INTO `search`(`key`,`code`,`name`,`group`,`info1`,`info2`,`semester`) " \
+          "VALUES(%s,%s,%s,%s,%s,%s,%s)"
+    cursor.execute(sql, args=[key, code, name, group, info1, info2, semester])
     conn.commit()
 
 
-def delete_search_group(config, group):
-    conn = Util.mysql_conn(config, "mysql-entity")
+def delete_search_group(conn, group):
     cursor = conn.cursor()
     sql = "DELETE FROM `search` WHERE `group`=%s"
     cursor.execute(sql, args=[group])
     conn.commit()
+
+
+def read_available_semester(conn, group, code):
+    cursor = conn.cursor()
+    sql = "SELECT DISTINCT `semester` FROM `link` WHERE `object`=%s AND `group`=%s"
+    cursor.execute(sql, args=[code, group])
+    return [obj[0] for obj in cursor.fetchall()]
 
 
 if __name__ == "__main__":
