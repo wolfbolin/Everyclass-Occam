@@ -8,59 +8,41 @@ import pypinyin
 
 
 def preprocess_search_data(config):
-    occam_conn = Util.mysql_conn(config, "mysql-occam")
-    entity_conn = Util.mysql_conn(config, "mysql-entity")
     # 读取改名规则
-    rename_rule = read_rename_rule(occam_conn)
-
-    # 更新课程搜索数据
-    # course_base = read_object_base(config, "course", ["type", "faculty"])
-    # delete_search_group(config, "course")
-    # for i, course in enumerate(course_base):
-    #     Util.print_white("【搜索课程】(%s/%s)" % (i + 1, len(course_base)), end="")
-    #     Util.print_white("正在写入 <%s:%s> 课程搜索数据..." % (course["name"], course["code"]))
-    #     name_list = convert_search_name(rename_rule, course["name"])
-    #     for name in name_list:
-    #         write_search_key(config, name, "course", course["code"])
+    rename_rule = read_rename_rule(config)
 
     # 更新教室搜索数据
-    room_base = read_object_base(entity_conn, "room", ["campus", "building"])
-    delete_search_group(entity_conn, "room")
-    for i, room in enumerate(room_base):
-        Util.print_white("【搜索教室】(%s/%s)" % (i + 1, len(room_base)), end="")
-        Util.print_white("正在写入 <%s:%s> 课程教室数据..." % (room["name"], room["code"]))
-        name_list = convert_search_name(rename_rule, room["name"])
-        semester_list = read_available_semester(entity_conn, "room", room["code"])
-        semester_list = json.dumps(semester_list)
-        for name in name_list:
-            write_search_key(entity_conn, "room", name, room["code"],
-                             room["campus"], room["building"], semester_list)
+    recalculation_search_key(config, rename_rule, "room", ["campus", "building"])
+
+    # 更新课程搜索数据
+    recalculation_search_key(config, rename_rule, "course", ["type", "faculty"])
 
     # 更新教师搜索数据
-    teacher_base = read_object_base(entity_conn, "teacher", ["title", "department"])
-    delete_search_group(entity_conn, "teacher")
-    for i, teacher in enumerate(teacher_base):
-        Util.print_white("【搜索教师】(%s/%s)" % (i + 1, len(teacher_base)), end="")
-        Util.print_white("正在写入 <%s:%s> 教师搜索数据..." % (teacher["name"], teacher["code"]))
-        name_list = convert_pinyin_name([teacher["name"]])
-        semester_list = read_available_semester(entity_conn, "teacher", teacher["code"])
-        semester_list = json.dumps(semester_list)
-        for name in name_list:
-            write_search_key(entity_conn, "teacher", name, teacher["code"],
-                             teacher["title"], teacher["department"], semester_list)
+    recalculation_search_key(config, rename_rule, "teacher", ["title", "department"])
 
     # 更新学生搜索数据
-    student_base = read_object_base(entity_conn, "student", ["class", "department"])
-    delete_search_group(entity_conn, "student")
-    for i, student in enumerate(student_base):
-        Util.print_white("【搜索学生】(%s/%s)" % (i + 1, len(student_base)), end="")
-        Util.print_white("正在写入 <%s:%s> 学生搜索数据..." % (student["name"], student["code"]))
-        name_list = convert_pinyin_name([student["name"]])
-        semester_list = read_available_semester(entity_conn, "student", student["code"])
+    recalculation_search_key(config, rename_rule, "student", ["class", "department"])
+
+
+def recalculation_search_key(config, rename_rule, group, params):
+    conn = Util.mysql_conn(config, "mysql-entity")
+    base_info = read_object_base(conn, group, params)
+    delete_search_group(conn, group)
+    for i, info in enumerate(base_info):
+        Util.print_white("【搜索处理】(%s/%s)" % (i + 1, len(base_info)), end="")
+        Util.print_white("正在写入 <%s:%s:%s> 搜索数据..." % (group, info["name"], info["code"]))
+
+        # 计算名称改写与拼音
+        name_list = convert_search_name(rename_rule, info["name"])
+        name_list = convert_pinyin_name(name_list)
+
+        # 计算对象可用学期
+        semester_list = read_available_semester(conn, group, info["code"])
         semester_list = json.dumps(semester_list)
+
         for name in name_list:
-            write_search_key(entity_conn, "student", name, student["code"],
-                             student["class"], student["department"], semester_list)
+            write_search_key(conn, group, name, info["code"], info["name"],
+                             info[params[0]], info[params[1]], semester_list)
 
 
 def convert_search_name(rename_rule, name):
@@ -87,7 +69,8 @@ def convert_pinyin_name(name_list):
     return list(pinyin_name)
 
 
-def read_rename_rule(conn):
+def read_rename_rule(config):
+    conn = Util.mysql_conn(config, "mysql-occam")
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT * FROM `rename`"
     cursor.execute(sql)
@@ -102,11 +85,11 @@ def read_object_base(conn, table, key):
     return cursor.fetchall()
 
 
-def write_search_key(conn, group, key, code, info1, info2, semester):
+def write_search_key(conn, group, key, code, name, info1, info2, semester):
     cursor = conn.cursor()
-    sql = "REPLACE INTO `search`(`key`,`code`,`group`,`info1`,`info2`,`semester`) " \
-          "VALUES(%s,%s,%s,%s,%s,%s)"
-    cursor.execute(sql, args=[key, code, group, info1, info2, semester])
+    sql = "REPLACE INTO `search`(`key`,`code`,`name`,`group`,`info1`,`info2`,`semester`) " \
+          "VALUES(%s,%s,%s,%s,%s,%s,%s)"
+    cursor.execute(sql, args=[key, code, name, group, info1, info2, semester])
     conn.commit()
 
 
