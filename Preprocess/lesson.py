@@ -43,19 +43,19 @@ def read_lesson_info(conn, lesson, session, semester):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
 
     # 查询教室信息
-    sql = "SELECT `code`,`name`  FROM `link`,`room` WHERE `group`='room' " \
+    sql = "SELECT `code`,`name` FROM `link`,`room` WHERE `group`='room' " \
           "AND `object`=`code` AND `lesson`=%s AND `session`=%s AND `semester`=%s"
     cursor.execute(sql, args=[lesson, session, semester])
     room_info = cursor.fetchone()
 
     # 查询课程信息
-    sql = "SELECT `code`,`name`  FROM `link`,`course` WHERE `group`='course' " \
+    sql = "SELECT `code`,`name` FROM `link`,`course` WHERE `group`='course' " \
           "AND `object`=`code` AND `lesson`=%s AND `session`=%s AND `semester`=%s"
     cursor.execute(sql, args=[lesson, session, semester])
     course_info = cursor.fetchone()
 
     # 查询老师信息
-    sql = "SELECT `code`,`name`,`title`  FROM `link`,`teacher` WHERE `group`='teacher' " \
+    sql = "SELECT `code`,`name` FROM `link`,`teacher` WHERE `group`='teacher' " \
           "AND `object`=`code` AND `lesson`=%s AND `session`=%s AND `semester`=%s"
     cursor.execute(sql, args=[lesson, session, semester])
     teacher_info = cursor.fetchall()
