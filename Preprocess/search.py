@@ -7,7 +7,7 @@ import pymysql
 import pypinyin
 
 
-def preprocess_search_data(config):
+def search_data(config):
     # 读取改名规则
     rename_rule = read_rename_rule(config)
 
@@ -33,14 +33,15 @@ def recalculation_search_key(config, rename_rule, group, params):
         Util.print_white("正在写入 <%s:%s:%s> 搜索数据..." % (group, info["name"], info["code"]))
 
         # 计算名称改写与拼音
-        name_list = convert_search_name(rename_rule, info["name"])
-        name_list = convert_pinyin_name(name_list)
+        key_list = convert_search_name(rename_rule, info["name"])
+        key_list = convert_pinyin_name(key_list)
+        key_list.append(info["code"])
 
         # 计算对象可用学期
         semester_list = read_available_semester(conn, group, info["code"])
         semester_list = json.dumps(semester_list)
 
-        for name in name_list:
+        for name in key_list:
             write_search_key(conn, group, name, info["code"], info["name"],
                              info[params[0]], info[params[1]], semester_list)
 
@@ -58,6 +59,7 @@ def convert_search_name(rename_rule, name):
 def convert_pinyin_name(name_list):
     pinyin_name = set()
     for name in name_list:
+        pinyin_name.add(name)
         full_pinyin = pypinyin.pinyin(name, errors='ignore', style=pypinyin.Style.NORMAL)
         full_pinyin = ''.join(list(x[0] for x in full_pinyin)).strip()
         if len(full_pinyin) > 1:
@@ -109,4 +111,4 @@ def read_available_semester(conn, group, code):
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    preprocess_search_data(_config)
+    search_data(_config)

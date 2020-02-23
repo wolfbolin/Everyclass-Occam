@@ -26,7 +26,7 @@ lesson_translation_table = {
 }
 
 
-def fetch_class_table(config, version, task_name, task_word, url_index, semester, active_list):
+def fetch_class_table(config, version, task_name, task_word, task_group, url_index, semester, active_list):
     """
     批量更新课表信息数据
     :param config:
@@ -39,7 +39,7 @@ def fetch_class_table(config, version, task_name, task_word, url_index, semester
     :return:
     """
     # 预处理参数
-    task_key = (task_name, task_word)
+    task_key = (task_name, task_word, task_group)
     headers, cookies = Common.auth_cookie(config)
 
     # 读取缓存数据
@@ -50,7 +50,7 @@ def fetch_class_table(config, version, task_name, task_word, url_index, semester
     # 获取课表信息
     for i, obj_data in enumerate(active_list):
         time_start = time.time()
-        extra_data = Util.dict_link(config[task_key[1] + "_extra"], obj_data)
+        extra_data = Util.dict_link(config[task_key[2] + "_info"], obj_data)
 
         # 尝试获取页面
         Util.print_white("【%s】(%s/%s)" % (task_key[0], i + 1, len(active_list)), end='')
@@ -76,7 +76,7 @@ def pull_table_page(config, version, task_key, url_index, headers, obj_data, ):
 
     url = config["url"][url_index]
     http_data = Util.dict_link(config[task_key[1] + "_data"], obj_data)
-    extra_data = Util.dict_link(config[task_key[1] + "_extra"], obj_data)
+    extra_data = Util.dict_link(config[task_key[2] + "_info"], obj_data)
     http_result = Util.http_request("POST", url, headers=headers, data=http_data, proxies=config["proxy"])
     if http_result is None:
         raise Util.NetworkError("获取【%s】对象 <%s> 课表时，网络请求失败" % (task_key[0], extra_data["name"]))
@@ -89,7 +89,7 @@ def pull_table_page(config, version, task_key, url_index, headers, obj_data, ):
 
 def parse_list_page(config, version, task_key, http_result, obj_data):
     conn = Util.mysql_conn(config, "mysql-occam")
-    extra_data = Util.dict_link(config[task_key[1] + "_extra"], obj_data)
+    extra_data = Util.dict_link(config[task_key[2] + "_info"], obj_data)
 
     # 解析页面数据
     lesson_list = []
@@ -148,7 +148,7 @@ def calc_purify_string(navigable_string):
     return str(res)
 
 
-def merge_table_info(config, version, task_name, task_word, task_group, semester):
+def update_table_info(config, version, task_name, task_word, task_group, semester):
     task_key = (task_name, task_word, task_group)
     occam_conn = Util.mysql_conn(config, "mysql-occam")
     entity_conn = Util.mysql_conn(config, "mysql-entity")
@@ -250,4 +250,4 @@ if __name__ == '__main__':
     # _test_html = Common.read_html_data(_conn, "room_table", "2019-11-27")
     # parse_list_page(_config, "2019-11-27", _task_key, _test_html[0]["data"],
     #                 {"jsid": "4080282", "jsmc": "S216"})
-    merge_table_info(_config, "2019-11-27", "课表教室", "room_table", "room")
+    update_table_info(_config, "2019-11-27", "课表教室", "room_table", "room")

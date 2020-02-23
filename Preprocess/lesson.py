@@ -5,7 +5,7 @@ import Config
 import pymysql
 
 
-def preprocess_lesson_data(config, semester):
+def lesson_data(config, semester):
     conn = Util.mysql_conn(config, "mysql-entity")
     lesson_list = read_all_lesson(conn, semester)
     for i, lesson in enumerate(lesson_list):
@@ -55,7 +55,7 @@ def read_lesson_info(conn, lesson, session, semester):
     course_info = cursor.fetchone()
 
     # 查询老师信息
-    sql = "SELECT `code`,`name` FROM `link`,`teacher` WHERE `group`='teacher' " \
+    sql = "SELECT `code`,`name`,`title` FROM `link`,`teacher` WHERE `group`='teacher' " \
           "AND `object`=`code` AND `lesson`=%s AND `session`=%s AND `semester`=%s"
     cursor.execute(sql, args=[lesson, session, semester])
     teacher_info = cursor.fetchall()
@@ -110,4 +110,4 @@ def make_week_string(time_list):
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    preprocess_lesson_data(_config, "2019-2020-1")
+    lesson_data(_config, "2019-2020-2")

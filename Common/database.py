@@ -96,6 +96,22 @@ def write_remark_info(conn, data):
     conn.commit()
 
 
+# 插入可用学期
+def write_active_semester(conn, code, group, semester):
+    cursor = conn.cursor()
+    sql = "INSERT INTO `semester`(`code`,`group`,`semester`) VALUES (%s,%s,%s)"
+    cursor.execute(sql, args=[code, group, semester])
+    conn.commit()
+
+
+# 删除可用学期
+def delete_active_semester(conn, group, semester):
+    cursor = conn.cursor()
+    sql = "DELETE FROM `semester` WHERE `group`=%s AND `semester`=%s"
+    cursor.execute(sql, args=[group, semester])
+    conn.commit()
+
+
 # 读取已完成的页面
 def read_exist_html_data(config, version, task_key):
     conn = Util.mysql_conn(config, "mysql-occam")

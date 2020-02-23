@@ -128,7 +128,7 @@ def parse_list_page(config, version, task_key, tag_index, http_result, page_num)
         Util.print_red("【%s】第%d页解析失败，解析页面已写入日志，原数据已删除" % (task_key[0], page_num))
 
 
-def merge_page_info(config, version, task_name, task_word, dao_func):
+def update_page_info(config, version, task_name, task_word, dao_func):
     task_key = (task_name, task_word)
     occam_conn = Util.mysql_conn(config, "mysql-occam")
     entity_conn = Util.mysql_conn(config, "mysql-entity")

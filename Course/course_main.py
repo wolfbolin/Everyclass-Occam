@@ -4,7 +4,7 @@ import Common
 import Course.database as dao
 
 
-def main(config, semester, version):
+def update(config, semester, version):
     # 更新全体名单
     tag_meaning = {
         "序号": "id",
@@ -14,14 +14,15 @@ def main(config, semester, version):
         "开课单位": "faculty",
     }
     if Common.fetch_list_data(config, version, "课程列表", "course_list", tag_meaning, "kcmd", 100):
-        Common.merge_page_info(config, version, "课程列表", "course_list", dao.write_course_info)
+        Common.update_page_info(config, version, "课程列表", "course_list", dao.write_course_info)
 
     # 更新活跃教室
     active_list = Common.fetch_active_list(config, version, "可用课程", "act_course", "kclb", semester)
+    Common.update_active_list(config, "可用课程", "act_course", "course", semester, active_list)
 
     # 更新教室课表
-    Common.fetch_class_table(config, version, "课程课表", "course_table", "kckb", semester, active_list)
-    Common.merge_table_info(config, version, "课程课表", "course_table", "course", semester)
+    Common.fetch_class_table(config, version, "课程课表", "course_table", "course", "kckb", semester, active_list)
+    Common.update_table_info(config, version, "课程课表", "course_table", "course", semester)
 
 
 if __name__ == "__main__":
