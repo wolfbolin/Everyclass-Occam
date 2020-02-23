@@ -104,7 +104,7 @@ def delete_search_group(conn, group):
 
 def read_available_semester(conn, group, code):
     cursor = conn.cursor()
-    sql = "SELECT DISTINCT `semester` FROM `link` WHERE `object`=%s AND `group`=%s"
+    sql = "SELECT DISTINCT `semester` FROM `semester` WHERE `code`=%s AND `group`=%s"
     cursor.execute(sql, args=[code, group])
     return [obj[0] for obj in cursor.fetchall()]
 
