@@ -55,7 +55,7 @@ def read_lesson_info(conn, lesson, session, semester):
     course_info = cursor.fetchone()
 
     # 查询老师信息
-    sql = "SELECT `code`,`name`,`title` FROM `link`,`teacher` WHERE `object`=`code` " \
+    sql = "SELECT `code`,`name`,`title`,`department` FROM `link`,`teacher` WHERE `object`=`code` " \
           "AND `lesson`=%s AND `session`=%s AND `semester`=%s AND `group`='teacher'"
     cursor.execute(sql, args=[lesson, session, semester])
     teacher_info = cursor.fetchall()

@@ -11,7 +11,7 @@ def update(config, semester, version):
         "课程号": "code",
         "课程名称": "name",
         "课程大类": "type",
-        "开课单位": "faculty",
+        "开课单位": "department",
     }
     if Common.fetch_list_data(config, version, "课程列表", "course_list", tag_meaning, "kcmd", 100):
         Common.update_page_info(config, version, "课程列表", "course_list", dao.write_course_info)

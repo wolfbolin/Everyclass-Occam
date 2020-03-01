@@ -98,7 +98,7 @@ def update_active_list(config, task_name, task_word, task_group, semester, activ
     conn = Util.mysql_conn(config, "mysql-entity")
 
     # 删除已有的学期数据
-    Common.delete_active_semester(conn, task_key[2], semester)
+    Common.delete_semester_data(conn, "semester", semester, task_key[2])
 
     # 插入可用学期信息
     for i, obj_data in enumerate(active_list):

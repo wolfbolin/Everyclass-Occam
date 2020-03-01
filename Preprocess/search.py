@@ -15,7 +15,7 @@ def search_data(config):
     recalculation_search_key(config, rename_rule, "room", ["campus", "building"])
 
     # 更新课程搜索数据
-    recalculation_search_key(config, rename_rule, "course", ["type", "faculty"])
+    recalculation_search_key(config, rename_rule, "course", ["type", "department"])
 
     # 更新教师搜索数据
     recalculation_search_key(config, rename_rule, "teacher", ["title", "department"])

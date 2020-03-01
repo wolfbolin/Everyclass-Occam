@@ -156,6 +156,10 @@ def update_table_info(config, version, task_name, task_word, task_group, semeste
     # 读取页面信息
     class_table_data = Common.read_json_data(occam_conn, task_key[1], version)
 
+    # 删除已有的数据
+    Common.delete_semester_data(entity_conn, "link", semester, task_key[2])
+    Common.delete_semester_data(entity_conn, "remark", semester, task_key[2])
+
     # 写入课表信息
     for i, table_data in enumerate(class_table_data):
         obj_code = table_data["mark"]
@@ -250,4 +254,4 @@ if __name__ == '__main__':
     # _test_html = Common.read_html_data(_conn, "room_table", "2019-11-27")
     # parse_list_page(_config, "2019-11-27", _task_key, _test_html[0]["data"],
     #                 {"jsid": "4080282", "jsmc": "S216"})
-    update_table_info(_config, "2019-11-27", "课表教室", "room_table", "room")
+    # update_table_info(_config, "2019-11-27", "课表教室", "room_table", "room")

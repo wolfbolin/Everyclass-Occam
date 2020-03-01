@@ -13,7 +13,7 @@ def update(config, semester, version):
         "电子邮箱": "email",
         "班级名称": "class",
         "校区名称": "campus",
-        "院系名称": "faculty",
+        "院系名称": "department",
     }
     if Common.fetch_list_data(config, version, "学生列表", "student_list", tag_meaning, "xsmd", 500):
         Common.update_page_info(config, version, "学生列表", "student_list", dao.write_student_info)

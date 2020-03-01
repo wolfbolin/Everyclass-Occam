@@ -153,7 +153,7 @@ if __name__ == "__main__":
         "电子邮箱": "email",
         "班级名称": "class",
         "校区名称": "campus",
-        "院系名称": "faculty",
+        "院系名称": "department",
     }
 
     _config = Config.load_config("../Config")

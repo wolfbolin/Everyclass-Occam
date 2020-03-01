@@ -105,10 +105,14 @@ def write_active_semester(conn, code, group, semester):
 
 
 # 删除可用学期
-def delete_active_semester(conn, group, semester):
+def delete_semester_data(conn, table, semester, group=None):
     cursor = conn.cursor()
-    sql = "DELETE FROM `semester` WHERE `group`=%s AND `semester`=%s"
-    cursor.execute(sql, args=[group, semester])
+    sql = "DELETE FROM `%s` WHERE `semester`=%s" % (table, "%s")
+    args = [semester]
+    if group is not None:
+        sql += " AND `group`=%s"
+        args.append(group)
+    cursor.execute(sql, args=args)
     conn.commit()
 
 
