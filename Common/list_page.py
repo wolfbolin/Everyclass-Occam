@@ -8,11 +8,10 @@ from math import ceil
 from bs4 import BeautifulSoup
 
 
-def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, page_size):
+def fetch_list_data(config, task_name, task_word, tag_dict, url_index, page_size):
     """
     批量更新列表信息数据
     :param config:  配置文件
-    :param version:  当前版本
     :param task_name:  任务名称 eg: 学生列表
     :param task_word:  关键字 eg: student
     :param tag_dict:  表头映射关系
@@ -22,6 +21,7 @@ def fetch_list_data(config, version, task_name, task_word, tag_dict, url_index, 
     """
     # 预处理参数
     task_key = (task_name, task_word)
+    version = config["roster"]["version"]
     headers, cookies = Common.auth_cookie(config)
     tag_index = dict(zip(tag_dict.values(), [0] * len(tag_dict)))
 
@@ -128,8 +128,9 @@ def parse_list_page(config, version, task_key, tag_index, http_result, page_num)
         Util.print_red("【%s】第%d页解析失败，解析页面已写入日志，原数据已删除" % (task_key[0], page_num))
 
 
-def update_page_info(config, version, task_name, task_word, dao_func):
+def update_page_info(config, task_name, task_word, dao_func):
     task_key = (task_name, task_word)
+    version = config["roster"]["version"]
     occam_conn = Util.mysql_conn(config, "mysql-occam")
     entity_conn = Util.mysql_conn(config, "mysql-entity")
 

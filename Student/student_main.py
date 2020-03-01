@@ -15,8 +15,8 @@ def update(config, semester, version):
         "校区名称": "campus",
         "院系名称": "department",
     }
-    if Common.fetch_list_data(config, version, "学生列表", "student_list", tag_meaning, "xsmd", 500):
-        Common.update_page_info(config, version, "学生列表", "student_list", dao.write_student_info)
+    if Common.fetch_list_data(config, "学生列表", "student_list", tag_meaning, "xsmd", 500):
+        Common.update_page_info(config, "学生列表", "student_list", dao.write_student_info)
 
     # 更新活跃教室
     active_list = Common.fetch_active_list(config, version, "可用学生", "act_student", "xslb", semester)

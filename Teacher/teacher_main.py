@@ -15,8 +15,8 @@ def update(config, semester, version):
         "所属单位": "department",
         "所属教研室": "section",
     }
-    if Common.fetch_list_data(config, version, "教师列表", "teacher_list", tag_meaning, "jgmd", 200):
-        Common.update_page_info(config, version, "教师列表", "teacher_list", dao.write_teacher_info)
+    if Common.fetch_list_data(config, "教师列表", "teacher_list", tag_meaning, "jgmd", 200):
+        Common.update_page_info(config, "教师列表", "teacher_list", dao.write_teacher_info)
 
     # 更新活跃教室
     active_list = Common.fetch_active_list(config, version, "可用教师", "act_teacher", "jglb", semester)

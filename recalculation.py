@@ -15,14 +15,14 @@ if __name__ == "__main__":
     semester = "2019-2020-2"
     conn = Util.mysql_conn(config, "mysql-entity")
     Common.delete_semester_data(conn, "lesson", semester)
-    Room.update(config, semester, config["semester"][semester])
-    Course.update(config, semester, config["semester"][semester])
-    Student.update(config, semester, config["semester"][semester])
-    Teacher.update(config, semester, config["semester"][semester])
+    Room.update(config, semester, config["schedule"][semester])
+    Course.update(config, semester, config["schedule"][semester])
+    Student.update(config, semester, config["schedule"][semester])
+    Teacher.update(config, semester, config["schedule0"][semester])
     Preprocess.lesson_data(config, semester)
 
     # 重新计算所有学期数据
-    # for semester in config["semester"]:
+    # for semester in config["schedule"]:
     #     # 重新计算对象信息
     #     Room.update(config, semester, config["semester"][semester])
     #     Course.update(config, semester, config["semester"][semester])
