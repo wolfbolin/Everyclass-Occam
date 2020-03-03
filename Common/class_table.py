@@ -55,11 +55,11 @@ def fetch_class_table(config, version, task_name, task_word, task_group, url_ind
         # 尝试获取页面
         Util.print_white("【%s】(%s/%s)" % (task_key[0], i + 1, len(active_list)), end='')
         if extra_data["code"] in exist_mark:
-            Util.print_white("重新计算 <%s> 课表..." % (extra_data["name"]), end='')
+            Util.print_white("重新计算 <%s:%s> 课表..." % (semester, extra_data["name"]), end='')
             cache = cache_data[exist_mark.index(extra_data["code"])]
             http_result = cache["data"]
         else:
-            Util.print_white("正在下载 <%s> 课表..." % (extra_data["name"]), end='')
+            Util.print_white("正在下载 <%s:%s> 课表..." % (semester, extra_data["name"]), end='')
             obj_data["semester"] = semester
             http_result = pull_table_page(config, version, task_key, url_index, headers, obj_data)
 
@@ -157,6 +157,7 @@ def update_table_info(config, version, task_name, task_word, task_group, semeste
     class_table_data = Common.read_json_data(occam_conn, task_key[1], version)
 
     # 删除已有的数据
+    Util.print_blue("【%s】正在删除link&remark已有数据" % task_key[0])
     Common.delete_semester_data(entity_conn, "link", semester, task_key[2])
     Common.delete_semester_data(entity_conn, "remark", semester, task_key[2])
 
@@ -165,7 +166,7 @@ def update_table_info(config, version, task_name, task_word, task_group, semeste
         obj_code = table_data["mark"]
         obj_data = json.loads(table_data["data"])
         Util.print_white("【%s】(%s/%s)" % (task_key[0], i + 1, len(class_table_data)), end='')
-        Util.print_white("正在写入 <%s> 课表..." % obj_code)
+        Util.print_white("正在写入 <%s:%s> 课表..." % (semester, obj_code))
 
         write_table_info(entity_conn, semester, task_key[2], obj_code, obj_data)
 
