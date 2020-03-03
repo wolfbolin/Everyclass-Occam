@@ -7,5 +7,6 @@ from .list_page import update_page_info
 from .active_list import fetch_active_list
 from .active_list import update_active_list
 from .class_table import fetch_class_table
+from .class_table import fetch_class_table_oc
 from .class_table import update_table_info
-
+from .class_table import update_table_info_oc

@@ -20,6 +20,6 @@ if __name__ == "__main__":
         Teacher.update(config, semester, config["schedule"][semester])
 
         # 重新完成数据预处理
-        Preprocess.lesson_data(config, semester)
+        Preprocess.lesson_data_oc(config, semester)
 
     Preprocess.search_data(config)

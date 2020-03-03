@@ -21,8 +21,8 @@ def update(config, semester, version):
     Common.update_active_list(config, "可用课程", "act_course", "course", semester, active_list)
 
     # 更新教室课表
-    Common.fetch_class_table(config, version, "课程课表", "course_table", "course", "kckb", semester, active_list)
-    Common.update_table_info(config, version, "课程课表", "course_table", "course", semester)
+    Common.fetch_class_table_oc(config, version, "课程课表", "course_table", "course", "kckb", semester, active_list)
+    Common.update_table_info_oc(config, version, "课程课表", "course_table", "course", semester)
 
 
 if __name__ == "__main__":

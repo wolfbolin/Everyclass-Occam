@@ -23,8 +23,8 @@ def update(config, semester, version):
     Common.update_active_list(config, "可用教师", "act_teacher", "teacher", semester, active_list)
 
     # 更新教室课表
-    Common.fetch_class_table(config, version, "教师课表", "teacher_table", "teacher", "jgkb", semester, active_list)
-    Common.update_table_info(config, version, "教师课表", "teacher_table", "teacher", semester)
+    Common.fetch_class_table_oc(config, version, "教师课表", "teacher_table", "teacher", "jgkb", semester, active_list)
+    Common.update_table_info_oc(config, version, "教师课表", "teacher_table", "teacher", semester)
 
 
 if __name__ == "__main__":

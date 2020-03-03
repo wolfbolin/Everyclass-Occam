@@ -1,4 +1,5 @@
 # coding=utf-8
+import gc
 import re
 import time
 import json
@@ -27,20 +28,10 @@ lesson_translation_table = {
 
 
 def fetch_class_table(config, version, task_name, task_word, task_group, url_index, semester, active_list):
-    """
-    批量更新课表信息数据
-    :param config:
-    :param version:
-    :param task_name:
-    :param task_word:
-    :param url_index: 链接关键字
-    :param semester:
-    :param active_list:
-    :return:
-    """
     # 预处理参数
     task_key = (task_name, task_word, task_group)
     headers, cookies = Common.auth_cookie(config)
+    occam_conn = Util.mysql_conn(config, "mysql-occam")
 
     # 读取缓存数据
     cache_data, exist_mark = Common.read_exist_html_data(config, version, task_key)
@@ -64,31 +55,67 @@ def fetch_class_table(config, version, task_name, task_word, task_group, url_ind
             http_result = pull_table_page(config, version, task_key, url_index, headers, obj_data)
 
         # 解析页面信息
-        parse_list_page(config, version, task_key, http_result, obj_data)
+        parse_list_page(config, occam_conn, version, task_key, http_result, obj_data)
         time_end = time.time()
 
         Util.print_green("OK", tag='', end='')
         Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
 
 
-def pull_table_page(config, version, task_key, url_index, headers, obj_data, ):
-    conn = Util.mysql_conn(config, "mysql-occam")
+def fetch_class_table_oc(config, version, task_name, task_word, task_group, url_index, semester, active_list):
+    # 预处理参数
+    task_key = (task_name, task_word, task_group)
+    headers, cookies = Common.auth_cookie(config)
 
-    url = config["url"][url_index]
-    http_data = Util.dict_link(config[task_key[1] + "_data"], obj_data)
-    extra_data = Util.dict_link(config[task_key[2] + "_info"], obj_data)
-    http_result = Util.http_request("POST", url, headers=headers, data=http_data, proxies=config["proxy"])
-    if http_result is None:
-        raise Util.NetworkError("获取【%s】对象 <%s> 课表时，网络请求失败" % (task_key[0], extra_data["name"]))
+    # 读取缓存数据
+    cache_data, exist_mark = Common.read_exist_html_data(config, version, task_key)
+    if len(exist_mark) == len(active_list):
+        Util.print_azure("该版本【%s】无需下载更新" % task_key[0])
 
-    # 写入已获取的数据
-    Common.write_html_data(conn, task_key[1], version, extra_data["code"], http_result)
+    # 获取课表信息
+    task_data = []
+    for i, obj_data in enumerate(active_list):
+        time_start = time.time()
+        extra_data = Util.dict_link(config[task_key[2] + "_info"], obj_data)
 
-    return http_result
+        # 尝试获取页面
+        Util.print_white("【%s】(%s/%s)" % (task_key[0], i + 1, len(active_list)), end='')
+        if extra_data["code"] in exist_mark:
+            Util.print_white("重新计算 <%s:%s:%s> 课表..." % (semester, task_key[2], extra_data["name"]), end='')
+            cache = cache_data[exist_mark.index(extra_data["code"])]
+            http_result = cache["data"]
+        else:
+            Util.print_white("正在下载 <%s:%s:%s> 课表..." % (semester, task_key[2], extra_data["name"]), end='')
+            obj_data["semester"] = semester
+            http_result = pull_table_page(config, version, task_key, url_index, headers, obj_data)
+
+        # 解析页面信息
+        task_data.append({"http_result": http_result, "obj_data": obj_data})
+        time_end = time.time()
+
+        Util.print_green("OK", tag='', end='')
+        Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
+    del active_list
+    gc.collect()
+
+    # 解析课表信息
+    Util.print_azure("即将批量解析【%s】" % task_key[0])
+    comm_data = {
+        "config": config,
+        "version": version,
+        "task_key": task_key
+
+    }
+    Util.turbo_multiprocess(config, parse_list_page_oc, comm_data, task_data,
+                            db_list=["mysql-occam"], max_process=8, max_thread=4)
 
 
-def parse_list_page(config, version, task_key, http_result, obj_data):
-    conn = Util.mysql_conn(config, "mysql-occam")
+def parse_list_page_oc(mysql_pool, config, version, task_key, http_result, obj_data):
+    conn = mysql_pool["mysql-occam"].connection()
+    return parse_list_page(config, conn, version, task_key, http_result, obj_data)
+
+
+def parse_list_page(config, conn, version, task_key, http_result, obj_data):
     extra_data = Util.dict_link(config[task_key[2] + "_info"], obj_data)
 
     # 解析页面数据
@@ -129,23 +156,20 @@ def parse_list_page(config, version, task_key, http_result, obj_data):
         Util.print_red(e, tag="")
 
 
-def calc_session(line_index, column_index):
-    session = str(column_index + 1)
-    session += str(line_index * 2 + 1).zfill(2)
-    session += str((line_index + 1) * 2).zfill(2)
-    return session
+def pull_table_page(config, version, task_key, url_index, headers, obj_data):
+    conn = Util.mysql_conn(config, "mysql-occam")
 
+    url = config["url"][url_index]
+    http_data = Util.dict_link(config[task_key[1] + "_data"], obj_data)
+    extra_data = Util.dict_link(config[task_key[2] + "_info"], obj_data)
+    http_result = Util.http_request("POST", url, headers=headers, data=http_data, proxies=config["proxy"])
+    if http_result is None:
+        raise Util.NetworkError("获取【%s】对象 <%s> 课表时，网络请求失败" % (task_key[0], extra_data["name"]))
 
-def calc_lesson_tag(tag_str):
-    res = re.search(r"jx0408id=(?P<jxid>\w+)&classroomID=(?P<rid>\w?)", tag_str)
-    return res.groupdict()
+    # 写入已获取的数据
+    Common.write_html_data(conn, task_key[1], version, extra_data["code"], http_result)
 
-
-def calc_purify_string(navigable_string):
-    res = ""
-    for string in navigable_string.stripped_strings:
-        res += Util.purify_string(string)
-    return str(res)
+    return http_result
 
 
 def update_table_info(config, version, task_name, task_word, task_group, semester):
@@ -166,9 +190,38 @@ def update_table_info(config, version, task_name, task_word, task_group, semeste
         obj_code = table_data["mark"]
         obj_data = json.loads(table_data["data"])
         Util.print_white("【%s】(%s/%s)" % (task_key[0], i + 1, len(class_table_data)), end='')
-        Util.print_white("正在写入 <%s:%s> 课表..." % (semester, obj_code))
+        Util.print_white("正在写入 <%s:%s:%s> 课表..." % (semester, task_key[2], obj_code))
 
         write_table_info(entity_conn, semester, task_key[2], obj_code, obj_data)
+
+
+def update_table_info_oc(config, version, task_name, task_word, task_group, semester):
+    task_key = (task_name, task_word, task_group)
+    occam_conn = Util.mysql_conn(config, "mysql-occam")
+    entity_conn = Util.mysql_conn(config, "mysql-entity")
+
+    # 读取页面信息
+    class_table_data = Common.read_json_data(occam_conn, task_key[1], version)
+    task_data = [{"obj_code": x["mark"], "obj_data": json.loads(x["data"])} for x in class_table_data]
+
+    # 删除已有的数据
+    Util.print_blue("【%s】正在删除link & remark已有数据" % task_key[0])
+    Common.delete_semester_data(entity_conn, "link", semester, task_key[2])
+    Common.delete_semester_data(entity_conn, "remark", semester, task_key[2])
+
+    # 写入课表信息
+    Util.print_azure("即将批量写入【%s】" % task_key[0])
+    comm_data = {
+        "semester": semester,
+        "group": task_key[2]
+    }
+    Util.turbo_multiprocess(config, write_table_info_oc, comm_data, task_data,
+                            db_list=["mysql-entity"], max_process=8, max_thread=4)
+
+
+def write_table_info_oc(mysql_pool, semester, group, obj_code, obj_data):
+    conn = mysql_pool["mysql-entity"].connection()
+    return write_table_info(conn, semester, group, obj_code, obj_data)
 
 
 def write_table_info(conn, semester, group, obj_code, obj_data):
@@ -203,6 +256,25 @@ def write_table_info(conn, semester, group, obj_code, obj_data):
             "semester": semester,
         }
         Common.write_remark_info(conn, remark_info)
+
+
+def calc_session(line_index, column_index):
+    session = str(column_index + 1)
+    session += str(line_index * 2 + 1).zfill(2)
+    session += str((line_index + 1) * 2).zfill(2)
+    return session
+
+
+def calc_lesson_tag(tag_str):
+    res = re.search(r"jx0408id=(?P<jxid>\w+)&classroomID=(?P<rid>\w?)", tag_str)
+    return res.groupdict()
+
+
+def calc_purify_string(navigable_string):
+    res = ""
+    for string in navigable_string.stripped_strings:
+        res += Util.purify_string(string)
+    return str(res)
 
 
 def read_week_string(week_str):

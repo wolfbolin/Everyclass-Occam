@@ -5,6 +5,7 @@ import json
 import Util
 import pymysql
 import requests
+from DBUtils.PooledDB import PooledDB
 from requests.adapters import HTTPAdapter
 
 useragent_path = os.path.dirname(__file__) + '/fake_useragent.json'
@@ -75,6 +76,14 @@ def mysql_conn(config, db_key):
     config[db_key]['port'] = int(config[db_key]['port'])
     conn = pymysql.connect(**config[db_key])
     return conn
+
+
+def mysql_pool(config, db_key):
+    for key in config["mysql_pool"]:
+        config["mysql_pool"][key] = int(config["mysql_pool"][key])
+    config[db_key]['port'] = int(config[db_key]['port'])
+    pool = PooledDB(creator=pymysql, **config[db_key], **config["mysql_pool"])
+    return pool
 
 
 if __name__ == "__main__":

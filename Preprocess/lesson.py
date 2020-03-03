@@ -9,27 +9,48 @@ def lesson_data(config, semester):
     conn = Util.mysql_conn(config, "mysql-entity")
     lesson_list = read_all_lesson(conn, semester)
     for i, lesson in enumerate(lesson_list):
-        Util.process_bar(i+1, len(lesson_list), "【课程卡片】更新信息  ")
+        Util.process_bar(i + 1, len(lesson_list), "【课程卡片】更新信息  ")
+        update_lesson_data(conn, lesson, semester)
 
-        room_info, course_info, teacher_info = read_lesson_info(conn, lesson["code"], lesson["session"], semester)
-        lesson["week_str"] = make_week_string(json.loads(lesson["week"]))
-        if room_info is None:
-            lesson["room_code"] = ""
-            lesson["room_name"] = ""
-        else:
-            lesson["room_code"] = room_info["code"]
-            lesson["room_name"] = room_info["name"]
-        if course_info is None:
-            lesson["course_code"] = ""
-            lesson["course_name"] = ""
-        else:
-            lesson["course_code"] = course_info["code"]
-            lesson["course_name"] = course_info["name"]
-        if teacher_info is None:
-            lesson["teacher_list"] = "[]"
-        else:
-            lesson["teacher_list"] = json.dumps(teacher_info, ensure_ascii=False)
-        update_lesson_info(conn, lesson["code"], lesson["session"], semester, lesson)
+
+def lesson_data_oc(config, semester):
+    conn = Util.mysql_conn(config, "mysql-entity")
+    lesson_list = read_all_lesson(conn, semester)
+    task_data = [{"lesson": x} for x in lesson_list]
+
+    Util.print_azure("即将批量更新【课程卡片】")
+    comm_data = {
+        "semester": semester
+    }
+    Util.turbo_multiprocess(config, update_lesson_data_oc, comm_data, task_data,
+                            db_list=["mysql-entity"], max_process=8, max_thread=4)
+
+
+def update_lesson_data_oc(mysql_pool, lesson, semester):
+    conn = mysql_pool["mysql-entity"].connection()
+    return update_lesson_data(conn, lesson, semester)
+
+
+def update_lesson_data(conn, lesson, semester):
+    room_info, course_info, teacher_info = read_lesson_info(conn, lesson["code"], lesson["session"], semester)
+    lesson["week_str"] = make_week_string(json.loads(lesson["week"]))
+    if room_info is None:
+        lesson["room_code"] = ""
+        lesson["room_name"] = ""
+    else:
+        lesson["room_code"] = room_info["code"]
+        lesson["room_name"] = room_info["name"]
+    if course_info is None:
+        lesson["course_code"] = ""
+        lesson["course_name"] = ""
+    else:
+        lesson["course_code"] = course_info["code"]
+        lesson["course_name"] = course_info["name"]
+    if teacher_info is None:
+        lesson["teacher_list"] = "[]"
+    else:
+        lesson["teacher_list"] = json.dumps(teacher_info, ensure_ascii=False)
+    update_lesson_info(conn, lesson["code"], lesson["session"], semester, lesson)
 
 
 def read_all_lesson(conn, semester):
