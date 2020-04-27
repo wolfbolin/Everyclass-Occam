@@ -92,6 +92,21 @@ def pull_active_list_page(config, version, task_key, url_index, headers, semeste
     return http_result
 
 
+def update_active_list(config, task_name, task_word, task_group, semester, active_list):
+    # 预处理参数
+    task_key = (task_name, task_word, task_group)
+    conn = Util.mysql_conn(config, "mysql-entity")
+
+    # 删除已有的学期数据
+    Common.delete_semester_data(conn, "semester", semester, task_key[2])
+
+    # 插入可用学期信息
+    for i, obj_data in enumerate(active_list):
+        base_info = Util.dict_link(config[task_key[2] + "_info"], obj_data)
+        Common.write_active_semester(conn, base_info["code"], task_key[2], semester)
+        Util.process_bar(i + 1, len(active_list), task_key[0])
+
+
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
     fetch_active_list(_config, "2019-11-27", "可用教室", "act_room", "jslb", "2019-2020-1")

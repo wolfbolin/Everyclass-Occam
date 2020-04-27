@@ -7,21 +7,21 @@ import pymysql
 import pypinyin
 
 
-def preprocess_search_data(config):
+def search_data(config):
     # 读取改名规则
     rename_rule = read_rename_rule(config)
 
     # 更新教室搜索数据
-    recalculation_search_key(config, rename_rule, "room", ["campus", "building"])
+    recalculation_search_key_oc(config, rename_rule, "room", ["campus", "building"])
 
     # 更新课程搜索数据
-    recalculation_search_key(config, rename_rule, "course", ["type", "faculty"])
+    recalculation_search_key_oc(config, rename_rule, "course", ["type", "department"])
 
     # 更新教师搜索数据
-    recalculation_search_key(config, rename_rule, "teacher", ["title", "department"])
+    recalculation_search_key_oc(config, rename_rule, "teacher", ["title", "department"])
 
     # 更新学生搜索数据
-    recalculation_search_key(config, rename_rule, "student", ["class", "department"])
+    recalculation_search_key_oc(config, rename_rule, "student", ["class", "department"])
 
 
 def recalculation_search_key(config, rename_rule, group, params):
@@ -31,18 +31,44 @@ def recalculation_search_key(config, rename_rule, group, params):
     for i, info in enumerate(base_info):
         Util.print_white("【搜索处理】(%s/%s)" % (i + 1, len(base_info)), end="")
         Util.print_white("正在写入 <%s:%s:%s> 搜索数据..." % (group, info["name"], info["code"]))
+        update_search_key(conn, group, rename_rule, info, params)
 
-        # 计算名称改写与拼音
-        name_list = convert_search_name(rename_rule, info["name"])
-        name_list = convert_pinyin_name(name_list)
 
-        # 计算对象可用学期
-        semester_list = read_available_semester(conn, group, info["code"])
-        semester_list = json.dumps(semester_list)
+def recalculation_search_key_oc(config, rename_rule, group, params):
+    conn = Util.mysql_conn(config, "mysql-entity")
 
-        for name in name_list:
-            write_search_key(conn, group, name, info["code"], info["name"],
-                             info[params[0]], info[params[1]], semester_list)
+    delete_search_group(conn, group)
+    base_info = read_object_base(conn, group, params)
+    task_data = [{"info": x} for x in base_info]
+
+    Util.print_azure("即将批量更新【搜索数据】")
+    comm_data = {
+        "group": group,
+        "rule": rename_rule,
+        "params": params
+    }
+    Util.turbo_multiprocess(config, update_search_key_oc, comm_data, task_data,
+                            db_list=["mysql-entity"], max_process=8, max_thread=32)
+
+
+def update_search_key_oc(mysql_pool, group, rule, info, params):
+    conn = mysql_pool["mysql-entity"].connection()
+    return update_search_key(conn, group, rule, info, params)
+
+
+def update_search_key(conn, group, rule, info, params):
+    # 计算名称改写与拼音
+    key_list = convert_search_name(rule, info["name"])
+    key_list = convert_pinyin_name(key_list)
+    key_list.append(info["code"])
+
+    # 计算对象可用学期
+    semester_list = read_available_semester(conn, group, info["code"])
+    semester_list = json.dumps(semester_list)
+
+    for name in key_list:
+        write_search_key(conn, group, name, info["code"], info["name"],
+                         info[params[0]], info[params[1]], semester_list)
 
 
 def convert_search_name(rename_rule, name):
@@ -58,6 +84,7 @@ def convert_search_name(rename_rule, name):
 def convert_pinyin_name(name_list):
     pinyin_name = set()
     for name in name_list:
+        pinyin_name.add(name)
         full_pinyin = pypinyin.pinyin(name, errors='ignore', style=pypinyin.Style.NORMAL)
         full_pinyin = ''.join(list(x[0] for x in full_pinyin)).strip()
         if len(full_pinyin) > 1:
@@ -102,11 +129,11 @@ def delete_search_group(conn, group):
 
 def read_available_semester(conn, group, code):
     cursor = conn.cursor()
-    sql = "SELECT DISTINCT `semester` FROM `link` WHERE `object`=%s AND `group`=%s"
+    sql = "SELECT DISTINCT `semester` FROM `semester` WHERE `code`=%s AND `group`=%s"
     cursor.execute(sql, args=[code, group])
     return [obj[0] for obj in cursor.fetchall()]
 
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    preprocess_search_data(_config)
+    search_data(_config)

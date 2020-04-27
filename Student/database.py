@@ -4,8 +4,8 @@
 # 写入教室信息
 def write_student_info(conn, room_data):
     cursor = conn.cursor()
-    sql = "REPLACE INTO `student` (`code`, `name`,`email`, `class`, `campus`, `faculty`) " \
+    sql = "REPLACE INTO `student` (`code`, `name`,`email`, `class`, `campus`, `department`) " \
           "VALUES (%s, %s, %s, %s, %s, %s)"
     cursor.execute(sql, args=[room_data["code"], room_data["name"], room_data["email"], room_data["class"],
-                              room_data["campus"], room_data["faculty"]])
+                              room_data["campus"], room_data["department"]])
     conn.commit()
