@@ -124,10 +124,13 @@ def parse_list_page(config, conn, version, task_key, http_result, obj_data):
         soup = BeautifulSoup(http_result, "lxml")
         table = soup.find("table")
         lines = table.find_all("tr")
+
+        week_index = calc_week_column(lines[0])
+
         for line_index, line in enumerate(lines[1:6]):
             columns = line.find_all("td")
             for column_index, column in enumerate(columns[1:]):
-                session = calc_session(line_index, column_index)
+                session = calc_session(line_index, week_index[column_index])
 
                 lessons = column.find(class_="kbcontent").find_all("a")
                 for lesson in lessons:
@@ -258,8 +261,27 @@ def write_table_info(conn, semester, group, obj_code, obj_data):
         Common.write_remark_info(conn, remark_info)
 
 
-def calc_session(line_index, column_index):
-    session = str(column_index + 1)
+def calc_week_column(line):
+    week_index = dict()
+    columns = line.find_all("th")
+    for index, column in enumerate(columns[1:]):
+        week_index[index] = column.string
+    return week_index
+
+
+def calc_session(line_index, week_name):
+    week_number = {
+        "星期一": 1,
+        "星期二": 2,
+        "星期三": 3,
+        "星期四": 4,
+        "星期五": 5,
+        "星期六": 6,
+        "星期日": 7,
+    }
+    column_index = week_number[week_name]
+
+    session = str(column_index)
     session += str(line_index * 2 + 1).zfill(2)
     session += str((line_index + 1) * 2).zfill(2)
     return session

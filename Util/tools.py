@@ -54,15 +54,22 @@ def http_request(method, url, keep_cookie=False, **kwargs):
     client.mount("http://", HTTPAdapter(max_retries=5))
     client.mount("https://", HTTPAdapter(max_retries=5))
 
-    http_result = None
-    try:
-        http_result = client.request(method=method, url=url, timeout=(2, 30), **kwargs)
-    except requests.exceptions.ProxyError:
-        Util.print_yellow("requests.exceptions.ProxyError:[%s]" % url)
-    except requests.exceptions.ReadTimeout:
-        Util.print_yellow("requests.exceptions.ReadTimeout:[%s]" % url)
-    except requests.exceptions.ConnectionError:
-        Util.print_yellow("requests.exceptions.ConnectionError:[%s]" % url)
+    retry_count = 0
+    while True:
+        try:
+            http_result = client.request(method=method, url=url, timeout=(2, 30), **kwargs)
+            break
+        except requests.exceptions.ProxyError:
+            Util.print_yellow("requests.exceptions.ProxyError:[%s]" % url)
+            retry_count += 1
+        except requests.exceptions.ReadTimeout:
+            Util.print_yellow("requests.exceptions.ReadTimeout:[%s]" % url)
+            retry_count += 1
+        except requests.exceptions.ConnectionError:
+            Util.print_yellow("requests.exceptions.ConnectionError:[%s]" % url)
+            retry_count += 1
+        if retry_count > 0:
+            Util.print_yellow("正在重试[%s]次" % retry_count)
 
     if http_result and keep_cookie:
         return http_result.text, http_result.cookies.get_dict()
