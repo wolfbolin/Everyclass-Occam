@@ -7,15 +7,45 @@ import pymysql
 week_sql_str = ",".join(['`week%s`' % i for i in range(1, 21)])  # `week1`,`week2`,`week3`...
 
 
-def spare_data(config, semester):
+def available_room(config, semester):
     conn = Util.mysql_conn(config, "mysql-entity")
 
-    # TODO 清空现有表数据
+    # 清空表数据
+    with conn.cursor() as cursor:
+        cursor.execute("TRUNCATE TABLE `avl_room`")
 
+    # 更新教学楼与校区列表
+    update_room_itemize(conn)
+
+    # 更新空教室
     lesson_list = read_all_lesson(conn, semester)
     for i, lesson in enumerate(lesson_list):
         Util.process_bar(i + 1, len(lesson_list), "【教室信息】更新空教室  ")
-        update_spare_room(conn, lesson)
+        update_available_room(conn, lesson)
+
+
+def update_room_itemize(conn):
+    cursor = conn.cursor()
+    sql = "SELECT DISTINCT `campus`,`building`,`code` FROM `room`"
+    cursor.execute(sql)
+    itemize = {}
+    for item in cursor.fetchall():
+        itemize.setdefault(item[0], {})
+        itemize[item[0]].setdefault(item[1], [])
+        itemize[item[0]][item[1]].append(item[2])
+    sql = "REPLACE INTO `kvdb`(`key`, `val`) VALUES ('room_itemize', %s)"
+    cursor.execute(sql, json.dumps(itemize, ensure_ascii=False))
+    conn.commit()
+
+
+def update_building_list(conn):
+    cursor = conn.cursor()
+    sql = "SELECT DISTINCT `building` FROM `room`"
+    cursor.execute(sql)
+    campus_list = [i[0] for i in cursor.fetchall()]
+    sql = "REPLACE INTO `kvdb`(`key`, `val`) VALUES ('building_list', %s)"
+    cursor.execute(sql, json.dumps(campus_list, ensure_ascii=False))
+    conn.commit()
 
 
 def read_all_lesson(conn, semester):
@@ -26,11 +56,11 @@ def read_all_lesson(conn, semester):
     return cursor.fetchall()
 
 
-def update_spare_room(conn, lesson):
+def update_available_room(conn, lesson):
     if lesson["room_code"] == "":
         return
     week_list = json.loads(lesson["week"])
-    sql = "INSERT INTO `spare`(`code`,`name`,`session`,%s) VALUES " % week_sql_str
+    sql = "INSERT INTO `avl_room`(`code`,`name`,`session`,%s) VALUES " % week_sql_str
     sql += "(%s) " % (",".join(["%s" for i in range(23)]))
     sql += "ON DUPLICATE KEY UPDATE `code`=`code`"
     base_args = [lesson["room_code"], lesson["room_name"], lesson["session"]]
@@ -57,4 +87,4 @@ def update_spare_room(conn, lesson):
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    spare_data(_config, "2019-2020-2")
+    available_room(_config, "2019-2020-2")
