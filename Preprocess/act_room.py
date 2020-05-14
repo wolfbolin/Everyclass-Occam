@@ -12,7 +12,7 @@ def available_room(config, semester):
 
     # 清空表数据
     with conn.cursor() as cursor:
-        cursor.execute("TRUNCATE TABLE `avl_room`")
+        cursor.execute("TRUNCATE TABLE `act_room`")
 
     # 更新教学楼与校区列表
     update_room_itemize(conn)
@@ -20,21 +20,21 @@ def available_room(config, semester):
     # 更新空教室
     lesson_list = read_all_lesson(conn, semester)
     for i, lesson in enumerate(lesson_list):
-        Util.process_bar(i + 1, len(lesson_list), "【教室信息】更新空教室  ")
-        update_available_room(conn, lesson)
+        Util.process_bar(i + 1, len(lesson_list), "【教室信息】更新活动教室  ")
+        update_active_room(conn, lesson)
 
 
 def update_room_itemize(conn):
     cursor = conn.cursor()
-    sql = "SELECT DISTINCT `campus`,`building`,`code` FROM `room`"
+    sql = "SELECT DISTINCT `campus`,`building`,`code`,`name` FROM `room`"
     cursor.execute(sql)
-    itemize = {}
+    room_group = {}
     for item in cursor.fetchall():
-        itemize.setdefault(item[0], {})
-        itemize[item[0]].setdefault(item[1], [])
-        itemize[item[0]][item[1]].append(item[2])
-    sql = "REPLACE INTO `kvdb`(`key`, `val`) VALUES ('room_itemize', %s)"
-    cursor.execute(sql, json.dumps(itemize, ensure_ascii=False))
+        room_group.setdefault(item[0], {})
+        room_group[item[0]].setdefault(item[1], {})
+        room_group[item[0]][item[1]].setdefault(item[2], item[3])
+    sql = "REPLACE INTO `kvdb`(`key`, `val`) VALUES ('room_group', %s)"
+    cursor.execute(sql, json.dumps(room_group, ensure_ascii=False))
     conn.commit()
 
 
@@ -56,11 +56,11 @@ def read_all_lesson(conn, semester):
     return cursor.fetchall()
 
 
-def update_available_room(conn, lesson):
+def update_active_room(conn, lesson):
     if lesson["room_code"] == "":
         return
     week_list = json.loads(lesson["week"])
-    sql = "INSERT INTO `avl_room`(`code`,`name`,`session`,%s) VALUES " % week_sql_str
+    sql = "INSERT INTO `act_room`(`code`,`name`,`session`,%s) VALUES " % week_sql_str
     sql += "(%s) " % (",".join(["%s" for i in range(23)]))
     sql += "ON DUPLICATE KEY UPDATE `code`=`code`"
     base_args = [lesson["room_code"], lesson["room_name"], lesson["session"]]
