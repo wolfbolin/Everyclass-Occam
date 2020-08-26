@@ -59,7 +59,7 @@ def fetch_class_table(config, version, task_name, task_word, task_group, url_ind
         time_end = time.time()
 
         Util.print_green("OK", tag='', end='')
-        Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
+        Util.print_yellow("(%.2fs)" % (time_end - time_start), tag='')
 
 
 def fetch_class_table_oc(config, version, task_name, task_word, task_group, url_index, semester, active_list):
@@ -94,7 +94,7 @@ def fetch_class_table_oc(config, version, task_name, task_word, task_group, url_
         time_end = time.time()
 
         Util.print_green("OK", tag='', end='')
-        Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
+        Util.print_yellow("(%.2fs)" % (time_end - time_start), tag='')
     del active_list
     gc.collect()
 
@@ -154,7 +154,7 @@ def parse_list_page(config, conn, version, task_key, http_result, obj_data):
         Common.write_json_data(conn, task_key[1], version, extra_data["code"], table_data)
     except AttributeError as e:
         Util.write_log("pull_%s_data" % task_key[1], http_result)
-        # Common.delete_html_data(conn, task_key[1], version, extra_data["code"])
+        Common.delete_html_data(conn, task_key[1], version, extra_data["code"])
         Util.print_red("【%s】编号 <%s> 解析失败，解析页面已写入日志，原数据已删除" % (task_key[0], extra_data["code"]))
         Util.print_red(e, tag="")
 
@@ -340,11 +340,11 @@ def read_week_string(week_str):
 if __name__ == '__main__':
     _config = Config.load_config("../Config")
     # _conn = Util.mysql_conn(_config, "mysql-occam")
-    # _act_room_list = [{
+    # _avl_room_list = [{
     #     "jsid": "2420104",
     #     "jsmc": "世Ａ104"
     # }]
-    # fetch_class_table(_config, "2019-11-27", "课表教室", "room_table", "jskb", "2019-2020-1", _act_room_list)
+    # fetch_class_table(_config, "2019-11-27", "课表教室", "room_table", "jskb", "2019-2020-1", _avl_room_list)
     # _task_key = ("课表教室", "room_table")
     # _test_html = Common.read_html_data(_conn, "room_table", "2019-11-27")
     # parse_list_page(_config, "2019-11-27", _task_key, _test_html[0]["data"],

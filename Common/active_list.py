@@ -35,7 +35,7 @@ def fetch_active_list(config, version, task_name, task_word, url_index, semester
     http_result = pull_active_list_page(config, version, task_key, url_index, headers, semester)
     time_end = time.time()
     Util.print_green("OK", tag='', end='')
-    Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
+    Util.print_yellow("(%.2fs)" % (time_end - time_start), tag='')
 
     # 解析页面信息
     active_list = parse_name_list(config, version, task_key, http_result)
@@ -109,4 +109,4 @@ def update_active_list(config, task_name, task_word, task_group, semester, activ
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    fetch_active_list(_config, "2019-11-27", "可用教室", "act_room", "jslb", "2019-2020-1")
+    fetch_active_list(_config, "2019-11-27", "可用教室", "avl_room", "jslb", "2019-2020-1")

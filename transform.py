@@ -4,6 +4,10 @@ import Util
 import Config
 import Common
 
+"""
+旧版数据库向新版转换
+"""
+
 
 def main(config, folder, semester):
     conn = Util.mysql_conn(config, "mysql-origin")

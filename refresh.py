@@ -8,6 +8,11 @@ import Student
 import Teacher
 import Preprocess
 
+
+"""
+下载并刷新课程数据
+"""
+
 if __name__ == "__main__":
     config = Config.load_config("./Config")
 

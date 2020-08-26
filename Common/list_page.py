@@ -51,7 +51,7 @@ def fetch_list_data(config, task_name, task_word, tag_dict, url_index, page_size
         time_end = time.time()
 
         Util.print_green("OK", tag='', end='')
-        Util.print_yellow("(%ss)" % ceil(time_end - time_start), tag='')
+        Util.print_yellow("(%.2fs)" % (time_end - time_start), tag='')
 
     return True
 

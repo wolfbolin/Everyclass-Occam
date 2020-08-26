@@ -12,7 +12,7 @@ def available_room(config, semester):
 
     # 清空表数据
     with conn.cursor() as cursor:
-        cursor.execute("TRUNCATE TABLE `act_room`")
+        cursor.execute("TRUNCATE TABLE `avl_room`")
 
     # 更新教学楼与校区列表
     update_room_itemize(conn)
@@ -60,7 +60,7 @@ def update_active_room(conn, lesson):
     if lesson["room_code"] == "":
         return
     week_list = json.loads(lesson["week"])
-    sql = "INSERT INTO `act_room`(`code`,`name`,`session`,%s) VALUES " % week_sql_str
+    sql = "INSERT INTO `avl_room`(`code`,`name`,`session`,%s) VALUES " % week_sql_str
     sql += "(%s) " % (",".join(["%s" for i in range(23)]))
     sql += "ON DUPLICATE KEY UPDATE `code`=`code`"
     base_args = [lesson["room_code"], lesson["room_name"], lesson["session"]]
@@ -87,4 +87,4 @@ def update_active_room(conn, lesson):
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    available_room(_config, "2019-2020-2")
+    available_room(_config, "2020-2021-1")

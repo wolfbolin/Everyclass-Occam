@@ -21,8 +21,8 @@ def update(config, semester, version):
         Common.update_page_info(config, "教室列表", "room_list", dao.write_room_info)
 
     # 更新活跃教室
-    active_list = Common.fetch_active_list(config, version, "可用教室", "act_room", "jslb", semester)
-    Common.update_active_list(config, "可用教室", "act_room", "room", semester, active_list)
+    active_list = Common.fetch_active_list(config, version, "可用教室", "avl_room", "jslb", semester)
+    Common.update_active_list(config, "可用教室", "avl_room", "room", semester, active_list)
 
     # 更新教室课表
     Common.fetch_class_table_oc(config, version, "教室课表", "room_table", "room", "jskb", semester, active_list)
