@@ -23,7 +23,7 @@ def lesson_data_oc(config, semester):
         "semester": semester
     }
     Util.turbo_multiprocess(config, update_lesson_data_oc, comm_data, task_data,
-                            db_list=["mysql-entity"], max_process=8, max_thread=4)
+                            db_list=["mysql-entity"], max_process=8, max_thread=16)
 
 
 def update_lesson_data_oc(mysql_pool, lesson, semester):

@@ -27,4 +27,4 @@ def update(config, semester, version):
 
 if __name__ == "__main__":
     _config = Config.load_config("../Config")
-    main(_config, "2019-2020-1", "2020-02-16")
+    update(_config, "2020-2021-1", "2020-2021-10-05")

@@ -107,7 +107,7 @@ def fetch_class_table_oc(config, version, task_name, task_word, task_group, url_
 
     }
     Util.turbo_multiprocess(config, parse_list_page_oc, comm_data, task_data,
-                            db_list=["mysql-occam"], max_process=8, max_thread=4)
+                            db_list=["mysql-occam"], max_process=8, max_thread=16)
 
 
 def parse_list_page_oc(mysql_pool, config, version, task_key, http_result, obj_data):
@@ -121,8 +121,8 @@ def parse_list_page(config, conn, version, task_key, http_result, obj_data):
     # 解析页面数据
     lesson_list = []
     try:
-        soup = BeautifulSoup(http_result, "lxml")
-        table = soup.find("table")
+        dom = BeautifulSoup(http_result, "lxml")
+        table = dom.find("table")
         lines = table.find_all("tr")
 
         week_index = calc_week_column(lines[0])
@@ -144,7 +144,7 @@ def parse_list_page(config, conn, version, task_key, http_result, obj_data):
 
                     lesson_list.append(lesson_info)
 
-        remark = soup.find(id="bzdiv").string
+        remark = dom.find(id="bzdiv").string
         table_data = {
             "remark": remark,
             "lesson": lesson_list
@@ -219,7 +219,7 @@ def update_table_info_oc(config, version, task_name, task_word, task_group, seme
         "group": task_key[2]
     }
     Util.turbo_multiprocess(config, write_table_info_oc, comm_data, task_data,
-                            db_list=["mysql-entity"], max_process=8, max_thread=4)
+                            db_list=["mysql-entity"], max_process=8, max_thread=16)
 
 
 def write_table_info_oc(mysql_pool, semester, group, obj_code, obj_data):

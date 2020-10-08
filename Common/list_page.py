@@ -4,7 +4,6 @@ import json
 import Util
 import Config
 import Common
-from math import ceil
 from bs4 import BeautifulSoup
 
 
@@ -58,11 +57,11 @@ def fetch_list_data(config, task_name, task_word, tag_dict, url_index, page_size
 
 # 预分析页面信息
 def parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_size):
-    soup = BeautifulSoup(http_result, "lxml")
+    dom = BeautifulSoup(http_result, "lxml")
 
     # 解析页码数据
     try:
-        all_page_num = soup.find(id="totalPages").attrs["value"]
+        all_page_num = dom.find(id="totalPages").attrs["value"]
         all_page_num = int(all_page_num)
         mev_line_num = all_page_num * int(page_size)
     except AttributeError:
@@ -72,7 +71,7 @@ def parse_page_info(config, task_key, http_result, tag_dict, tag_index, page_siz
 
     # 解析映射关系
     try:
-        tag_list = soup.find('thead').find_all('th')
+        tag_list = dom.find('thead').find_all('th')
         for index, tag in enumerate(tag_list):
             if tag.string is None:
                 continue
@@ -110,8 +109,8 @@ def parse_list_page(config, version, task_key, tag_index, http_result, page_num)
 
     # 解析页面数据
     try:
-        soup = BeautifulSoup(http_result, "lxml")
-        table_list = soup.find('tbody').find_all('tr')
+        dom = BeautifulSoup(http_result, "lxml")
+        table_list = dom.find('tbody').find_all('tr')
 
         page_data = []
         for table_line in table_list:

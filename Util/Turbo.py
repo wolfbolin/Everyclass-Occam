@@ -81,7 +81,7 @@ def turbo_multiprocess(config, task_func, comm_data, task_data, db_list=None, ma
     return result_data
 
 
-def multithread_master(config, task_func, task_queue, result_list, db_list=None, max_thread=4):
+def multithread_master(config, task_func, task_queue, result_list, db_list=None, max_thread=16):
     Util.print_yellow("Process start: [%5d]" % os.getpid())
 
     # 建立连接池
